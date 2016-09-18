@@ -1,0 +1,252 @@
+#!/bin/bash
+# Original code by Dave Coyle (http://coyled.com)
+# Tweaks by Gwyneth Llewelyn (http://gwynethllewelyn.net/)
+# Additional code by Lotek Ixtar (http://lotix.nl)
+
+# Requires bash 4
+
+# Get the root folder of the isthmus tree
+export OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
+SIMS_AVAILABLE="${OPENSIM_DIR}/sims-available"
+
+# Second Life time is the US/Pacific-New timezone
+VIEWER_TIME="US/Pacific-New"
+
+# Mono 3 compatibility
+export MONO_GC_PARAMS="nursery-size=8m"
+
+MONO="/usr/bin/mono"
+SCREEN="/usr/bin/screen"
+
+show_help() {
+    echo `basename $0` - Control opensim simulators
+    echo ""
+    echo "start <simname>     Start a simulator"
+    echo "stop <simname>      Stop and deregister from the map"
+    echo "kill <simname>      Stop by sending SIGHUP (unclean)"
+    echo "alert <simname> \"This is an alert message\"    Send an inworld alert msg"
+    echo "restart <simname>   Issues a stop, then start command"
+    echo "audit <simname>     Returns which ports a sim is using"
+    echo "status <simname>    Returns online status"
+}
+
+check_user() {
+    if [ ${USER} != 'opensim' ]; then
+        echo "This must be run as user opensim"
+        exit 1
+    fi
+}
+
+is_sim() {
+    if [ -d "${SIMS_AVAILABLE}/$1" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+is_running() {
+    if [ ! $1 ]; then
+        show_help
+        exit 1
+    else
+        SIM=$1
+    fi
+
+    if [ -f "${SIMS_AVAILABLE}/${SIM}/pid" ]; then
+        if ps -p `cat "${SIMS_AVAILABLE}/${SIM}/pid"` > /dev/null; then
+            return 0
+        else
+            return 1
+        fi
+    else
+        return 1
+    fi 
+}
+
+get_status() {
+    if [ ! $1 ]; then
+        show_help
+        exit 1
+    else
+        SIM=$1
+    fi
+
+    if is_sim ${SIM}; then
+        if is_running ${SIM}; then
+            echo "${SIM} is online"
+        else
+            echo "${SIM} is offline"
+        fi
+    else
+        echo "${SIM} does not exist"
+    fi
+}
+
+do_audit() {
+    if [ ! $1 ]; then
+        show_help
+        exit 1
+    else
+        SIM=$1
+    fi
+
+    if is_sim ${SIM}; then
+        simport=`grep http_listener_port "${SIMS_AVAILABLE}/${SIM}/OpenSim.ini" | grep -ho '[0-9]*'`
+        echo -n "[${SIM}] TCP:${simport} "
+        for INIFILE in ${SIMS_AVAILABLE}/${SIM}/regions/*.ini ; do
+            regionport=`grep InternalPort ${INIFILE} | grep -ho '[0-9]*'`
+            echo -n "UDP:${regionport} "
+        done
+        echo "\n"
+    fi
+}
+
+setup() {
+    if [ ! $1 ]; then
+        show_help
+        exit 1
+    else
+        SIM=$1
+    fi
+
+    if is_sim ${SIM}; then
+        # SIM_PATH is used by log4net to put the logfiles in each sim's folder
+        export SIM_PATH="${SIMS_AVAILABLE}/${SIM}"
+        PID="${SIM_PATH}/pid"
+    else
+        echo "Sorry, I've never heard of sim ${SIM}.  Exiting."
+        exit 1;
+    fi
+}
+
+do_start() {
+    if [ ! $1 ]; then
+        show_help
+        exit 1
+    else
+        SIM=$1
+    fi
+
+    setup ${SIM}
+    check_user
+
+    # Make sure opensim.exe runs in the SLT time zone:
+    export TZ=${VIEWER_TIME}
+    cd "${OPENSIM_DIR}/lib/bin" && ${SCREEN} -S ${SIM} -d -m -l \
+	${MONO} OpenSim.exe -inidirectory="${SIMS_AVAILABLE}/${SIM}"
+}
+
+do_kill() {
+    if [ ! $1 ]; then
+        show_help
+        exit 1
+    else
+        SIM=$1
+    fi
+
+    setup ${SIM}
+    check_user
+
+    if [ -f ${PID} ]; then
+        # Send backup command and wait 1 minute
+        ${SCREEN} -r ${SIM} -X exec .\!\! echo backup
+        sleep 60
+        kill -9 `cat ${PID}`
+        rm ${PID}
+#    else
+#        echo "Sorry, ${SIM} PID not found."
+#        exit 1
+    fi
+}
+
+do_stop() {
+    if [ ! $1 ]; then
+        show_help
+        exit 1
+    else
+        SIM=$1
+    fi
+
+    setup ${SIM}
+    check_user
+
+    if [ -f $PID ]; then
+        ${SCREEN} -r ${SIM} -X exec .\!\! echo quit
+    else
+        echo "Sorry, ${SIM} PID not found."
+        exit 1
+    fi
+}
+
+do_alert() {
+    if [ ! $1 ]; then
+        show_help
+        exit 1
+    else
+        SIM=$1
+    fi
+
+    setup ${SIM}
+    check_user
+
+    if [ -f $PID ]; then
+        ${SCREEN} -r ${SIM} -X exec .\!\! echo "alert $2"
+    else
+        echo "Sorry, ${SIM} PID not found."
+        exit 1
+    fi
+}
+
+do_console() {
+    if [ ! $1 ]; then
+        show_help
+        exit 1
+    fi
+
+    setup $1
+
+    cd "${OPENSIM_DIR}/lib/bin" && ${SCREEN} -S ${SIM} -d -m -l \
+	 ${MONO} OpenSim.exe -inidirectory="${SIMS_AVAILABLE}/${SIM}"
+}
+
+case "$1" in
+    start)
+        do_start $2
+        ;; 
+    stop)
+        do_stop $2
+        ;;
+    kill)
+        do_kill $2
+        ;;
+    alert)
+        do_alert $2 "$3"
+        ;;
+    restart)
+        do_stop $2
+        sleep 120
+        do_kill $2
+        sleep 10
+        do_start $2
+        ;;
+    console)
+        do_console $2
+        ;;
+    status)
+        get_status $2
+        ;;
+    status-all)
+        for simulator in ${SIMS_AVAILABLE}/*; do
+            get_status `basename $simulator`
+        done;
+        ;;
+    audit)
+        do_audit $2
+        ;;
+    *)
+        show_help
+        exit 1
+        ;;
+esac
+

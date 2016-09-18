@@ -1,0 +1,19 @@
+The following packages are required:
+
+  bash
+  dialog
+  grep
+  screen
+  sed
+  unzip
+  which
+  zip
+  mono-complete
+
+In addition, one of the following databases is required:
+
+  mariadb (recommended)
+  mysql
+  postgresql
+
+

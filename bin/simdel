@@ -1,0 +1,81 @@
+#!/bin/sh
+OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
+
+backtitle="Isthmus - Delete a sim/region"
+
+sim_name=""
+
+# If no parameters given, select a sim from sims-available in a dialog
+if [ $# -eq 0 ]; then
+    exec 3>&1
+    sim_name=$(dialog --clear --ascii-lines --backtitle "${backtitle}" \
+	--dselect "${OPENSIM_DIR}/sims-available/" 0 0 \
+    2>&1 1>&3)
+    exec 3>&-
+
+    if [ -z ${sim_name} ]; then
+        # Cancel/no pressed
+        exit 1
+    fi
+else
+    sim_name="$1"
+fi
+
+sim_name=`basename ${sim_name}`
+if [ ! -d "${OPENSIM_DIR}/sims-available/${sim_name}" ]; then
+    # sim does not exist
+    exit 1
+fi
+
+# Check wether simulator online
+${OPENSIM_DIR}/bin/simctl status ${sim_name} | grep offline > /dev/null
+status=$?
+if [ ${status} -eq 0 ]; then
+    # sim not online
+    dialog --clear --ascii-lines --backtitle "${backtitle}" \
+	--title "${sim_name}" --yes-label "Start" --no-label "Cancel" \
+	--yesno "The sim is offline and needs to be started one more time in order to delete all associated data" 10 30
+
+    if [ $? -ne 0 ]; then
+        # Cancel pressed
+        clear
+        exit 1
+    fi
+
+    # Start simulator
+    dialog --ascii-lines --backtitle "${backtitle}" \
+	--title "${sim_name}" --infobox \
+	"Starting... (2 minutes)" 7 30 
+    # ${OPENSIM_DIR}/bin/simctl start ${sim_name}
+    #sleep 120
+    echo "pretend: ${OPENSIM_DIR}/bin/simctl start ${sim_name}"
+    sleep 5
+fi
+
+# Delete region
+dialog --ascii-lines --backtitle "${backtitle}" \
+	--title "${sim_name}" --infobox \
+	"Deleting region" 7 30 
+echo "pretend: ${OPENSIM_DIR}/bin/simctl cmd ${sim_name} \"delete-region regionname\""
+sleep 5
+
+# Stop simulator
+dialog --ascii-lines --backtitle "${backtitle}" \
+	--title "${sim_name}" --infobox \
+	"Stopping simulator" 7 30 
+#${OPENSIM_DIR}/bin/simctl stop ${sim_name}
+echo "pretend: ${OPENSIM_DIR}/bin/simctl stop ${sim_name}"
+sleep 5
+
+# Stop simulator
+dialog --ascii-lines --backtitle "${backtitle}" \
+	--title "${sim_name}" --infobox \
+	"Deleting simulator" 7 30 
+#rm -R ${OPENSIM_DIR}/sims-available/${sim_name}
+#rm ${OPENSIM_DIR}/sims-enabled/${sim_name} > /dev/null
+echo "pretend: rm -R ${OPENSIM_DIR}/sims-available/${sim_name}"
+echo "pretend: rm ${OPENSIM_DIR}/sims-enabled/${sim_name} > /dev/null"
+
+
+exit 0
+

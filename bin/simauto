@@ -1,0 +1,112 @@
+#!/bin/sh
+OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
+
+SIMCTL="${OPENSIM_DIR}/bin/simctl"
+
+# Seconds delay between inworld alert and actual shutdown
+ALERT_DELAY=120
+
+# Seconds delay after stopping (for a clean shutdown)
+STOP_DELAY=120
+
+# Seconds delay after starting (to space out autobackups)
+START_DELAY=600
+
+# Inworld warnings users get to see $ALERT_DELAY seconds before stopping or
+# restarts. Note that you CAN'T use special characters such as \n (newline)
+MSG_REGION_RESTART="ATTENTION: REGION RESTART - This region will be restarting within ${ALERT_DELAY} seconds. Please teleport elsewhere until we are back..."
+MSG_REGION_STOP="ATTENTION: REGION MAINTENANCE - This region will be going down for maintenance within ${ALERT_DELAY} seconds. Please teleport elsewhere until we are back..."
+
+show_help() {
+    echo "Usage: `basename $0` [ start | stop | restart ]"
+    echo "Starts or stops all simulators in ${OPENSIM_DIR}/sims-enabled"
+}
+
+do_start() {
+    for simulator in $OPENSIM_DIR/sims-enabled/*; do
+        simname=`basename $simulator`
+        if [ -f "${simulator}/pid" ]; then
+           if ps -p `cat "${simulator}/pid"` > /dev/null; then
+               echo "[${simname}] Already running"
+           else
+               echo "[${simname}] Starting (${START_DELAY}s, unclean shutdown)"
+               ${SIMCTL} start ${simname}
+               sleep ${START_DELAY}
+           fi
+        else
+           echo "[${simname}] Starting (${START_DELAY})"
+           ${SIMCTL} start ${simname}
+           sleep ${START_DELAY}
+        fi
+    done;
+    echo "`date`"
+    echo "All sims have started."
+}
+
+do_stop() {
+    for simulator in "${OPENSIM_DIR}/sims-enabled/*"; do
+        simname=`basename ${simulator}`
+        if [ -f "${simulator}/pid" ]; then
+           if ps -p `cat "${simulator}/pid"` > /dev/null; then
+               echo "[${simname}] Sending inworld alert (${ALERT_DELAY}s)"
+               ${SIMCTL} alert ${simname} "${MSG_REGION_STOP}"
+               sleep ${ALERT_DELAY}
+               echo "[${simname}] Stopping"
+               ${SIMCTL} stop ${simname}
+               sleep ${STOP_DELAY}
+               ${SIMCTL} kill ${simname}
+           else
+               echo "[${simname}] Already offline (stale pid file)"
+           fi
+        else
+           echo "[${simname}] Already offline"
+        fi
+    done;
+    echo "`date`"
+    echo "All sims have stopped."
+}
+
+do_restart() {
+    for simulator in "${OPENSIM_DIR}/sims-enabled/*"; do
+        simname=`basename ${simulator}`
+        if [ -f "${simulator}/pid" ]; then
+           if ps -p `cat "${simulator}/pid"` > /dev/null; then
+               echo "[${simname}] Alerting (${ALERT_DELAY}s)"
+               ${SIMCTL} alert ${simname} "$MSG_REGION_RESTART"
+               sleep ${ALERT_DELAY}
+
+               echo "[${simname}] Stopping (${STOP_DELAY}s)"
+               ${SIMCTL} stop ${simname}
+               # Give time for the sim to cleanly shutdown
+               sleep ${STOP_DELAY}
+
+               # Kill it in case it was stuck
+               ${SIMCTL} kill ${simname}
+           fi
+        fi
+        echo "[${simname}] Starting (${START_DELAY}s)"
+        ${SIMCTL} start ${simname}
+        sleep ${START_DELAY}
+    done;
+    echo "`date`"
+    echo "All sims have been restarted."
+}
+
+case "$1" in
+    start)
+        echo "Starting all sims delayed"
+        do_start
+        ;;
+    stop)
+        echo "Stopping all sims"
+        do_stop
+        ;;
+    restart)
+        echo "Restarting all sims delayed"
+        do_restart
+        ;;
+    *)
+        show_help
+        exit 1
+        ;;
+esac
