@@ -34,27 +34,34 @@ do_start() {
                sleep ${START_DELAY}
            fi
         else
-           echo "[${simname}] Starting (${START_DELAY})"
+           echo "[${simname}] Starting (${START_DELAY}s)"
            ${SIMCTL} start ${simname}
            sleep ${START_DELAY}
         fi
     done;
-    echo "`date`"
     echo "All sims have started."
 }
 
 do_stop() {
+    # Phase 1: Alert
     for simulator in "${OPENSIM_DIR}/sims-enabled/*"; do
         simname=`basename ${simulator}`
         if [ -f "${simulator}/pid" ]; then
            if ps -p `cat "${simulator}/pid"` > /dev/null; then
-               echo "[${simname}] Sending inworld alert (${ALERT_DELAY}s)"
+               echo "[${simname}] Sending inworld alert"
                ${SIMCTL} alert ${simname} "${MSG_REGION_STOP}"
-               sleep ${ALERT_DELAY}
+           fi
+        fi
+    done;
+    echo "Pausing (${ALERT_DELAY}s) before stopping"
+    sleep ${ALERT_DELAY}
+    # Phase 2: Stop
+    for simulator in "${OPENSIM_DIR}/sims-enabled/*"; do
+        simname=`basename ${simulator}`
+        if [ -f "${simulator}/pid" ]; then
+           if ps -p `cat "${simulator}/pid"` > /dev/null; then
                echo "[${simname}] Stopping"
                ${SIMCTL} stop ${simname}
-               sleep ${STOP_DELAY}
-               ${SIMCTL} kill ${simname}
            else
                echo "[${simname}] Already offline (stale pid file)"
            fi
@@ -62,25 +69,53 @@ do_stop() {
            echo "[${simname}] Already offline"
         fi
     done;
-    echo "`date`"
+    echo "Pausing (${STOP_DELAY}s) before killcheck"
+    sleep ${STOP_DELAY}
+    # Phase 3: Kill
+    for simulator in "${OPENSIM_DIR}/sims-enabled/*"; do
+        simname=`basename ${simulator}`
+        if [ -f "${simulator}/pid" ]; then
+           if ps -p `cat "${simulator}/pid"` > /dev/null; then
+               echo "[${simname}] Killing"
+               ${SIMCTL} kill ${simname}
+           fi
+        fi
+    done;
     echo "All sims have stopped."
 }
 
 do_restart() {
+    # Phase 1: Alert
     for simulator in "${OPENSIM_DIR}/sims-enabled/*"; do
         simname=`basename ${simulator}`
         if [ -f "${simulator}/pid" ]; then
            if ps -p `cat "${simulator}/pid"` > /dev/null; then
                echo "[${simname}] Alerting (${ALERT_DELAY}s)"
                ${SIMCTL} alert ${simname} "$MSG_REGION_RESTART"
-               sleep ${ALERT_DELAY}
-
+           fi
+        fi
+    done;
+    echo "Pausing (${ALERT_DELAY}s) before stopping sims"
+    sleep ${ALERT_DELAY}
+    # Phase 2: Stop
+    for simulator in "${OPENSIM_DIR}/sims-enabled/*"; do
+        simname=`basename ${simulator}`
+        if [ -f "${simulator}/pid" ]; then
+           if ps -p `cat "${simulator}/pid"` > /dev/null; then
                echo "[${simname}] Stopping (${STOP_DELAY}s)"
                ${SIMCTL} stop ${simname}
-               # Give time for the sim to cleanly shutdown
-               sleep ${STOP_DELAY}
-
+           fi
+        fi
+    done;
+    echo "Pausing (${ALERT_DELAY}s) before starting sims"
+    sleep ${ALERT_DELAY}
+    # Phase 3: Start
+    for simulator in "${OPENSIM_DIR}/sims-enabled/*"; do
+        simname=`basename ${simulator}`
+        if [ -f "${simulator}/pid" ]; then
+           if ps -p `cat "${simulator}/pid"` > /dev/null; then
                # Kill it in case it was stuck
+               echo "[${simname}] Killing (unclean shutdown)"
                ${SIMCTL} kill ${simname}
            fi
         fi
@@ -88,8 +123,14 @@ do_restart() {
         ${SIMCTL} start ${simname}
         sleep ${START_DELAY}
     done;
-    echo "`date`"
     echo "All sims have been restarted."
+}
+
+do_status() {
+    for simulator in "${OPENSIM_DIR}/sims-enabled/*"; do
+        simname=`basename ${simulator}`
+        ${SIMCTL} status ${simname}
+    done;
 }
 
 case "$1" in
@@ -103,7 +144,10 @@ case "$1" in
         ;;
     restart)
         echo "Restarting all sims delayed"
-        do_restart
+        time do_restart
+        ;;
+    status)
+        do_status
         ;;
     *)
         show_help

@@ -74,12 +74,15 @@ get_status() {
 
     if is_sim ${SIM}; then
         if is_running ${SIM}; then
-            echo "${SIM} is online"
+            echo "[${SIM}] is online"
+            exit 1 
         else
-            echo "${SIM} is offline"
+            echo "[${SIM}] is offline"
+            exit 0 
         fi
     else
-        echo "${SIM} does not exist"
+        echo "[${SIM}] does not exist"
+        exit -1
     fi
 }
 
@@ -235,11 +238,6 @@ case "$1" in
         ;;
     status)
         get_status $2
-        ;;
-    status-all)
-        for simulator in ${SIMS_AVAILABLE}/*; do
-            get_status `basename $simulator`
-        done;
         ;;
     audit)
         do_audit $2
