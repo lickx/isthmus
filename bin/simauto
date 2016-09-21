@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 
 SIMCTL="${OPENSIM_DIR}/bin/simctl"
@@ -34,7 +34,7 @@ do_start() {
                sleep ${START_DELAY}
            fi
         else
-           echo "[${simname}] Starting (${START_DELAY}s)"
+           echo "[${simname}] Starting (${START_DELAY})"
            ${SIMCTL} start ${simname}
            sleep ${START_DELAY}
         fi
@@ -44,7 +44,7 @@ do_start() {
 
 do_stop() {
     # Phase 1: Alert
-    for simulator in "${OPENSIM_DIR}/sims-enabled/*"; do
+    for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
         simname=`basename ${simulator}`
         if [ -f "${simulator}/pid" ]; then
            if ps -p `cat "${simulator}/pid"` > /dev/null; then
@@ -56,7 +56,7 @@ do_stop() {
     echo "Pausing (${ALERT_DELAY}s) before stopping"
     sleep ${ALERT_DELAY}
     # Phase 2: Stop
-    for simulator in "${OPENSIM_DIR}/sims-enabled/*"; do
+    for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
         simname=`basename ${simulator}`
         if [ -f "${simulator}/pid" ]; then
            if ps -p `cat "${simulator}/pid"` > /dev/null; then
@@ -72,7 +72,7 @@ do_stop() {
     echo "Pausing (${STOP_DELAY}s) before killcheck"
     sleep ${STOP_DELAY}
     # Phase 3: Kill
-    for simulator in "${OPENSIM_DIR}/sims-enabled/*"; do
+    for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
         simname=`basename ${simulator}`
         if [ -f "${simulator}/pid" ]; then
            if ps -p `cat "${simulator}/pid"` > /dev/null; then
