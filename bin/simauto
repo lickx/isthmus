@@ -86,7 +86,7 @@ do_stop() {
 
 do_restart() {
     # Phase 1: Alert
-    for simulator in "${OPENSIM_DIR}/sims-enabled/*"; do
+    for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
         simname=`basename ${simulator}`
         if [ -f "${simulator}/pid" ]; then
            if ps -p `cat "${simulator}/pid"` > /dev/null; then
@@ -98,7 +98,7 @@ do_restart() {
     echo "Pausing (${ALERT_DELAY}s) before stopping sims"
     sleep ${ALERT_DELAY}
     # Phase 2: Stop
-    for simulator in "${OPENSIM_DIR}/sims-enabled/*"; do
+    for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
         simname=`basename ${simulator}`
         if [ -f "${simulator}/pid" ]; then
            if ps -p `cat "${simulator}/pid"` > /dev/null; then
@@ -110,7 +110,7 @@ do_restart() {
     echo "Pausing (${ALERT_DELAY}s) before starting sims"
     sleep ${ALERT_DELAY}
     # Phase 3: Start
-    for simulator in "${OPENSIM_DIR}/sims-enabled/*"; do
+    for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
         simname=`basename ${simulator}`
         if [ -f "${simulator}/pid" ]; then
            if ps -p `cat "${simulator}/pid"` > /dev/null; then
@@ -127,7 +127,7 @@ do_restart() {
 }
 
 do_status() {
-    for simulator in "${OPENSIM_DIR}/sims-enabled/*"; do
+    for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
         simname=`basename ${simulator}`
         ${SIMCTL} status ${simname}
     done;
