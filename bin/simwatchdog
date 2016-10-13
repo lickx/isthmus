@@ -1,0 +1,28 @@
+#!/bin/bash
+if [ $# -eq 0 ]; then
+    echo No isthmus folder specified
+    exit 1
+fi
+
+OPENSIM_DIR=$1
+SIMCTL="${OPENSIM_DIR}/bin/simctl"
+LOGFILE="${OPENSIM_DIR}/var/log/watchdog.log"
+SCREEN="/usr/bin/screen"
+START_DELAY=600
+
+mkdir -p "${OPENSIM_DIR}/var/log"
+
+do_log() {
+    logline="`date` - $1"
+    echo $logline >> $LOGFILE
+}
+
+for simulator in $OPENSIM_DIR/sims-enabled/*; do
+    simname=`basename $simulator`
+    if [ -f "${simulator}/pid" ]; then
+       if ! ps -p `cat "${simulator}/pid"` > /dev/null; then
+           do_log "[${simname}] Crashed, restarting"
+           ${SIMCTL} start ${simname}
+       fi
+    fi
+done;
