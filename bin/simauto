@@ -107,8 +107,8 @@ do_restart() {
            fi
         fi
     done;
-    echo "Pausing (${ALERT_DELAY}s) before starting sims"
-    sleep ${ALERT_DELAY}
+    echo "Pausing (${STOP_DELAY}s) before starting sims"
+    sleep ${STOP_DELAY}
     # Phase 3: Start
     for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
         simname=`basename ${simulator}`
@@ -124,6 +124,37 @@ do_restart() {
         sleep ${START_DELAY}
     done;
     echo "All sims have been restarted."
+}
+
+do_reload() {
+    for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
+        simname=`basename ${simulator}`
+        if [ -f "${simulator}/pid" ]; then
+           if ps -p `cat "${simulator}/pid"` > /dev/null; then
+               # Alert
+               echo "[${simname}] Alerting (${ALERT_DELAY}s)"
+               ${SIMCTL} alert ${simname} "$MSG_REGION_RESTART"
+               sleep ${ALERT_DELAY}
+               # Stop
+               echo "[${simname}] Stopping (${STOP_DELAY}s)"
+               ${SIMCTL} stop ${simname}
+               sleep ${STOP_DELAY}
+               # Kill
+               if [ -f "${simulator}/pid" ]; then
+                   if ps -p `cat "${simulator}/pid"` > /dev/null; then
+                       # Kill it in case it was stuck
+                       echo "[${simname}] Killing (unclean shutdown)"
+                       ${SIMCTL} kill ${simname}
+                   fi
+               fi
+               # Start
+               echo "[${simname}] Starting (${START_DELAY}s)"
+               ${SIMCTL} start ${simname}
+               sleep ${START_DELAY}
+           fi
+        fi
+    done;
+    echo "All sims have been reloaded."
 }
 
 do_status() {
@@ -145,6 +176,10 @@ case "$1" in
     restart)
         echo "Restarting all sims delayed"
         time do_restart
+        ;;
+    reload)
+        echo "Reloading all sims delayed"
+        time do_reload
         ;;
     status)
         do_status

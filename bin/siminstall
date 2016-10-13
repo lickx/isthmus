@@ -1,6 +1,6 @@
 #!/bin/sh
 OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
-TARGET_DIR="${OPENSIM_DIR}/lib"
+TARGET_DIR="lib"
 BACKUP_DIR="${OPENSIM_DIR}/var/distfiles"
 
 INSTALL_TYPE="clean"
@@ -18,12 +18,14 @@ fi
 EXCLUDE="bin/config-include/* bin/Regions/* bin/OpenSim.ini bin/OpenSim.exe.config"
 
 # Backup first in case we need to re-roll
-if [[ -d ${TARGET_DIR} ]] && [[ -x `which zip` ]]; then
+cd "${OPENSIM_DIR}"
+if [[ -d "${TARGET_DIR}" ]] && [[ -x `which zip` ]]; then
     echo -n "Backing up current version... "
     INSTALL_TYPE="upgrade"
     BACKUP_ARCHIVE="opensim-preupgrade.zip"
     mkdir -p "${BACKUP_DIR}"
-    zip -q -r "${BACKUP_DIR}/${BACKUP_ARCHIVE}" ${TARGET_DIR}/*
+    cd ${OPENSIM_DIR}
+    zip -q -r "${BACKUP_DIR}/${BACKUP_ARCHIVE}" . -i "${TARGET_DIR}/*"
     echo "Done"
 else
     mkdir -p "${TARGET_DIR}"
@@ -35,7 +37,7 @@ if [ ${INSTALL_TYPE} == "upgrade" ]; then
 else
     echo -n "Installing simulator software...  "
 fi
-unzip -q -o -d ${TARGET_DIR} $1 -x ${EXCLUDE} &>/dev/null
+unzip -q -o -d "${TARGET_DIR}" "$1" -x ${EXCLUDE} &>/dev/null
 
 if [ $? -eq 0 ]; then
     echo "Succes"

@@ -126,7 +126,7 @@ echo "DefaultEstateName = \"${estate_name}\"" >> "${opensim_ini}"
 echo "DefaultEstateOwnerName = \"${estate_owner}\"" >> "${opensim_ini}"
 
 echo -e "\n[Main]" >> "${opensim_ini}"
-echo "Include-Main = \"../../opensim.ini\"" >> "${opensim_ini}"
+echo "Include-Main = \"../../etc/opensim.ini\"" >> "${opensim_ini}"
 
 echo "[${region_name}] Populating regions.ini"
 regions_ini="${sim_dir}/regions/regions.ini"
