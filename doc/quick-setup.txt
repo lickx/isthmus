@@ -24,8 +24,9 @@ $ ./siminstall ~/Downloads/opensimulator-0.9.0.zip
 Database setup
 
 
-For now it is assumed you will be making a new database for each instance of
-Isthmus. The database will be shared among all regions in the instance.
+For now it is assumed you will be making a new database for each installation of
+Isthmus. The database will be shared among all regions. By default each region
+runs in its own simulator instance, which is managed by GNU Screen.
 
 
 If you chose MySQL/MariaDB:
@@ -80,6 +81,13 @@ For all simulators at once which are symlinked in the sims-enabled folder:
 Start:    ./simauto start
 Stop:     ./simauto stop
 Restart:  ./simauto restart
+Reload:   ./simauto reload
+
+You use restart after big upgrades with drastic changes in OpenSim, such as
+database migrations. It will take all sims in the isthmus installation down,
+upgrade, then start them again. Reload is used for small upgrades, sims are
+restarted one by one. Reload can for example be used for automated weekly
+restarts.
 
 To see more options, type without parameters:   ./simauto
  
