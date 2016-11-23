@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 
 tempfile=`(tempfile) 2>/dev/null` || tempfile=/tmp/test$$
