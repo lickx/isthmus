@@ -157,9 +157,6 @@ do_kill() {
         sleep 60
         kill -9 `cat ${PID}`
         rm ${PID}
-#    else
-#        echo "Sorry, ${SIM} PID not found."
-#        exit 1
     fi
 }
 
@@ -175,9 +172,9 @@ do_stop() {
     check_user
 
     if [ -f $PID ]; then
-        ${SCREEN} -r ${SIM} -X exec .\!\! echo quit
+         kill -SIGTERM `cat $PID`
     else
-        echo "Sorry, ${SIM} PID not found."
+        echo "error: ${SIM} is not running"
         exit 1
     fi
 }
@@ -196,7 +193,7 @@ do_alert() {
     if [ -f $PID ]; then
         ${SCREEN} -r ${SIM} -X exec .\!\! echo "alert $2"
     else
-        echo "Sorry, ${SIM} PID not found."
+        echo "error: ${SIM} is not running"
         exit 1
     fi
 }
