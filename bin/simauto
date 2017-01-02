@@ -5,6 +5,12 @@ OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 
 SIMCTL="${OPENSIM_DIR}/bin/simctl"
 
+mkdir -p "${OPENSIM_DIR}/var"
+
+# We create this lock file when needing to suspend the watchdog
+SIMAUTO_LOCK="${OPENSIM_DIR}/var/simauto.lock"
+touch "${SIMAUTO_LOCK}"
+
 # Seconds delay between inworld alert and actual shutdown
 ALERT_DELAY=120
 
@@ -153,7 +159,17 @@ do_reload() {
                echo "[${simname}] Starting (${START_DELAY}s)"
                ${SIMCTL} start ${simname}
                sleep ${START_DELAY}
+           else
+               # Start crashed sim
+               echo "[${simname}] Starting (${START_DELAY}s)"
+               ${SIMCTL} start ${simname}
+               sleep ${START_DELAY}
            fi
+        else
+           # Start non-running sim
+           echo "[${simname}] Starting (${START_DELAY}s)"
+           ${SIMCTL} start ${simname}
+           sleep ${START_DELAY}
         fi
     done;
     echo "All sims have been reloaded."
@@ -191,3 +207,5 @@ case "$1" in
         exit 1
         ;;
 esac
+
+rm ${SIMAUTO_LOCK}
