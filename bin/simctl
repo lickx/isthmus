@@ -172,7 +172,8 @@ do_stop() {
     check_user
 
     if [ -f $PID ]; then
-         kill -SIGTERM `cat $PID`
+         #kill -SIGTERM `cat $PID`
+         ${SCREEN} -r ${SIM} -X exec .\!\! echo quit
     else
         echo "error: ${SIM} is not running"
         exit 1
