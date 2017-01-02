@@ -20,4 +20,4 @@
 # For more information see the manual pages of crontab(5) and cron(8)
 # 
 # m h  dom mon dow   command
-10 * * * * /home/opensim/isthmus/bin/simwatchdog /home/opensim/isthmus
+*/10 * * * * /home/opensim/isthmus/bin/simwatchdog /home/opensim/isthmus
