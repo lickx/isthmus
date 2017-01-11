@@ -27,7 +27,7 @@ for simulator in $OPENSIM_DIR/sims-enabled/*; do
     if [ -f "${simulator}/pid" ]; then
        if ! ps -p `cat "${simulator}/pid"` > /dev/null; then
            do_log "[${simname}] Crashed, restarting (${START_DELAY})"
-           ${SIMCTL} start ${simname}
+           ${SIMCTL} restart ${simname}
            sleep ${START_DELAY}
        fi
     else
