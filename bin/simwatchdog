@@ -8,9 +8,11 @@ OPENSIM_DIR=$1
 SIMCTL="${OPENSIM_DIR}/bin/simctl"
 LOGFILE="${OPENSIM_DIR}/var/log/watchdog.log"
 SCREEN="/usr/bin/screen"
-START_DELAY=600
+GREP="/bin/grep"
+START_DELAY=60
 SIMAUTO_LOCK="${OPENSIM_DIR}/var/simauto.lock"
 
+cd "${OPENSIM_DIR}/bin"
 mkdir -p "${OPENSIM_DIR}/var/log"
 
 do_log() {
@@ -23,17 +25,15 @@ if [ -f ${SIMAUTO_LOCK} ]; then
 fi
 
 for simulator in $OPENSIM_DIR/sims-enabled/*; do
-    simname=`basename $simulator`
-    if [ -f "${simulator}/pid" ]; then
-       if ! ps -p `cat "${simulator}/pid"` > /dev/null; then
-           do_log "[${simname}] Crashed, restarting (${START_DELAY})"
-           ${SIMCTL} restart ${simname}
-           sleep ${START_DELAY}
-       fi
-    else
-       # No pid file found, start it:
-       do_log "[${simname}] Not running, starting (${START_DELAY})"
-       ${SIMCTL} start ${simname}
-       sleep ${START_DELAY}
+    SIM=`basename $simulator`
+    ${SCREEN} -ls ${SIM} > /dev/null
+    if [ $? -ne 0 ]; then
+        do_log "[${SIM}] Not online, restarting"
+        ${SIMCTL} kill ${SIM}
+        sleep 10
+        ${SIMCTL} start ${SIM}
+        sleep ${START_DELAY}
+    #else
+    #    do_log "[${SIM}] is running OK"
     fi
 done;
