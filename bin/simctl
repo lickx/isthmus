@@ -17,6 +17,7 @@ export MONO_GC_PARAMS="nursery-size=8m"
 
 MONO="/usr/bin/mono"
 SCREEN="/usr/bin/screen"
+GREP="/bin/grep"
 
 show_help() {
     echo `basename $0` - Control opensim simulators
@@ -53,15 +54,12 @@ is_running() {
         SIM=$1
     fi
 
-    if [ -f "${SIMS_AVAILABLE}/${SIM}/pid" ]; then
-        if ps -p `cat "${SIMS_AVAILABLE}/${SIM}/pid"` > /dev/null; then
-            return 0
-        else
-            return 1
-        fi
+    ${SCREEN} -ls ${SIM} > /dev/null
+    if [ $? -eq 0 ]; then
+        return 0
     else
         return 1
-    fi 
+    fi
 }
 
 get_status() {
@@ -75,7 +73,7 @@ get_status() {
     if is_sim ${SIM}; then
         if is_running ${SIM}; then
             echo "[${SIM}] is online"
-            exit 1 
+            exit 1
         else
             echo "[${SIM}] is offline"
             exit 0 
@@ -95,10 +93,10 @@ do_audit() {
     fi
 
     if is_sim ${SIM}; then
-        simport=`grep http_listener_port "${SIMS_AVAILABLE}/${SIM}/OpenSim.ini" | grep -ho '[0-9]*'`
+        simport=`${GREP} http_listener_port "${SIMS_AVAILABLE}/${SIM}/OpenSim.ini" | ${GREP} -ho '[0-9]*'`
         echo -n "[${SIM}] TCP:${simport} "
         for INIFILE in ${SIMS_AVAILABLE}/${SIM}/regions/*.ini ; do
-            regionport=`grep InternalPort ${INIFILE} | grep -ho '[0-9]*'`
+            regionport=`${GREP} InternalPort ${INIFILE} | ${GREP} -ho '[0-9]*'`
             echo -n "UDP:${regionport} "
         done
         echo "\n"
@@ -151,12 +149,14 @@ do_kill() {
     setup ${SIM}
     check_user
 
-    if [ -f ${PID} ]; then
+    if is_running ${SIM}; then
         # Send backup command and wait 1 minute
         ${SCREEN} -r ${SIM} -X exec .\!\! echo backup
         sleep 60
-        kill -9 `cat ${PID}`
-        rm ${PID}
+        if [ -f ${PID} ]; then
+            kill -9 `cat ${PID}`
+            rm ${PID}
+        fi
     fi
 }
 
@@ -171,13 +171,12 @@ do_stop() {
     setup ${SIM}
     check_user
 
-    if [ -f $PID ]; then
-         #kill -SIGTERM `cat $PID`
+    if is_running ${SIM}; then
          ${SCREEN} -r ${SIM} -X exec .\!\! echo quit
     else
-        echo "error: ${SIM} is not running"
-        exit 1
-    fi
+         echo "${SIM} is not running"
+         exit 1
+    fi 
 }
 
 do_alert() {
@@ -191,24 +190,11 @@ do_alert() {
     setup ${SIM}
     check_user
 
-    if [ -f $PID ]; then
+    if is_running ${SIM}; then
         ${SCREEN} -r ${SIM} -X exec .\!\! echo "alert $2"
     else
-        echo "error: ${SIM} is not running"
-        exit 1
+        echo "${SIM} not running"
     fi
-}
-
-do_console() {
-    if [ ! $1 ]; then
-        show_help
-        exit 1
-    fi
-
-    setup $1
-
-    cd "${OPENSIM_DIR}/lib/bin" && ${SCREEN} -S ${SIM} -d -m -l \
-	 ${MONO} OpenSim.exe -inidirectory="${SIMS_AVAILABLE}/${SIM}"
 }
 
 case "$1" in
@@ -226,13 +212,10 @@ case "$1" in
         ;;
     restart)
         do_stop $2
-        sleep 120
+        sleep 60
         do_kill $2
         sleep 10
         do_start $2
-        ;;
-    console)
-        do_console $2
         ;;
     status)
         get_status $2

@@ -4,6 +4,8 @@
 OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 
 SIMCTL="${OPENSIM_DIR}/bin/simctl"
+SCREEN="/usr/bin/screen"
+GREP="/bin/grep"
 
 mkdir -p "${OPENSIM_DIR}/var"
 
@@ -15,10 +17,10 @@ touch "${SIMAUTO_LOCK}"
 ALERT_DELAY=120
 
 # Seconds delay after stopping (for a clean shutdown)
-STOP_DELAY=120
+STOP_DELAY=60
 
-# Seconds delay after starting (to space out autobackups)
-START_DELAY=600
+# Seconds delay after starting (to space out multiple sims starting)
+START_DELAY=120
 
 # Inworld warnings users get to see $ALERT_DELAY seconds before stopping or
 # restarts. Note that you CAN'T use special characters such as \n (newline)
@@ -26,23 +28,28 @@ MSG_REGION_RESTART="ATTENTION: REGION RESTART - This region will be restarting w
 MSG_REGION_STOP="ATTENTION: REGION MAINTENANCE - This region will be going down for maintenance within ${ALERT_DELAY} seconds. Please teleport elsewhere until we are back..."
 
 show_help() {
-    echo "Usage: `basename $0` [ start | stop | restart ]"
+    echo "Usage: `basename $0` [ start | stop | restart | reload | status ]"
     echo "Starts or stops all simulators in ${OPENSIM_DIR}/sims-enabled"
+}
+
+is_running() {
+    SIM=$1
+
+    ${SCREEN} -ls ${SIM} > /dev/null
+    if [ $? -eq 0 ]; then
+        return 0
+    else
+        return 1
+    fi
 }
 
 do_start() {
     for simulator in $OPENSIM_DIR/sims-enabled/*; do
         simname=`basename $simulator`
-        if [ -f "${simulator}/pid" ]; then
-           if ps -p `cat "${simulator}/pid"` > /dev/null; then
-               echo "[${simname}] Already running"
-           else
-               echo "[${simname}] Starting (${START_DELAY}s, unclean shutdown)"
-               ${SIMCTL} start ${simname}
-               sleep ${START_DELAY}
-           fi
+        if is_running ${simname}; then
+           echo "[${simname}] Already running"
         else
-           echo "[${simname}] Starting (${START_DELAY})"
+           echo "[${simname}] Starting (${START_DELAY}s)"
            ${SIMCTL} start ${simname}
            sleep ${START_DELAY}
         fi
@@ -53,12 +60,10 @@ do_start() {
 do_stop() {
     # Phase 1: Alert
     for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
-        simname=`basename ${simulator}`
-        if [ -f "${simulator}/pid" ]; then
-           if ps -p `cat "${simulator}/pid"` > /dev/null; then
-               echo "[${simname}] Sending inworld alert"
-               ${SIMCTL} alert ${simname} "${MSG_REGION_STOP}"
-           fi
+        simname=`basename ${simulator}`  
+        if is_running ${simname}; then
+           echo "[${simname}] Sending inworld alert"
+           ${SIMCTL} alert ${simname} "${MSG_REGION_STOP}"
         fi
     done;
     echo "Pausing (${ALERT_DELAY}s) before stopping"
@@ -66,13 +71,9 @@ do_stop() {
     # Phase 2: Stop
     for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
         simname=`basename ${simulator}`
-        if [ -f "${simulator}/pid" ]; then
-           if ps -p `cat "${simulator}/pid"` > /dev/null; then
-               echo "[${simname}] Stopping"
-               ${SIMCTL} stop ${simname}
-           else
-               echo "[${simname}] Already offline (stale pid file)"
-           fi
+        if is_running ${simname}; then
+           echo "[${simname}] Stopping"
+           ${SIMCTL} stop ${simname}
         else
            echo "[${simname}] Already offline"
         fi
@@ -82,11 +83,9 @@ do_stop() {
     # Phase 3: Kill
     for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
         simname=`basename ${simulator}`
-        if [ -f "${simulator}/pid" ]; then
-           if ps -p `cat "${simulator}/pid"` > /dev/null; then
-               echo "[${simname}] Killing"
-               ${SIMCTL} kill ${simname}
-           fi
+        if is_running ${simname}; then
+            echo "[${simname}] Killing"
+            ${SIMCTL} kill ${simname}
         fi
     done;
     echo "All sims have stopped."
@@ -96,11 +95,9 @@ do_restart() {
     # Phase 1: Alert
     for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
         simname=`basename ${simulator}`
-        if [ -f "${simulator}/pid" ]; then
-           if ps -p `cat "${simulator}/pid"` > /dev/null; then
-               echo "[${simname}] Alerting (${ALERT_DELAY}s)"
-               ${SIMCTL} alert ${simname} "$MSG_REGION_RESTART"
-           fi
+        if is_running ${simname}; then
+           echo "[${simname}] Alerting (${ALERT_DELAY}s)"
+           ${SIMCTL} alert ${simname} "$MSG_REGION_RESTART"
         fi
     done;
     echo "Pausing (${ALERT_DELAY}s) before stopping sims"
@@ -108,11 +105,9 @@ do_restart() {
     # Phase 2: Stop
     for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
         simname=`basename ${simulator}`
-        if [ -f "${simulator}/pid" ]; then
-           if ps -p `cat "${simulator}/pid"` > /dev/null; then
-               echo "[${simname}] Stopping (${STOP_DELAY}s)"
-               ${SIMCTL} stop ${simname}
-           fi
+        if is_running ${simname}; then
+           echo "[${simname}] Stopping (${STOP_DELAY}s)"
+           ${SIMCTL} stop ${simname}
         fi
     done;
     echo "Pausing (${STOP_DELAY}s) before starting sims"
@@ -120,12 +115,10 @@ do_restart() {
     # Phase 3: Start
     for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
         simname=`basename ${simulator}`
-        if [ -f "${simulator}/pid" ]; then
-           if ps -p `cat "${simulator}/pid"` > /dev/null; then
-               # Kill it in case it was stuck
-               echo "[${simname}] Killing (unclean shutdown)"
-               ${SIMCTL} kill ${simname}
-           fi
+        if is_running ${simname}; then
+           # Kill it in case it was stuck
+           echo "[${simname}] Killing (unclean shutdown)"
+           ${SIMCTL} kill ${simname}
         fi
         echo "[${simname}] Starting (${START_DELAY}s)"
         ${SIMCTL} start ${simname}
@@ -137,40 +130,28 @@ do_restart() {
 do_reload() {
     for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
         simname=`basename ${simulator}`
-        if [ -f "${simulator}/pid" ]; then
-           if ps -p `cat "${simulator}/pid"` > /dev/null; then
-               # Alert
-               echo "[${simname}] Alerting (${ALERT_DELAY}s)"
-               ${SIMCTL} alert ${simname} "$MSG_REGION_RESTART"
-               sleep ${ALERT_DELAY}
-               # Stop
-               echo "[${simname}] Stopping (${STOP_DELAY}s)"
-               ${SIMCTL} stop ${simname}
-               sleep ${STOP_DELAY}
-               # Kill
-               if [ -f "${simulator}/pid" ]; then
-                   if ps -p `cat "${simulator}/pid"` > /dev/null; then
-                       # Kill it in case it was stuck
-                       echo "[${simname}] Killing (unclean shutdown)"
-                       ${SIMCTL} kill ${simname}
-                   fi
-               fi
-               # Start
-               echo "[${simname}] Starting (${START_DELAY}s)"
-               ${SIMCTL} start ${simname}
-               sleep ${START_DELAY}
-           else
-               # Start crashed sim
-               echo "[${simname}] Starting (${START_DELAY}s)"
-               ${SIMCTL} start ${simname}
-               sleep ${START_DELAY}
-           fi
-        else
-           # Start non-running sim
-           echo "[${simname}] Starting (${START_DELAY}s)"
-           ${SIMCTL} start ${simname}
-           sleep ${START_DELAY}
+        if is_running ${simname}; then
+            # Alert
+            echo "[${simname}] Alerting (${ALERT_DELAY}s)"
+            ${SIMCTL} alert ${simname} "$MSG_REGION_RESTART"
+            sleep ${ALERT_DELAY}
+            # Stop
+            echo "[${simname}] Stopping (${STOP_DELAY}s)"
+            ${SIMCTL} stop ${simname}
+            sleep ${STOP_DELAY}
+            # Kill
+            if [ -f "${simulator}/pid" ]; then
+                if ps -p `cat "${simulator}/pid"` > /dev/null; then
+                    # Kill it in case it was stuck
+                    echo "[${simname}] Killing (unclean shutdown)"
+                    ${SIMCTL} kill ${simname}
+                fi
+            fi
         fi
+        # Start
+        echo "[${simname}] Starting (${START_DELAY}s)"
+        ${SIMCTL} start ${simname}
+        sleep ${START_DELAY}
     done;
     echo "All sims have been reloaded."
 }
