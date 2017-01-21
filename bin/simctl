@@ -8,6 +8,8 @@
 # Get the root folder of the isthmus tree
 export OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 SIMS_AVAILABLE="${OPENSIM_DIR}/sims-available"
+OAR_PATH="${OPENSIM_DIR}/var/backup"
+OAR_OPTIONS=
 
 # Second Life time is the US/Pacific-New timezone
 VIEWER_TIME="US/Pacific-New"
@@ -197,6 +199,61 @@ do_alert() {
     fi
 }
 
+# do_saveoar simname (oarpath)
+# Saves oars for all regions in simulator
+# If no oarpath specified, use default var/backup
+do_saveoar() {
+    if [ ! $1 ]; then
+        show_help
+        exit 1
+    else
+        SIM=$1
+    fi
+
+    setup ${SIM}
+    check_user
+
+    if [ ! $3 ]; then
+        LOCAL_OAR_PATH="${OAR_PATH}/`date -I'date'`"
+    else
+        LOCAL_OAR_PATH=$3 
+    fi
+
+    mkdir -p "${LOCAL_OAR_PATH}"
+
+    if is_running ${SIM}; then
+        echo "Alerting inworld about temporary degraded performance"
+        ${SCREEN} -r ${SIM} -X exec .\!\! echo "alert \"SYSTEM NOTICE: Region backup in progress. Performance might be a bit slower for a few minutes..\""
+        sleep 3
+
+        # Following would save all regions in one oar: 
+        # OAR_FILE="${LOCAL_OAR_PATH}/${SIM}-`date -I'date'`.oar"
+        # ${SCREEN} -r ${SIM} -X exec .\!\! echo "save oar ${OAR_OPTIONS} --all \"${OAR_FILE}\""
+
+        ERRORLEVEL=0
+        # This is a more flexible method, each region in a seperate oar:
+        for INIFILE in ${SIMS_AVAILABLE}/${SIM}/regions/*.ini ; do
+            #FIXME: This strips off brackets from the [Regionname]
+            #       Assumes section on the first line and no trailing spaces
+            SECTION=`head -n 1 ${INIFILE}`
+            REGION="${SECTION:1: -1}"
+
+            ${SCREEN} -r ${SIM} -X exec .\!\! echo "change region \"${REGION}\""
+            sleep 3
+
+            OAR_FILE="${LOCAL_OAR_PATH}/${REGION}.oar"
+            ${SCREEN} -r ${SIM} -X exec .\!\! echo "save oar ${OAR_OPTIONS} \"${OAR_FILE}\""
+            sleep 3
+
+            if [ ! -f "${OAR_FILE}" ]; then
+                echo "Can't write to \"${OAR_FILE}\""
+                ERRORLEVEL=1
+            fi
+        done
+        exit ${ERRORLEVEL}
+    fi
+}
+
 case "$1" in
     start)
         do_start $2
@@ -222,6 +279,9 @@ case "$1" in
         ;;
     audit)
         do_audit $2
+        ;;
+    saveoar)
+        do_saveoar $2
         ;;
     *)
         show_help

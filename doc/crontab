@@ -1,3 +1,14 @@
+#
+# To load this file for the current user: $ crontab ./crontab
+#
+# Defaults:
+# -  Every 10 minutes all sims are checked for crashes (and if so restarted)
+# -  Daily at 4am OAR backups are made of all regions in all simulators
+#
+# Each script defined also needs the path to your isthmus to work correctly!
+#
+# -------------------------------------------------------------------------
+#
 # Edit this file to introduce tasks to be run by cron.
 # 
 # Each task to run has to be defined through a single line
@@ -21,3 +32,4 @@
 # 
 # m h  dom mon dow   command
 */10 * * * * /home/opensim/isthmus/bin/simwatchdog /home/opensim/isthmus
+0 4 * * * /home/opensim/isthmus/bin/simbackup /home/opensim/isthmus
