@@ -34,16 +34,16 @@ ERRORS=0
 
 for simulator in $OPENSIM_DIR/sims-enabled/*; do
     SIM=`basename $simulator`
-    ${SCREEN} -ls ${SIM} > /dev/null
-    if [ $? -eq 0 ]; then
+    SCREENRET=`${SCREEN} -ls ${SIM}`
+    if [[ ${SCREENRET} == "No Sockets"* ]]; then
+        do_log "${SIM} not online; skipping backup for simulator"
+    else
         ${SIMCTL} saveoar "${SIM}" "${OAR_PATH}" >> "${LOGFILE}"
         if [ $? -ne 0 ]; then
             ERRORS=$((ERRORS+1))
         fi
         # Wait 5 minutes between simulators
         sleep 300
-    else
-        do_log "${SIM} not online; skipping backup for simulator"
     fi
 done;
 

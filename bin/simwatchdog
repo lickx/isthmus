@@ -26,8 +26,8 @@ fi
 
 for simulator in $OPENSIM_DIR/sims-enabled/*; do
     SIM=`basename $simulator`
-    ${SCREEN} -ls ${SIM} > /dev/null
-    if [ $? -ne 0 ]; then
+    SCREENRET=`${SCREEN} -ls ${SIM}`
+    if [[ ${SCREENRET} == "No Sockets"* ]]; then
         do_log "[${SIM}] Not online, restarting"
         ${SIMCTL} kill ${SIM}
         sleep 10

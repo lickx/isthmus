@@ -35,11 +35,11 @@ show_help() {
 is_running() {
     SIM=$1
 
-    ${SCREEN} -ls ${SIM} > /dev/null
-    if [ $? -eq 0 ]; then
-        return 0
-    else
+    SCREENRET=`${SCREEN} -ls ${SIM}`
+    if [[ ${SCREENRET} == "No Sockets"* ]]; then
         return 1
+    else
+        return 0
     fi
 }
 
