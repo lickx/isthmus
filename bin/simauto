@@ -11,7 +11,6 @@ mkdir -p "${OPENSIM_DIR}/var"
 
 # We create this lock file when needing to suspend the watchdog
 SIMAUTO_LOCK="${OPENSIM_DIR}/var/simauto.lock"
-touch "${SIMAUTO_LOCK}"
 
 # Seconds delay between inworld alert and actual shutdown
 ALERT_DELAY=120
@@ -165,20 +164,28 @@ do_status() {
 
 case "$1" in
     start)
+        touch "${SIMAUTO_LOCK}"
         echo "Starting all sims delayed"
         do_start
+        rm ${SIMAUTO_LOCK}
         ;;
     stop)
+        touch "${SIMAUTO_LOCK}"
         echo "Stopping all sims"
         do_stop
+        # Deliberately don't remove lock
         ;;
     restart)
+        touch "${SIMAUTO_LOCK}"
         echo "Restarting all sims delayed"
         time do_restart
+        rm ${SIMAUTO_LOCK}
         ;;
     reload)
+        touch "${SIMAUTO_LOCK}"
         echo "Reloading all sims delayed"
         time do_reload
+        rm ${SIMAUTO_LOCK}
         ;;
     status)
         do_status
@@ -189,4 +196,3 @@ case "$1" in
         ;;
 esac
 
-rm ${SIMAUTO_LOCK}
