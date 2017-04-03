@@ -144,7 +144,7 @@ if [ $DBTYPE == "PostgreSQL" ]; then
 else
     # MySQL
     echo 'StorageProvider = "OpenSim.Data.MySQL.dll"' >> $dbfile
-    echo 'ConnectionString = "Server=localhost;Database='${DbDatabase}';User Id='${DbUser}';password='${DbPassword}';Old Guids=true"' >> $dbfile
+    echo 'ConnectionString = "Protocol=unix;DataSource=/var/run/mysqld/mysqld.sock;Database='${DbDatabase}';User Id='${DbUser}';password='${DbPassword}';Old Guids=true"' >> $dbfile
 fi
 
 # ------------------------ simulator software ---------------------------
