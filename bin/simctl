@@ -22,8 +22,7 @@ SCREEN="/usr/bin/screen"
 GREP="/bin/grep"
 
 show_help() {
-    echo `basename $0` - Control opensim simulators
-    echo ""
+    echo "`basename $0` - Control opensim simulators\n\n"
     echo "start <simname>     Start a simulator"
     echo "stop <simname>      Stop and deregister from the map"
     echo "kill <simname>      Stop by sending SIGHUP (unclean)"
@@ -31,6 +30,8 @@ show_help() {
     echo "restart <simname>   Issues a stop, then start command"
     echo "audit <simname>     Returns which ports a sim is using"
     echo "status <simname>    Returns online status"
+    echo "saveoar <simname> (pathname)   Make OAR backups of regions in sim"
+    echo "backup <simname>    Ensure database is saved"
 }
 
 check_user() {
@@ -96,12 +97,12 @@ do_audit() {
 
     if is_sim ${SIM}; then
         simport=`${GREP} http_listener_port "${SIMS_AVAILABLE}/${SIM}/OpenSim.ini" | ${GREP} -ho '[0-9]*'`
-        echo -n "[${SIM}] TCP:${simport} "
+        echo -e "${simport}\tTCP\t${SIM}"
         for INIFILE in ${SIMS_AVAILABLE}/${SIM}/regions/*.ini ; do
             regionport=`${GREP} InternalPort ${INIFILE} | ${GREP} -ho '[0-9]*'`
-            echo -n "UDP:${regionport} "
+            echo -e "${regionport}\tUDP\t${SIM} - region"
         done
-        echo "\n"
+#        echo "\n"
     fi
 }
 
@@ -199,9 +200,27 @@ do_alert() {
     fi
 }
 
+do_backup() {
+    if [ ! $1 ]; then
+        show_help
+        exit 1
+    else
+        SIM=$1
+    fi
+
+    setup ${SIM}
+    check_user
+
+    if is_running ${SIM}; then
+        ${SCREEN} -r ${SIM} -X exec .\!\! echo "backup"
+    else
+        echo "${SIM} not running"
+    fi
+}
+
 # do_saveoar simname (oarpath)
 # Saves oars for all regions in simulator
-# If no oarpath specified, use default var/backup
+# If no oarpath specified, use default var/backup/yyyy-mm-dd
 do_saveoar() {
     if [ ! $1 ]; then
         show_help
@@ -222,7 +241,7 @@ do_saveoar() {
     mkdir -p "${LOCAL_OAR_PATH}"
 
     if is_running ${SIM}; then
-        echo "Alerting inworld about temporary degraded performance"
+        # Alert inworld about temporary degraded performance"
         ${SCREEN} -r ${SIM} -X exec .\!\! echo "alert \"SYSTEM NOTICE: Region backup in progress. Performance might be a bit slower for a few minutes..\""
         sleep 3
 
@@ -282,6 +301,9 @@ case "$1" in
         ;;
     saveoar)
         do_saveoar $2
+        ;;
+    backup)
+        do_backup $2
         ;;
     *)
         show_help
