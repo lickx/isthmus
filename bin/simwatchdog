@@ -8,7 +8,6 @@ OPENSIM_DIR=$1
 SIMCTL="${OPENSIM_DIR}/bin/simctl"
 LOGFILE="${OPENSIM_DIR}/var/log/watchdog.log"
 SCREEN="/usr/bin/screen"
-GREP="/bin/grep"
 START_DELAY=60
 SIMAUTO_LOCK="${OPENSIM_DIR}/var/simauto.lock"
 
