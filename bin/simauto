@@ -27,7 +27,7 @@ MSG_REGION_RESTART="ATTENTION: REGION RESTART - This region will be restarting w
 MSG_REGION_STOP="ATTENTION: REGION MAINTENANCE - This region will be going down for maintenance within ${ALERT_DELAY} seconds. Please teleport elsewhere until we are back..."
 
 show_help() {
-    echo "Usage: `basename $0` [ start | stop | restart | reload | status ]"
+    echo "Usage: `basename $0` [ start | stop | restart | reload | status | audit ]"
     echo "Starts or stops all simulators in ${OPENSIM_DIR}/sims-enabled"
 }
 
@@ -61,8 +61,10 @@ do_stop() {
     for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
         simname=`basename ${simulator}`  
         if is_running ${simname}; then
-           echo "[${simname}] Sending inworld alert"
-           ${SIMCTL} alert ${simname} "${MSG_REGION_STOP}"
+            echo "[${simname}] Sending inworld alert"
+            ${SIMCTL} alert ${simname} "${MSG_REGION_STOP}"
+            sleep 2
+            ${SIMCTL} backup ${simname}
         fi
     done;
     echo "Pausing (${ALERT_DELAY}s) before stopping"
@@ -71,10 +73,10 @@ do_stop() {
     for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
         simname=`basename ${simulator}`
         if is_running ${simname}; then
-           echo "[${simname}] Stopping"
-           ${SIMCTL} stop ${simname}
+            echo "[${simname}] Stopping"
+            ${SIMCTL} stop ${simname}
         else
-           echo "[${simname}] Already offline"
+            echo "[${simname}] Already offline"
         fi
     done;
     echo "Pausing (${STOP_DELAY}s) before killcheck"
@@ -95,8 +97,10 @@ do_restart() {
     for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
         simname=`basename ${simulator}`
         if is_running ${simname}; then
-           echo "[${simname}] Alerting (${ALERT_DELAY}s)"
-           ${SIMCTL} alert ${simname} "$MSG_REGION_RESTART"
+            echo "[${simname}] Alerting (${ALERT_DELAY}s)"
+            ${SIMCTL} alert ${simname} "$MSG_REGION_RESTART"
+            sleep 2
+            ${SIMCTL} backup ${simname}
         fi
     done;
     echo "Pausing (${ALERT_DELAY}s) before stopping sims"
@@ -105,8 +109,8 @@ do_restart() {
     for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
         simname=`basename ${simulator}`
         if is_running ${simname}; then
-           echo "[${simname}] Stopping (${STOP_DELAY}s)"
-           ${SIMCTL} stop ${simname}
+            echo "[${simname}] Stopping (${STOP_DELAY}s)"
+            ${SIMCTL} stop ${simname}
         fi
     done;
     echo "Pausing (${STOP_DELAY}s) before starting sims"
@@ -115,9 +119,9 @@ do_restart() {
     for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
         simname=`basename ${simulator}`
         if is_running ${simname}; then
-           # Kill it in case it was stuck
-           echo "[${simname}] Killing (unclean shutdown)"
-           ${SIMCTL} kill ${simname}
+            # Kill it in case it was stuck
+            echo "[${simname}] Killing (unclean shutdown)"
+            ${SIMCTL} kill ${simname}
         fi
         echo "[${simname}] Starting (${START_DELAY}s)"
         ${SIMCTL} start ${simname}
@@ -133,6 +137,8 @@ do_reload() {
             # Alert
             echo "[${simname}] Alerting (${ALERT_DELAY}s)"
             ${SIMCTL} alert ${simname} "$MSG_REGION_RESTART"
+            sleep 2
+            ${SIMCTL} backup ${simname}
             sleep ${ALERT_DELAY}
             # Stop
             echo "[${simname}] Stopping (${STOP_DELAY}s)"
@@ -159,6 +165,13 @@ do_status() {
     for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
         simname=`basename ${simulator}`
         ${SIMCTL} status ${simname}
+    done;
+}
+
+do_audit() {
+    for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
+        simname=`basename ${simulator}`
+        ${SIMCTL} audit ${simname}
     done;
 }
 
@@ -189,6 +202,9 @@ case "$1" in
         ;;
     status)
         do_status
+        ;;
+    audit)
+        do_audit
         ;;
     *)
         show_help
