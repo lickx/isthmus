@@ -1,192 +1,34 @@
 #!/bin/bash
 OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 
-tempfile=`(tempfile) 2>/dev/null` || tempfile=/tmp/test$$
-trap "rm -f $tempfile" 0 $SIG_NONE $SIG_HUP $SIG_INT $SIG_TRAP $SIG_TERM
-
-TITLE="Isthmus Setup"
-
-if [ -f $OPENSIM_DIR/grid.ini ]; then
-    echo "This isthmus installation is already initialized"
-    exit 1
-fi
-
-if [ ! -x `which dialog` ]; then
-    echo "Please install the 'dialog' package with your package manager first"
-    exit 1
-fi
-
-# Grid selection:
-	
 declare GRIDS
 for GRID in ${OPENSIM_DIR}/share/grids/* ; do
     GRIDS=("${GRIDS[@]}" "`basename \"${GRID}\"`")
 done
 
-exec 3>&1
-GRID=$(dialog --clear --ascii-lines --backtitle "${TITLE}" --no-items \
-	--menu "Grid to connect to:" 0 0 5 \
-	 ${GRIDS[@]} \
-2>&1 1>&3)
-exec 3>&-
-
-if [ -z ${GRID} ]; then
-   clear
-   echo "Setup cancelled"
-   exit 1
+if [ $# -eq 0 ]; then
+    echo "Usage: ${0} gridname"
+    echo "Available grids are: ${GRIDS[@]}"
+    exit 0
 fi
 
-# Choice of database:
+GRID=${1}
 
-if [ -x `which mysql` ]; then
-    MYSQL_AVAIL="Available"
-else
-    MYSQL_AVAIL="Not installed"
+if [ ! -d "${OPENSIM_DIR}/share/grids/${GRID}" ]; then
+    echo "Error: No such grid"
+    echo "Available grids are: ${GRIDS[@]}"
+    exit 0
 fi
 
-if [ -x `which psql` ]; then
-    PGSQL_AVAIL="Available"
-else
-    PGSQL_AVAIL="Not installed"
-fi
-
-exec 3>&1
-DBTYPE=$(dialog --clear --ascii-lines --backtitle "${TITLE}" \
-	--menu "Choice of database:" 0 0 5 \
-	 "MySQL" "${MYSQL_AVAIL}" \
-	 "PostgreSQL" "${PGSQL_AVAIL}" \
-2>&1 1>&3)
-exec 3>&-
-
-if [ -z ${DBTYPE} ]; then
-   clear
-   echo "Setup cancelled"
-   exit 1
-fi
-
-# Database details:
-
-if [ ${DBTYPE} == "MySQL" ]; then
-    DbUser="opensim"
-else
-    DbUser="`whoami`"
-fi
-DbDatabase="isthmus_${GRID}"
-
-exec 3>&1
-
-VALUES=$(dialog --clear --ascii-lines --backtitle "${TITLE}" \
-	--mixedform "${DBTYPE} database details:" 0 40 4 \
-        "Database: " 1 1 "$DbDatabase"  1 10 20 0 0 \
-	"DB User : " 2 1 "$DbUser"      2 10 20 0 0 \
-	"DB Pass : " 3 1 ""             3 10 20 0 1 \
-	"\\Confirm: " 4 1 ""            4 10 20 0 1 \
-2>&1 1>&3)
-
-exec 3>&-
-
-# Returned VALUES are on seperate lines. Read into bash array:
-IFS=$'\n' read -rd '' -a DbDetails <<<"$VALUES"
-DbDatabase="${DbDetails[0]}"
-DbUser=${DbDetails[1]}
-DbPassword="${DbDetails[2]}"
-DbPassword2="${DbDetails[3]}"
-
-if [[ -z "$DbDatabase" ]] || [[ -z "$DbUser" ]] || [[ -z "$DbPassword" ]]; then
-    clear
-    echo "Required database details missing"
-    echo "Setup cancelled"
-    exit 1
-fi
-
-if [ "$DbPassword" != "$DbPassword2" ]; then
-    clear
-    echo "Database passwords do not match"
-    echo "Setup cancelled"
-    exit 1
-fi
-
-# Todo: Fetch optional modules list, offer module selection dialog
-# Todo: Confirmation dialog
-
-setupdetails="Grid      : ${GRID}\\n\\n
-DB Type   : ${DBTYPE}\\n
-Database  : ${DbDatabase}\\n
-DbUser    : ${DbUser}\\n
-DbPassword: *****"
-
-dialog --clear --ascii-lines --title "Confirmation" --backtitle "${TITLE}" \
-	--yesno "${setupdetails}" 15 40
-
-clear
-
-if [ $? -ne 0 ]; then
-    echo "Setup cancelled"
-    exit 1
-fi
-
-# ---------------------------- installation -------------------------------
-
-clear
 echo "Installing files needed for ${GRID}"
 cp -r "${OPENSIM_DIR}/share/grids/${GRID}/." "${OPENSIM_DIR}"
 
 echo "Installing common files"
 cp -r "${OPENSIM_DIR}/share/common/." "${OPENSIM_DIR}"
 
-echo "Installing database.ini with your details"
-dbfile="${OPENSIM_DIR}/etc/database.ini"
-echo "[DatabaseService]" > $dbfile
-chmod 600 $dbfile
-if [ $DBTYPE == "PostgreSQL" ]; then
-    echo 'StorageProvider = "OpenSim.Data.PGSQL.dll"' >> $dbfile
-    echo 'ConnectionString = "Data Source=localhost;Database='${DbDatabase}';User ID='${DbUser}';Password='${DbPassword}';"' >> $dbfile
-else
-    # MySQL
-    echo 'StorageProvider = "OpenSim.Data.MySQL.dll"' >> $dbfile
-    echo 'ConnectionString = "Protocol=unix;DataSource=/var/run/mysqld/mysqld.sock;Database='${DbDatabase}';User Id='${DbUser}';password='${DbPassword}';Old Guids=true"' >> $dbfile
-fi
+echo "Protecting passwords"
+chmod 600 "${OPENSIM_DIR}/etc/database.ini"
+chmod 600 "${OPENSIM_DIR}/etc/Gloebit.ini"
+chmod 600 "${OPENSIM_DIR}/etc/voice.ini"
 
-# ------------------------ simulator software ---------------------------
-
-dialog --clear --ascii-lines --title "Install simulator software" \
-	--backtitle "${TITLE}" \
-	--yesno "Would you like to install the simulator software now?\n\n
-You will have to select an opensimulator distribution archive (zip)" 15 40
-
-if [ $? -ne 0 ]; then
-    clear
-    exit 0
-fi
-
-# ---
-while
-    exec 3>&1
-    opensim_zip=$(dialog --clear --ascii-lines --title "Install simulator software" \
-	--backtitle "${TITLE}" \
-	--fselect "${OPENSIM_DIR}/var/distfiles/." 10 60 \
-2>&1 1>&3)
-    exec 3>&-
-
-    if [ -z "${opensim_zip}" ]; then
-        # quit
-        clear
-        exit 1
-    else
-	# todo: test if bin/OpenSim.exe exists in zip
-        unzip -l ${opensim_zip} | grep "bin/OpenSim.exe" > /dev/null
-        if [ $? -eq 0 ]; then
-            break
-        else
-            dialog --clear --ascii-lines --title "Install simulator software" \
-		--backtitle "${TITLE}" --msgbox "`basename ${opensim_zip}` does not contain a version of Open Simulator" 7 50
-            continue
-        fi
-    fi
-do
-	:
-done
-
-# We got a valid archive, install it:
-${OPENSIM_DIR}/bin/siminstall ${opensim_zip} | dialog --clear --ascii-lines --title "Installing simulator software" --backtitle "${TITLE}" --progressbox 10 60
-
+echo "Done"
