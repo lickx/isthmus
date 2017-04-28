@@ -1,130 +1,108 @@
+
+  i s t h m u s
+  Quick Setup guide                                                 17.04.24
+
 ------------------------------------------------------------------------------
 
+  Base setup
 
-Base setup
-
-
-Have an opensimulator archive (distribution zipfile) handy. If you use osgrid
-you can use the one on their download page https://www.osgrid.org
+  Have an opensimulator archive (distribution zipfile) handy. If you connect
+  to OsGrid you can use the one on their download page https://www.osgrid.org
 
 $ git clone https://github.com/lickx/isthmus.git 
 $ cd isthmus/bin
 $ ./siminit
-(Follow instructions on screen)
 
-
-If you skipped the installation of the simulator software, this can be done:
+  (Follow instructions on screen)
+  If you skipped the installation of the simulator software, this can be done:
 
 $ ./siminstall ~/Downloads/opensimulator-0.9.0.zip
 
-
 ------------------------------------------------------------------------------
 
+  Database setup
 
-Database setup
+  For now it is assumed you will be making a new database for each
+  installation of Isthmus. The database will be shared among all regions.
+  By default each region runs in its own simulator instance, which is managed
+  by GNU Screen.
 
-
-For now it is assumed you will be making a new database for each installation of
-Isthmus. The database will be shared among all regions. By default each region
-runs in its own simulator instance, which is managed by GNU Screen.
-
-
-If you chose MySQL/MariaDB:
+  If you chose MySQL/MariaDB:
 
 $ mysql --user root --password
 MariaDB [(none)]> create database isthmus_gridname;
-MariaDB [(none)]> grant all on isthmus_gridname.* to DbUser@localhost identified by 'DbPassword';
+MariaDB [(none)]> grant all on isthmus_gridname.* to DbUser@localhost identified by 'DbUserPassword';
 
-
-If you chose PostgreSQL:
+  If you chose PostgreSQL:
 
 $ sudo -u postgres psql template1
 template1=# CREATE USER DbUser WITH PASSWORD 'DbPassword';
 template1=# GRANT ALL PRIVILEGES ON DATABASE "isthmus_gridname" to DbUser;
 template1=# \q
 
-
-Note: If you have multiple installations of isthmus and use Gloebit, you'll
-probably also want a seperate database for Gloebit usage to be shared by all
-isthmus installations. See the end of Gloebit.ini
+  Note: If you have multiple installations of isthmus and use Gloebit, you'll
+  probably also want a seperate database for Gloebit usage to be shared by all
+  isthmus installations. See the end of Gloebit.ini
 
 ------------------------------------------------------------------------------
 
-
-Adding your first simulator
-
+  Adding your first simulator
 
 ./simadd
 (Follow instructions on screen)
 
-
 ------------------------------------------------------------------------------
 
+  Command line commands
 
-Command line commands
+$ cd ~/isthmus/bin
 
-cd ~/isthmus/bin
+  For a single simulator:
 
+  Start:    ./simctl start SimName
+  Stop:     ./simctl stop SimName
+  Restart:  ./simctl restart SimName
+  Status:   ./simctl status SimName
 
-For a single simulator:
+  To see more options, type without parameters:   ./simctl
 
-Start:    ./simctl start SimName
-Stop:     ./simctl stop SimName
-Restart:  ./simctl restart SimName
-Status:   ./simctl status SimName
+  For all simulators at once which are symlinked in the sims-enabled folder:
 
-To see more options, type without parameters:   ./simctl
+  Start:    ./simauto start
+  Stop:     ./simauto stop
+  Restart:  ./simauto restart
+  Reload:   ./simauto reload
+  Audit:    ./simauto audit
 
+  You use restart after big upgrades with drastic changes in OpenSim, such as
+  database migrations. It will take all sims in the isthmus installation down,
+  upgrade, then start them again. Reload is used for small upgrades, sims are
+  restarted one by one. Reload can for example be used for automated weekly
+  restarts.
 
-For all simulators at once which are symlinked in the sims-enabled folder:
+  Audit will list used ports, this can be piped for example:
+  ./simauto audit | sort | less
 
-Start:    ./simauto start
-Stop:     ./simauto stop
-Restart:  ./simauto restart
-Reload:   ./simauto reload
-
-You use restart after big upgrades with drastic changes in OpenSim, such as
-database migrations. It will take all sims in the isthmus installation down,
-upgrade, then start them again. Reload is used for small upgrades, sims are
-restarted one by one. Reload can for example be used for automated weekly
-restarts.
-
-To see more options, type without parameters:   ./simauto
+  To see more options, type without parameters:   ./simauto
  
-Simauto starts the simulators 10 minutes apart by design. This is done to
-avoid autobackup backing up all simulators at the same time, which could
-cause noticable inworld lag.
+------------------------------------------------------------------------------
 
+  Autobackup
+
+  To setup autobackup, refer to etc/autobackup.ini
+
+  You can store the OARs in any folder/mountpoint. For remote backups, specify
+  a remote or cloud storage mountpoint such as your DropBox folder.
+
+  However, we recommend instead of OpenSim's autobackup to use a scheduled
+  cronjob instead utilizing simbackup. Refer to doc/crontab
 
 ------------------------------------------------------------------------------
 
+  Optional modules
 
-Autobackup
-
-
-To setup autobackup, refer to etc/autobackup.ini
-
-You can store the OARs in any folder/mountpoint. For remote backups, specify a
-remote or cloud storage mountpoint such as your DropBox folder.
-
-
-------------------------------------------------------------------------------
-
-
-Voice
-
-To setup voice provided by Vivox, refer to etc/voice.ini
-
-
-------------------------------------------------------------------------------
-
-
-Optional modules
-
-
-TBD
-
-This will be for installing prepackaged optional modules such as VirWox OMC
-
+  To setup voice support provided by Vivox, refer to etc/voice.ini
+  To setup Gloebit currency, refer to etc/Gloebit.ini
+  To setup OpenMetaverse currency, refer to /etc/omc.ini
 
 ------------------------------------------------------------------------------

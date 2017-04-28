@@ -35,8 +35,8 @@ show_help() {
 }
 
 check_user() {
-    if [ ${USER} != 'opensim' ]; then
-        echo "This must be run as user opensim"
+    if [ `whoami` == 'root' ]; then
+        echo "Refusing to run as root"
         exit 1
     fi
 }

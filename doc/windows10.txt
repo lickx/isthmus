@@ -1,0 +1,45 @@
+
+  i s t h m u s
+  Windows 10 support guide [DRAFT]                                  17.04.24
+
+  With the 'Creators Update' of Windows 10 released in March/April 2017,
+  it's possible to run isthmus in Windows. Older versions of Windows 10 are
+  not compatible.
+
+-----------------------------------------------------------------------------
+
+  Preparation
+
+  First, you need to install Ubuntu for Windows 10. Refer to tutorials on the
+  internet how to do this, it's relatively easy and well worth it.
+
+-----------------------------------------------------------------------------
+
+  Install the needed dependencies:
+
+# sudo apt-get install screen mono-complete dialog zip unzip
+
+  (Yes, you do need mono even on Windows)
+
+-----------------------------------------------------------------------------
+
+  Next, set up support for running GNU Screen properly:
+
+# mkdir -p /var/run/screen
+# chmod 777 /var/run/screen
+
+-----------------------------------------------------------------------------
+
+  Possibly, ports need to be opened on Windows Firewall. That is out of the
+  scope of this readme, but I suggest:
+
+  TCP  20000-20003  For 4 simulators
+  UDP  30000-30003  For the regions run by the respective simulators
+
+  NOTE: 'simadd' reserves an UDP region port 10000 higher for each simulator
+  port. So if you choose 9000 for the sim, the region port will be 19000.
+
+-----------------------------------------------------------------------------
+
+  Now you should be set, refer to quick-setup.txt on how to get things running.
+
