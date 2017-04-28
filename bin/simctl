@@ -99,8 +99,10 @@ do_audit() {
         simport=`${GREP} http_listener_port "${SIMS_AVAILABLE}/${SIM}/OpenSim.ini" | ${GREP} -ho '[0-9]*'`
         echo -e "${simport}\tTCP\t${SIM}"
         for INIFILE in ${SIMS_AVAILABLE}/${SIM}/regions/*.ini ; do
-            regionport=`${GREP} InternalPort ${INIFILE} | ${GREP} -ho '[0-9]*'`
-            echo -e "${regionport}\tUDP\t${SIM} - region"
+            SECTION=`head -n 1 ${INIFILE}`
+            REGION="${SECTION:1: -1}"
+            REGIONPORT=`${GREP} InternalPort ${INIFILE} | ${GREP} -ho '[0-9]*'`
+            echo -e "${REGIONPORT}\tUDP\t${SIM} - ${REGION}"
         done
 #        echo "\n"
     fi
