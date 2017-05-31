@@ -139,6 +139,7 @@ do_start() {
 
     # Make sure opensim.exe runs in the SLT time zone:
     export TZ=${VIEWER_TIME}
+    ulimit -s 262144
     cd "${OPENSIM_DIR}/lib/bin" && ${SCREEN} -S ${SIM} -d -m -l \
 	${MONO} OpenSim.exe -inidirectory="${SIMS_AVAILABLE}/${SIM}"
 }
