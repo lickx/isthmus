@@ -15,7 +15,7 @@ if [[ ! -x `which unzip` ]] || [[ ! -x `which zip` ]]; then
     exit 0
 fi
 
-EXCLUDE="bin/config-include/* bin/Regions/* bin/OpenSim.ini bin/OpenSim.exe.config"
+EXCLUDE="bin/config-include/* bin/Regions/* bin/OpenSim.ini bin/OpenSim.exe.config bin/OpenSim32.exe.config"
 
 # Backup first in case we need to re-roll
 cd "${OPENSIM_DIR}"
@@ -24,14 +24,16 @@ if [[ -d "${TARGET_DIR}" ]] && [[ -x `which zip` ]]; then
     INSTALL_TYPE="upgrade"
     BACKUP_ARCHIVE="opensim-preupgrade.zip"
     mkdir -p "${BACKUP_DIR}"
-    cd ${OPENSIM_DIR}
-    zip -q -r "${BACKUP_DIR}/${BACKUP_ARCHIVE}" . -i "${TARGET_DIR}/*"
+    rm "${BACKUP_DIR}/${BACKUP_ARCHIVE}"
+    cd "${TARGET_DIR}"
+    zip -r "${BACKUP_DIR}/${BACKUP_ARCHIVE}" .
     echo "Done"
 else
     mkdir -p "${TARGET_DIR}"
 fi
 
 # Do the upgrade
+cd "${OPENSIM_DIR}"
 if [ ${INSTALL_TYPE} == "upgrade" ]; then
     echo -n "Upgrading simulator software... "
 else
