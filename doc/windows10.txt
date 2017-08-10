@@ -36,10 +36,12 @@
   TCP  20000-20003  For 4 simulators
   UDP  30000-30003  For the regions run by the respective simulators
 
-  NOTE: 'simadd' reserves an UDP region port 10000 higher for each simulator
+  TIP: 'simadd' reserves an UDP region port 10000 higher for each simulator
   port. So if you choose 9000 for the sim, the region port will be 19000.
 
 -----------------------------------------------------------------------------
 
   Now you should be set, refer to quick-setup.txt on how to get things running.
+
+  Some commands may not work in simctl such as ulimit. Comment that out
 

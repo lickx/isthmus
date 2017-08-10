@@ -29,7 +29,7 @@ $ ./siminstall ~/Downloads/opensimulator-0.9.0.zip
 
   If you chose MySQL/MariaDB:
 
-$ mysql --user root --password
+$ sudo mysql --user root --password
 MariaDB [(none)]> create database isthmus_gridname;
 MariaDB [(none)]> grant all on isthmus_gridname.* to DbUser@localhost identified by 'DbUserPassword';
 
@@ -74,13 +74,13 @@ $ cd ~/isthmus/bin
   Reload:   ./simauto reload
   Audit:    ./simauto audit
 
-  You use restart after big upgrades with drastic changes in OpenSim, such as
+  You'd use restart after big upgrades with drastic changes in OpenSim, such as
   database migrations. It will take all sims in the isthmus installation down,
   upgrade, then start them again. Reload is used for small upgrades, sims are
   restarted one by one. Reload can for example be used for automated weekly
   restarts.
 
-  Audit will list used ports, this can be piped for example:
+  Audit will list all used ports, this can be piped for example:
   ./simauto audit | sort | less
 
   To see more options, type without parameters:   ./simauto
@@ -94,8 +94,8 @@ $ cd ~/isthmus/bin
   You can store the OARs in any folder/mountpoint. For remote backups, specify
   a remote or cloud storage mountpoint such as your DropBox folder.
 
-  However, we recommend instead of OpenSim's autobackup to use a scheduled
-  cronjob instead utilizing simbackup. Refer to doc/crontab
+  However, we recommend instead of the autobackup module, to use a scheduled
+  cronjob using simbackup. Refer to doc/crontab
 
 ------------------------------------------------------------------------------
 
@@ -103,6 +103,6 @@ $ cd ~/isthmus/bin
 
   To setup voice support provided by Vivox, refer to etc/voice.ini
   To setup Gloebit currency, refer to etc/Gloebit.ini
-  To setup OpenMetaverse currency, refer to /etc/omc.ini
+  To setup OpenMetaverse currency, refer to etc/omc.ini
 
 ------------------------------------------------------------------------------
