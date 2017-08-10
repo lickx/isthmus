@@ -20,6 +20,9 @@ if [ ! -d "${OPENSIM_DIR}/share/grids/${GRID}" ]; then
     exit 0
 fi
 
+mkdir -p "${OPENSIM_DIR}/etc"
+mkdir -p "${OPENSIM_DIR}/lib/bin"
+
 echo "Installing files needed for ${GRID}"
 cp -r "${OPENSIM_DIR}/share/grids/${GRID}/." "${OPENSIM_DIR}"
 
