@@ -9,6 +9,6 @@ Currently works out of the box for the following grids:
   * Grids using phpgridserver
 
 Other grids can add themselves, set your grid specific files up in  
-/share/grids/YourGrid (see other grids), then do a pull request.
+share/grids/YourGrid (see other grids), then do a pull request.
 
 Users can refer to the user documentation in the doc folder
