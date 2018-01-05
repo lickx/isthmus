@@ -24,7 +24,7 @@ if [[ -d "${TARGET_DIR}" ]] && [[ -x `which zip` ]]; then
     INSTALL_TYPE="upgrade"
     BACKUP_ARCHIVE="opensim-preupgrade.zip"
     mkdir -p "${BACKUP_DIR}"
-    rm "${BACKUP_DIR}/${BACKUP_ARCHIVE}"
+    rm -f "${BACKUP_DIR}/${BACKUP_ARCHIVE}"
     cd "${TARGET_DIR}"
     zip -r "${BACKUP_DIR}/${BACKUP_ARCHIVE}" .
     echo "Done"

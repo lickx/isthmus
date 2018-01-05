@@ -34,4 +34,11 @@ chmod 600 "${OPENSIM_DIR}/etc/database.ini"
 chmod 600 "${OPENSIM_DIR}/etc/Gloebit.ini"
 chmod 600 "${OPENSIM_DIR}/etc/voice.ini"
 
+read -r -p "Default estate name: "
+DefaultEstateName=${REPLY}
+read -r -p "Default estate owner: "
+DefaultEstateOwnerName=${REPLY}
+
+echo -e "[Estates]\nDefaultEstateName = \"${DefaultEstateName}\"\nDefaultEstateOwnerName = \"${DefaultEstateOwnerName}\"\n" > "${OPENSIM_DIR}/etc/estate.ini"
+
 echo "Done"

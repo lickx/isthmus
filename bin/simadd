@@ -1,135 +1,29 @@
 #!/bin/bash
 OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 
-backtitle="Isthmus - Add a sim/region"
-
-# ------------------------------- Region Name -------------------------------
-
-exec 3>&1
-region_name=$(dialog --clear --ascii-lines --backtitle "${backtitle}" \
-	--inputbox "Region name:" 0 0 "My Region" \
-2>&1 1>&3)
-exec 3>&-
-
-if [ -z ${region_name} ]; then
-   exit 1
+region_name="My Region"
+read -r -p "New region name (My Region): "
+if [ "${REPLY}" != "" ]; then
+    region_name=${REPLY}
 fi
 
-sim_name=`echo ${region_name} | tr -d " "`
-if [ -d "${OPENSIM_DIR}/sims-available/${sim_name}" ]; then
-    clear
-    echo "Already exists"
-    exit 1;
+region_coords="10000,10000"
+read -r -p "New region coordinates (10000,10000): "
+if [ "${REPLY}" != "" ]; then
+    region_coords=${REPLY}
 fi
 
-# -------------------------- Region Coordinates -----------------------------
-
-exec 3>&1
-region_coords=$(dialog --clear --ascii-lines --backtitle "${backtitle}" \
-	--inputbox "Where should '${region_name}' be placed on the map?\nFill in x,y" 0 0 "10000,10000" \
-2>&1 1>&3)
-exec 3>&-
-
-if [ -z ${region_coords} ]; then
-   exit 1
+region_port="19000"
+read -r -p "New region port (19000): "
+if [ "${REPLY}" != "" ]; then
+    region_port=${REPLY}
 fi
-
-# ------------------------------ Estate Owner --------------------------------
-
-exec 3>&1
-estate_owner=$(dialog --clear --ascii-lines --backtitle "${backtitle}" \
-	--inputbox "Estate Owner:" 0 0 "Firstname Lastname" \
-2>&1 1>&3)
-exec 3>&-
-
-if [ -z ${estate_owner} ]; then
-   exit 1
-fi
-
-# ------------------------------ Estate Name --------------------------------
-
-exec 3>&1
-estate_name=$(dialog --clear --ascii-lines --backtitle "${backtitle}" \
-	--inputbox "Estate Name:" 0 0 "My Estate" \
-2>&1 1>&3)
-exec 3>&-
-
-if [ -z ${estate_name} ]; then
-   exit 1
-fi
-
-# ------------------------------ Simulator Port -----------------------------
-
-exec 3>&1
-sim_port=$(dialog --clear --ascii-lines --backtitle "${backtitle}" \
-	--inputbox "Specify an unused port for the simulator. A second port for the region will be chosen automatically" 0 0 "9000" \
-2>&1 1>&3)
-exec 3>&-
-
-if [ -z ${sim_port} ]; then
-   exit 1
-fi
-
-# ------------------------------- Region Port -------------------------------
-
-# Region port can't be the same port as sim port
-region_port=$((sim_port + 10000))
-
-# ------------------------------ Region UUID --------------------------------
 
 region_uuid=`uuidgen`
-exec 3>&1
-region_uuid=$(dialog --clear --ascii-lines --backtitle "${backtitle}" \
-	--inputbox "A custom UUID can be filled in or you can leave the generated default:" 0 0 "${region_uuid}" \
-2>&1 1>&3)
-retval=$?
-exec 3>&-
 
-if [ -z ${region_uuid} ]; then
-    exit 1
-fi
-
-# ------------------------------ Confirmation ------------------------------
-
-dialog --clear --ascii-lines --backtitle "${backtitle}" \
-	--yesno "Please review. Create the following region?\n\nName: ${region_name}\nCoordinates: ${region_coords}\nEstate: ${estate_name}" 0 0
-
-retval=$?
-
-if [ ${retval} -ne 0 ]; then
-	exit 1
-fi
-
-# ----------------------- Commence installation  ---------------------------
-
-clear
-sim_dir="${OPENSIM_DIR}/sims-available/${sim_name}"
-echo "[${region_name}] Creating sim directory"
-mkdir -p "${sim_dir}/regions"
-if [ $? -ne 0 ]; then
-	echo "Error: could not create ${sim_dir}"
-	exit 1
-fi
-
-echo "[${region_name}] Populating OpenSim.ini"
-rel_sim_path="../../sims-available/${sim_name}"
-opensim_ini="${sim_dir}/OpenSim.ini"
-echo "[Startup]" > "${sim_dir}/OpenSim.ini"
-echo "PIDFile = \"${rel_sim_path}/pid\"" >> "${opensim_ini}"
-echo "regionload_regionsdir = \"${rel_sim_path}/regions/\"" >> "${opensim_ini}"
-
-echo -e "\n[Network]" >> "${opensim_ini}"
-echo "http_listener_port = ${sim_port}" >> "${opensim_ini}"
-
-echo -e "\n[Estates]" >> "${opensim_ini}"
-echo "DefaultEstateName = \"${estate_name}\"" >> "${opensim_ini}"
-echo "DefaultEstateOwnerName = \"${estate_owner}\"" >> "${opensim_ini}"
-
-echo -e "\n[Main]" >> "${opensim_ini}"
-echo "Include-Main = \"../../etc/opensim.ini\"" >> "${opensim_ini}"
-
-echo "[${region_name}] Populating regions.ini"
-regions_ini="${sim_dir}/regions/regions.ini"
+mkdir -p "${OPENSIM_DIR}/etc/regions"
+regions_ini="${OPENSIM_DIR}/etc/regions/${region_name}.ini"
+echo "Populating ${regions_ini}..."
 echo "[${region_name}]" > "${regions_ini}"
 echo "RegionUUID = ${region_uuid}" >> "${regions_ini}"
 echo "Location = ${region_coords}" >> "${regions_ini}"
@@ -137,15 +31,8 @@ echo "InternalAddress = 0.0.0.0" >> "${regions_ini}"
 echo "InternalPort = ${region_port}" >> "${regions_ini}"
 echo "AllowAlternatePorts = False" >> "${regions_ini}"
 echo "ExternalHostName = SYSTEMIP" >> "${regions_ini}"
-#echo "MaxPrims = 15000"            >> "${regions_ini}"
+#echo "MaxPrims = 20000"            >> "${regions_ini}"
 #echo "MaxAgents = 10"              >> "${regions_ini}"
 #echo "RegionType = \"Mainland\""   >> "${regions_ini}"
 
-echo "[${region_name}] Enabling region"
-mkdir -p "${OPENSIM_DIR}/sims-enabled"
-cd "${OPENSIM_DIR}/sims-enabled"
-ln -s "../sims-available/${sim_name}"
-
-echo "[${region_name}] Starting region (NOT)"
-# $OPENSIM_DIR/simctl start "$sim_name"
-
+echo "Done"

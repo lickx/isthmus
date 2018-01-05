@@ -9,6 +9,7 @@ The following packages are required:
   which
   zip
   mono-complete
+  uuid-runtime
 
 In addition, one of the following databases is required:
 

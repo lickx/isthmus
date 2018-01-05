@@ -7,7 +7,7 @@
 
 # Get the root folder of the isthmus tree
 export OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
-SIMS_AVAILABLE="${OPENSIM_DIR}/sims-available"
+REGIONS_DIR="${OPENSIM_DIR}/etc/regions"
 OAR_PATH="${OPENSIM_DIR}/var/backup"
 OAR_OPTIONS=
 
@@ -28,9 +28,7 @@ show_help() {
     echo "kill <simname>      Stop by sending SIGHUP (unclean)"
     echo "alert <simname> \"This is an alert message\"    Send an inworld alert msg"
     echo "restart <simname>   Issues a stop, then start command"
-    echo "audit <simname>     Returns which ports a sim is using"
     echo "status <simname>    Returns online status"
-    echo "saveoar <simname> (pathname)   Make OAR backups of regions in sim"
     echo "backup <simname>    Ensure database is saved"
 }
 
@@ -42,7 +40,7 @@ check_user() {
 }
 
 is_sim() {
-    if [ -d "${SIMS_AVAILABLE}/$1" ]; then
+    if [ -r "${REGIONS_DIR}/$1.ini" ]; then
         return 0
     else
         return 1
@@ -87,27 +85,6 @@ get_status() {
     fi
 }
 
-do_audit() {
-    if [ ! $1 ]; then
-        show_help
-        exit 1
-    else
-        SIM=$1
-    fi
-
-    if is_sim ${SIM}; then
-        simport=`${GREP} http_listener_port "${SIMS_AVAILABLE}/${SIM}/OpenSim.ini" | ${GREP} -ho '[0-9]*'`
-        echo -e "${simport}\tTCP\t${SIM}"
-        for INIFILE in ${SIMS_AVAILABLE}/${SIM}/regions/*.ini ; do
-            SECTION=`head -n 1 ${INIFILE}`
-            REGION="${SECTION:1: -1}"
-            REGIONPORT=`${GREP} InternalPort ${INIFILE} | ${GREP} -ho '[0-9]*'`
-            echo -e "${REGIONPORT}\tUDP\t${SIM} - ${REGION}"
-        done
-#        echo "\n"
-    fi
-}
-
 setup() {
     if [ ! $1 ]; then
         show_help
@@ -117,13 +94,24 @@ setup() {
     fi
 
     if is_sim ${SIM}; then
-        # SIM_PATH is used by log4net to put the logfiles in each sim's folder
-        export SIM_PATH="${SIMS_AVAILABLE}/${SIM}"
-        PID="${SIM_PATH}/pid"
+        # LOG_PATH is used by log4net to put the logfiles in each sim's folder
+        mkdir -p "${OPENSIM_DIR}/var/log/${SIM}"
+        export LOG_PATH="${OPENSIM_DIR}/var/log/${SIM}"
+        mkdir -p "${OPENSIM_DIR}/var/pid"
+        PID="${OPENSIM_DIR}/var/pid/${SIM}.pid"
     else
         echo "Sorry, I've never heard of sim ${SIM}.  Exiting."
         exit 1;
     fi
+
+    mkdir -p "${OPENSIM_DIR}/var/ports_sim"
+    for port in {9000..9100..1}
+    do
+        if [ ! -f "${OPENSIM_DIR}/var/ports_sim/${port}" ]; then
+            PORT_SIM=${port}
+            break;
+        fi
+    done
 }
 
 do_start() {
@@ -140,8 +128,13 @@ do_start() {
     # Make sure opensim.exe runs in the SLT time zone:
     export TZ=${VIEWER_TIME}
     ulimit -s 262144
+    echo "${SIM}" > "${OPENSIM_DIR}/var/ports_sim/${PORT_SIM}"
     cd "${OPENSIM_DIR}/lib/bin" && ${SCREEN} -S ${SIM} -d -m -l \
-	${MONO} OpenSim.exe -inidirectory="${SIMS_AVAILABLE}/${SIM}"
+	${MONO} OpenSim.exe -inifile="${OPENSIM_DIR}/etc/opensim.ini" \
+                            -http_listener_port=${PORT_SIM} \
+                            -pidfile="${PID}" \
+                -regionload_regionfile="${REGIONS_DIR}/${SIM}.ini"
+    echo "Started sim \"${SIM}\" on port ${PORT_SIM}"
 }
 
 do_kill() {
@@ -162,6 +155,16 @@ do_kill() {
         if [ -f ${PID} ]; then
             kill -9 `cat ${PID}`
             rm ${PID}
+	    for port in {9000..9100..1}
+	    do
+		if [ -f "${OPENSIM_DIR}/var/ports_sim/${port}" ]; then
+                    if [ `cat "${OPEN_DIR}/var/ports_sim/${port}"` == "${SIM}" ]; then
+                        echo "Killed sim \"${SIM}\" on port ${port}"
+                        rm "${OPENSIM_DIR}/var/ports_sim/${port}"
+		        break;
+                    fi
+		fi
+	    done
         fi
     fi
 }
@@ -179,6 +182,17 @@ do_stop() {
 
     if is_running ${SIM}; then
          ${SCREEN} -r ${SIM} -X exec .\!\! echo quit
+	for port in {9000..9100..1}
+	do
+	    if [ -f "${OPENSIM_DIR}/var/ports_sim/${port}" ]; then
+                contents=`cat "${OPENSIM_DIR}/var/ports_sim/${port}"`
+                if [ "${contents}" == "${SIM}" ]; then
+                    echo "Stopped sim \"${SIM}\" on port ${port}"
+                    rm "${OPENSIM_DIR}/var/ports_sim/${port}"
+		    break;
+                fi
+            fi
+	done
     else
          echo "${SIM} is not running"
          exit 1
@@ -221,60 +235,6 @@ do_backup() {
     fi
 }
 
-# do_saveoar simname (oarpath)
-# Saves oars for all regions in simulator
-# If no oarpath specified, use default var/backup/yyyy-mm-dd
-do_saveoar() {
-    if [ ! $1 ]; then
-        show_help
-        exit 1
-    else
-        SIM=$1
-    fi
-
-    setup ${SIM}
-    check_user
-
-    if [ ! $3 ]; then
-        LOCAL_OAR_PATH="${OAR_PATH}/`date -I'date'`"
-    else
-        LOCAL_OAR_PATH=$3 
-    fi
-
-    mkdir -p "${LOCAL_OAR_PATH}"
-
-    if is_running ${SIM}; then
-        # Alert inworld about temporary degraded performance"
-        ${SCREEN} -r ${SIM} -X exec .\!\! echo "alert \"SYSTEM NOTICE: Region backup in progress. Performance might be a bit slower for a few minutes..\""
-        sleep 3
-
-        # Following would save all regions in one oar: 
-        # OAR_FILE="${LOCAL_OAR_PATH}/${SIM}-`date -I'date'`.oar"
-        # ${SCREEN} -r ${SIM} -X exec .\!\! echo "save oar ${OAR_OPTIONS} --all \"${OAR_FILE}\""
-
-        ERRORLEVEL=0
-        # This is a more flexible method, each region in a seperate oar:
-        for INIFILE in ${SIMS_AVAILABLE}/${SIM}/regions/*.ini ; do
-            #FIXME: This strips off brackets from the [Regionname]
-            #       Assumes section on the first line and no trailing spaces
-            SECTION=`head -n 1 ${INIFILE}`
-            REGION="${SECTION:1: -1}"
-
-            ${SCREEN} -r ${SIM} -X exec .\!\! echo "change region \"${REGION}\""
-            sleep 3
-
-            OAR_FILE="${LOCAL_OAR_PATH}/${REGION}.oar"
-            ${SCREEN} -r ${SIM} -X exec .\!\! echo "save oar ${OAR_OPTIONS} \"${OAR_FILE}\""
-            sleep 3
-
-            if [ ! -f "${OAR_FILE}" ]; then
-                echo "Can't write to \"${OAR_FILE}\""
-                ERRORLEVEL=1
-            fi
-        done
-        exit ${ERRORLEVEL}
-    fi
-}
 
 case "$1" in
     start)
@@ -298,12 +258,6 @@ case "$1" in
         ;;
     status)
         get_status $2
-        ;;
-    audit)
-        do_audit $2
-        ;;
-    saveoar)
-        do_saveoar $2
         ;;
     backup)
         do_backup $2
