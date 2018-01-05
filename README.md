@@ -1,3 +1,5 @@
+# Note: WIP, only works with opensim from https://github.com/lickx/opensim/tree/cfg
+
 # isthmus
 Easy and modular OpenSimulator management and deployment for Linux. I made this system for my own 25 regions in OsGrid. Designed for OpenSim 0.9 and higher.
 
