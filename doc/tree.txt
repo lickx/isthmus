@@ -51,18 +51,18 @@
 |-- share
 |   |-- common
 |   |   |-- etc
-|   |   `-- lib
+|   |   `-- runtime
 |   |       `-- bin
 |   `-- grids
 |       |-- metropolis
 |       |   `-- etc
 |       |-- osgrid
 |       |   |-- etc
-|       |   `-- lib
+|       |   `-- runtime
 |       |       `-- bin
 |       `-- phpgridserver
 |           |-- etc
-|           `-- lib
+|           `-- runtime
 |               `-- bin
 `-- var
     |-- AssetCache
