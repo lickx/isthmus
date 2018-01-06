@@ -21,7 +21,7 @@ if [ ! -d "${OPENSIM_DIR}/share/grids/${GRID}" ]; then
 fi
 
 mkdir -p "${OPENSIM_DIR}/etc"
-mkdir -p "${OPENSIM_DIR}/lib/bin"
+mkdir -p "${OPENSIM_DIR}/runtime/bin"
 
 echo "Installing files needed for ${GRID}"
 cp -r "${OPENSIM_DIR}/share/grids/${GRID}/." "${OPENSIM_DIR}"
@@ -41,4 +41,4 @@ DefaultEstateOwnerName=${REPLY}
 
 echo -e "[Estates]\nDefaultEstateName = \"${DefaultEstateName}\"\nDefaultEstateOwnerName = \"${DefaultEstateOwnerName}\"\n" > "${OPENSIM_DIR}/etc/estate.ini"
 
-echo "Done"
+echo "Done. Don't forget to setup database settings in etc/database.ini"

@@ -1,60 +1,21 @@
 #!/bin/bash
 OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
-TARGET_DIR="lib"
-BACKUP_DIR="${OPENSIM_DIR}/var/distfiles"
-
-INSTALL_TYPE="clean"
+TARGET_DIR="runtime"
 
 if [ $# -eq 0 ]; then
     echo "Usage: $0 <opensim_distribution.zip>"
     exit 0
 fi
 
-if [[ ! -x `which unzip` ]] || [[ ! -x `which zip` ]]; then
-    echo "Package 'zip' and 'unzip' needs to be installed"
+if [ ! -x `which unzip` ]; then
+    echo "Package 'unzip' needs to be installed"
     exit 0
 fi
 
 EXCLUDE="bin/config-include/* bin/Regions/* bin/OpenSim.ini bin/OpenSim.exe.config bin/OpenSim32.exe.config"
-
-# Backup first in case we need to re-roll
 cd "${OPENSIM_DIR}"
-if [[ -d "${TARGET_DIR}" ]] && [[ -x `which zip` ]]; then
-    echo -n "Backing up current version... "
-    INSTALL_TYPE="upgrade"
-    BACKUP_ARCHIVE="opensim-preupgrade.zip"
-    mkdir -p "${BACKUP_DIR}"
-    rm -f "${BACKUP_DIR}/${BACKUP_ARCHIVE}"
-    cd "${TARGET_DIR}"
-    zip -r "${BACKUP_DIR}/${BACKUP_ARCHIVE}" .
-    echo "Done"
-else
-    mkdir -p "${TARGET_DIR}"
-fi
-
-# Do the upgrade
-cd "${OPENSIM_DIR}"
-if [ ${INSTALL_TYPE} == "upgrade" ]; then
-    echo -n "Upgrading simulator software... "
-else
-    echo -n "Installing simulator software...  "
-fi
 unzip -q -o -d "${TARGET_DIR}" "$1" -x ${EXCLUDE} &>/dev/null
 
-if [ $? -eq 0 ]; then
-    echo "Succes"
-    if [ ${INSTALL_TYPE} == "upgrade" ]; then
-        echo "Don't forget to issue an 'simauto restart'"
-    fi
-else
-    echo "Failed"
-    if [ ${INSTALL_TYPE} == "upgrade" ]; then
-        echo -n "Rolling back upgrade... "
-        unzip -q -o -d ${TARGET_DIR} "${BACKUP_DIR}/${BACKUP_ARCHIVE}" &>/dev/null
-        if [ $? -eq 0 ]; then
-            echo "Succes"
-        else
-            echo "Failed"
-        fi
-    fi
-fi
+echo "Does this upgrade have database migrations? Then issue ./simauto restart"
+echo "Else, issue ./simauto reload"
+
