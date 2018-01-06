@@ -127,13 +127,15 @@ do_start() {
 
     # Make sure opensim.exe runs in the SLT time zone:
     export TZ=${VIEWER_TIME}
+    export LANG=C
     ulimit -s 262144
     echo "${SIM}" > "${OPENSIM_DIR}/var/ports_sim/${PORT_SIM}"
     cd "${OPENSIM_DIR}/lib/bin" && ${SCREEN} -S ${SIM} -d -m -l \
-	${MONO} OpenSim.exe -inifile="${OPENSIM_DIR}/etc/opensim.ini" \
-                            -http_listener_port=${PORT_SIM} \
-                            -pidfile="${PID}" \
-                -regionload_regionfile="${REGIONS_DIR}/${SIM}.ini"
+	${MONO} --debug OpenSim.exe \
+            -inifile="${OPENSIM_DIR}/etc/opensim.ini" \
+            -http_listener_port=${PORT_SIM} \
+            -pidfile="${PID}" \
+            -regionload_regionfile="${REGIONS_DIR}/${SIM}.ini"
     echo "Started sim \"${SIM}\" on port ${PORT_SIM}"
 }
 
