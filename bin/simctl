@@ -237,6 +237,68 @@ do_backup() {
     fi
 }
 
+do_audit() {
+    if [ ! $1 ]; then
+        show_help
+        exit 1
+    else
+        SIM=$1
+    fi
+
+    if is_sim ${SIM}; then
+        for port in {9000..9100..1}
+        do
+            contents=`cat "${OPENSIM_DIR}/var/ports_sim/${port}"`
+            if [ "${contents}" == "${SIM}" ]; then
+                simport=${port}
+                break;
+            fi
+        done
+        echo -e "${simport}\tTCP\t${SIM}"
+        # Todo: region ports
+        #for INIFILE in ${SIMS_AVAILABLE}/${SIM}/regions/*.ini ; do
+        #    SECTION=`head -n 1 ${INIFILE}`
+        #    REGION="${SECTION:1: -1}"
+        #    REGIONPORT=`${GREP} InternalPort ${INIFILE} | ${GREP} -ho '[0-9]*'`
+        #    echo -e "${REGIONPORT}\tUDP\t${SIM} - ${REGION}"
+        #done
+#        echo "\n"
+    fi
+}
+
+
+# do_saveoar simname (oarpath)
+# Saves oars for all regions in simulator
+# If no oarpath specified, use default var/backup/yyyy-mm-dd
+do_saveoar() {
+    if [ ! $1 ]; then
+        show_help
+        exit 1
+    else
+        SIM=$1
+    fi
+
+    setup ${SIM}
+    check_user
+
+    if [ ! $3 ]; then
+        LOCAL_OAR_PATH="${OAR_PATH}/`date -I'date'`"
+    else
+        LOCAL_OAR_PATH=$3 
+    fi
+
+    mkdir -p "${LOCAL_OAR_PATH}"
+
+    if is_running ${SIM}; then
+        # Alert inworld about temporary degraded performance"
+        ${SCREEN} -r ${SIM} -X exec .\!\! echo "alert \"SYSTEM NOTICE: Region backup in progress. Performance might be a bit slower for a few minutes..\""
+        sleep 3
+
+        # Following would save all regions in one oar: 
+        OAR_FILE="${LOCAL_OAR_PATH}/${SIM}-`date -I'date'`.oar"
+        ${SCREEN} -r ${SIM} -X exec .\!\! echo "save oar ${OAR_OPTIONS} --all \"${OAR_FILE}\""
+    fi
+}
 
 case "$1" in
     start)
@@ -260,6 +322,12 @@ case "$1" in
         ;;
     status)
         get_status $2
+        ;;
+    audit)
+        do_audit $2
+        ;;
+    saveoar)
+        do_saveoar $2
         ;;
     backup)
         do_backup $2
