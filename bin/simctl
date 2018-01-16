@@ -99,7 +99,7 @@ setup() {
     if is_sim ${SIM}; then
         # SIM_LOG_FILE is used by log4net (OpenSim.exe.config) for sim logs
         mkdir -p "${OPENSIM_DIR}/var/log"
-        export SIM_LOG_FILE="${OPENSIM_DIR}/var/log/${SIM}"
+        export SIM_LOG_FILE="${OPENSIM_DIR}/var/log/${SIM}.log"
         mkdir -p "${OPENSIM_DIR}/var/pid"
         PID="${OPENSIM_DIR}/var/pid/${SIM}.pid"
     else
