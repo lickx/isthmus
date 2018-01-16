@@ -1,6 +1,6 @@
 # Note: WIP rewrite
 
-Only works with custom opensim from https://github.com/lickx/opensim (lickx branch)
+This branch only works with custom opensim from https://github.com/lickx/opensim (lickx branch)
 Large parts are yet unfinished but siminit, siminstall, simadd and simctl should work
 
 # isthmus
