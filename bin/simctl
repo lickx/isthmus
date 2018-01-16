@@ -14,8 +14,11 @@ OAR_OPTIONS=
 # Second Life time is the US/Pacific-New timezone
 VIEWER_TIME="US/Pacific-New"
 
-# Mono compatibility
-export MONO_GC_PARAMS="nursery-size=8m,minor=split,promotion-age=14"
+# Mono optimizations
+export MONO_GC_PARAMS="nursery-size=32m,promotion-age=14,minor=split,major=marksweep,no-lazy-sweep,alloc-ratio=50"
+export MONO_GC_DEBUG=""
+export MONO_ENV_OPTIONS="--desktop"
+export MONO_THREADS_PER_CPU=250
 
 MONO="/usr/bin/mono"
 SCREEN="/usr/bin/screen"
