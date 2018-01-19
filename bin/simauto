@@ -55,10 +55,7 @@ is_enabled() {
 do_start() {
     for simulator in ${OPENSIM_DIR}/etc/regions/*.ini; do
         simname=`basename ${simulator} .ini`
-        if is_running ${simname}; then
-            echo "[${simname}] Already running"
-        else
-            echo "[${simname}] Starting (${START_DELAY}s)"
+        if ! is_running ${simname}; then
             ${SIMCTL} start ${simname}
             sleep ${START_DELAY}
         fi
@@ -83,7 +80,6 @@ do_stop() {
     for simulator in ${OPENSIM_DIR}/etc/regions/*.ini; do
         simname=`basename ${simulator} .ini`
         if is_running ${simname}; then
-            echo "[${simname}] Stopping"
             ${SIMCTL} stop ${simname}
         else
             echo "[${simname}] Already offline"
@@ -95,7 +91,6 @@ do_stop() {
     for simulator in ${OPENSIM_DIR}/etc/regions/*.ini; do
         simname=`basename ${simulator} .ini`
         if is_running ${simname}; then
-            echo "[${simname}] Killing"
             ${SIMCTL} kill ${simname}
         fi
     done;
@@ -119,7 +114,6 @@ do_restart() {
     for simulator in ${OPENSIM_DIR}/etc/regions/*.ini; do
         simname=`basename ${simulator} .ini`
         if is_running ${simname}; then
-            echo "[${simname}] Stopping (${STOP_DELAY}s)"
             ${SIMCTL} stop ${simname}
         fi
     done;
@@ -130,11 +124,9 @@ do_restart() {
         simname=`basename ${simulator} .ini`
         if is_running ${simname}; then
             # Kill it in case it was stuck
-            echo "[${simname}] Killing (unclean shutdown)"
             ${SIMCTL} kill ${simname}
             sleep 5
         fi
-        echo "[${simname}] Starting (${START_DELAY}s)"
         ${SIMCTL} start ${simname}
         sleep ${START_DELAY}
     done;
@@ -152,20 +144,17 @@ do_reload() {
             ${SIMCTL} backup ${simname}
             sleep ${ALERT_DELAY}
             # Stop
-            echo "[${simname}] Stopping (${STOP_DELAY}s)"
             ${SIMCTL} stop ${simname}
             sleep ${STOP_DELAY}
             # Kill
             if [ -f "${OPENSIM_DIR}/var/pid/${simulator}.pid" ]; then
                 if ps -p `cat "${OPENSIM_DIR}/var/pid/${simulator}.pid"` > /dev/null; then
                     # Kill it in case it was stuck
-                    echo "[${simname}] Killing (unclean shutdown)"
                     ${SIMCTL} kill ${simname}
                 fi
             fi
         fi
         # Start
-        echo "[${simname}] Starting (${START_DELAY}s)"
         ${SIMCTL} start ${simname}
         sleep ${START_DELAY}
     done;

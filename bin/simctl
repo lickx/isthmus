@@ -33,6 +33,7 @@ show_help() {
     echo "restart <simname>   Issues a stop, then start command"
     echo "status <simname>    Returns online status"
     echo "backup <simname>    Ensure database is saved"
+    echo "saveoar <simname>    Saves regions in sim to an .oar bundle"
 }
 
 check_user() {
@@ -139,7 +140,7 @@ do_start() {
             -http_listener_port=${PORT_SIM} \
             -pidfile="${PID}" \
             -regionload_regionfile="${REGIONS_DIR}/${SIM}.ini"
-    echo "Started sim \"${SIM}\" on port ${PORT_SIM}"
+    echo "[${SIM}] Started"
 }
 
 do_kill() {
@@ -164,9 +165,9 @@ do_kill() {
 	    do
 		if [ -f "${OPENSIM_DIR}/var/ports_sim/${port}" ]; then
                     if [ `cat "${OPEN_DIR}/var/ports_sim/${port}"` == "${SIM}" ]; then
-                        echo "Killed sim \"${SIM}\" on port ${port}"
                         rm "${OPENSIM_DIR}/var/ports_sim/${port}"
-		        break;
+                        echo "[${SIM}] Killed"
+                        exit 0
                     fi
 		fi
 	    done
@@ -326,9 +327,6 @@ case "$1" in
         ;;
     restart)
         do_stop $2
-        sleep 60
-        do_kill $2
-        sleep 10
         do_start $2
         ;;
     status)
