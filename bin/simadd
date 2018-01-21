@@ -2,24 +2,28 @@
 OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 
 region_name="My Region"
-read -r -p "New region name (My Region): "
+read -r -p "New region name (${region_name}): "
 if [ "${REPLY}" != "" ]; then
     region_name=${REPLY}
 fi
 
 region_coords="10000,10000"
-read -r -p "New region coordinates (10000,10000): "
+read -r -p "New region coordinates (${region_coords}): "
 if [ "${REPLY}" != "" ]; then
     region_coords=${REPLY}
 fi
 
-region_port="19000"
-read -r -p "New region port (19000): "
+region_port="9000"
+read -r -p "New region port (${region_port}): "
 if [ "${REPLY}" != "" ]; then
     region_port=${REPLY}
 fi
 
 region_uuid=`uuidgen`
+read -r -p "New region UUID (${region_uuid}): "
+if [ "${REPLY}" != "" ]; then
+    region_port=${REPLY}
+fi
 
 mkdir -p "${OPENSIM_DIR}/etc/regions"
 regions_ini="${OPENSIM_DIR}/etc/regions/${region_name//[[:space:]]/}.ini"
