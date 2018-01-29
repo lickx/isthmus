@@ -173,6 +173,8 @@ case "$1" in
         rm ${SIMAUTO_LOCK}
         ;;
     status)
+        do_batch $1
+        ;;
     audit)
         do_batch $1
         ;;
