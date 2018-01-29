@@ -161,7 +161,7 @@ do_kill() {
 
     if is_running ${SIM}; then
         # Send backup command and wait 1 minute
-        ${SCREEN} -r ${SIM} -X exec .\!\! echo ";\nbackup"
+        ${SCREEN} -r ${SIM} -X exec .\!\! echo "\nbackup"
         sleep 60
         if [ -f ${PID} ]; then
             kill -9 `cat ${PID}`
@@ -193,7 +193,7 @@ do_stop() {
 
     if is_running ${SIM}; then
         echo -n "[${SIM}] Stopping"
-        ${SCREEN} -r ${SIM} -X exec .\!\! echo ";\nquit"
+        ${SCREEN} -r ${SIM} -X exec .\!\! echo "\nquit"
 	for port in {9000..9100..1}
 	do
 	    if [ -f "${OPENSIM_DIR}/var/ports_sim/${port}" ]; then
@@ -236,7 +236,7 @@ do_alert() {
     check_user
 
     if is_running ${SIM}; then
-        ${SCREEN} -r ${SIM} -X exec .\!\! echo ";\nalert $2"
+        ${SCREEN} -r ${SIM} -X exec .\!\! echo "\nalert $2"
     else
         echo "${SIM} not running"
     fi
@@ -254,7 +254,7 @@ do_backup() {
     check_user
 
     if is_running ${SIM}; then
-        ${SCREEN} -r ${SIM} -X exec .\!\! echo ";\nbackup"
+        ${SCREEN} -r ${SIM} -X exec .\!\! echo "\nbackup"
     else
         echo "${SIM} not running"
     fi
@@ -314,12 +314,12 @@ do_saveoar() {
 
     if is_running ${SIM}; then
         # Alert inworld about temporary degraded performance"
-        ${SCREEN} -r ${SIM} -X exec .\!\! echo ";\nalert \"SYSTEM NOTICE: Region backup in progress. Performance might be a bit slower for a few minutes..\""
+        ${SCREEN} -r ${SIM} -X exec .\!\! echo "\nalert \"SYSTEM NOTICE: Region backup in progress. Performance might be a bit slower for a few minutes..\""
         sleep 3
 
         # Following would save all regions in one oar: 
         OAR_FILE="${LOCAL_OAR_PATH}/${SIM}-`date -I'date'`.oar"
-        ${SCREEN} -r ${SIM} -X exec .\!\! echo ";\nsave oar ${OAR_OPTIONS} --all \"${OAR_FILE}\""
+        ${SCREEN} -r ${SIM} -X exec .\!\! echo "\nsave oar ${OAR_OPTIONS} --all \"${OAR_FILE}\""
     fi
 }
 
