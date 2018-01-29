@@ -94,7 +94,7 @@ do_restart() {
         simname=`basename ${simulator} .ini`
         if is_running ${simname}; then
             echo "[${simname}] Alerting (${ALERT_DELAY}s)"
-            ${SIMCTL} alert ${simname} "$MSG_REGION_RESTART"
+            ${SIMCTL} alert ${simname} "${MSG_REGION_RESTART}"
             sleep 2
             ${SIMCTL} backup ${simname}
         fi
@@ -126,7 +126,7 @@ do_reload() {
         if is_running ${simname}; then
             # Alert
             echo "[${simname}] Alerting (${ALERT_DELAY}s)"
-            ${SIMCTL} alert ${simname} "$MSG_REGION_RESTART"
+            ${SIMCTL} alert ${simname} "${MSG_REGION_RESTART}"
             sleep 2
             ${SIMCTL} backup ${simname}
             sleep ${ALERT_DELAY}
