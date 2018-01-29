@@ -85,15 +85,6 @@ do_stop() {
             echo "[${simname}] Already offline"
         fi
     done;
-    echo "Pausing (${STOP_DELAY}s) before killcheck"
-    sleep ${STOP_DELAY}
-    # Phase 3: Kill
-    for simulator in ${OPENSIM_DIR}/etc/regions/*.ini; do
-        simname=`basename ${simulator} .ini`
-        if is_running ${simname}; then
-            ${SIMCTL} kill ${simname}
-        fi
-    done;
     echo "All sims have stopped."
 }
 
@@ -117,20 +108,16 @@ do_restart() {
             ${SIMCTL} stop ${simname}
         fi
     done;
-    echo "Pausing (${STOP_DELAY}s) before starting sims"
-    sleep ${STOP_DELAY}
+    echo "All sims have been stopped"
+    #echo "Pausing (${STOP_DELAY}s) before starting sims"
+    #sleep ${STOP_DELAY}
     # Phase 3: Start
     for simulator in ${OPENSIM_DIR}/etc/regions/*.ini; do
         simname=`basename ${simulator} .ini`
-        if is_running ${simname}; then
-            # Kill it in case it was stuck
-            ${SIMCTL} kill ${simname}
-            sleep 5
-        fi
         ${SIMCTL} start ${simname}
         sleep ${START_DELAY}
     done;
-    echo "All sims have been restarted."
+    echo "All sims have been started."
 }
 
 do_reload() {
@@ -145,14 +132,6 @@ do_reload() {
             sleep ${ALERT_DELAY}
             # Stop
             ${SIMCTL} stop ${simname}
-            sleep ${STOP_DELAY}
-            # Kill
-            if [ -f "${OPENSIM_DIR}/var/pid/${simulator}.pid" ]; then
-                if ps -p `cat "${OPENSIM_DIR}/var/pid/${simulator}.pid"` > /dev/null; then
-                    # Kill it in case it was stuck
-                    ${SIMCTL} kill ${simname}
-                fi
-            fi
         fi
         # Start
         ${SIMCTL} start ${simname}
@@ -161,17 +140,10 @@ do_reload() {
     echo "All sims have been reloaded."
 }
 
-do_status() {
+do_batch() {
     for simulator in ${OPENSIM_DIR}/etc/regions/*.ini; do
         simname=`basename ${simulator} .ini`
-        ${SIMCTL} status ${simname}
-    done;
-}
-
-do_audit() {
-    for simulator in ${OPENSIM_DIR}/etc/regions/*.ini; do
-        simname=`basename ${simulator} .ini`
-        ${SIMCTL} audit ${simname}
+        ${SIMCTL} $1 ${simname}
     done;
 }
 
@@ -201,10 +173,8 @@ case "$1" in
         rm ${SIMAUTO_LOCK}
         ;;
     status)
-        do_status
-        ;;
     audit)
-        do_audit
+        do_batch $1
         ;;
     *)
         show_help
