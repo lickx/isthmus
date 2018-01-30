@@ -145,7 +145,15 @@ do_start() {
             -http_listener_port=${PORT_SIM} \
             -pidfile="${PID}" \
             -regionload_regionfile="${REGIONS_DIR}/${SIM}.ini"
-    echo "[${SIM}] Started"
+
+    sleep 3
+    if ! is_running ${SIM}; then
+        rm "${OPENSIM_DIR}/var/ports_sim/${PORT_SIM}"
+        echo "[${SIM}] Failed to start"
+        exit 1
+    else
+        echo "[${SIM}] Started"
+    fi
 }
 
 do_kill() {
