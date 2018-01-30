@@ -22,7 +22,7 @@ fi
 region_uuid=`uuidgen`
 read -r -p "New region UUID (${region_uuid}): "
 if [ "${REPLY}" != "" ]; then
-    region_port=${REPLY}
+    region_uuid=${REPLY}
 fi
 
 mkdir -p "${OPENSIM_DIR}/etc/regions"
