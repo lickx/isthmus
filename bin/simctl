@@ -134,6 +134,21 @@ do_start() {
     setup ${SIM}
     check_user
 
+    # Avoid snapshot sharing violation (probably needs to be Mantis'ed)
+    SNAPDIR="${OPENSIM_DIR}/var/DataSnapshot"
+    if [ -f "${SNAPDIR}/${SIM}.xml" ]; then
+        rm "${SNAPDIR}/${SIM}.xml"
+    fi
+    if [ -f "${SNAPDIR}/${SIM}_ObjectSnapshot.xml" ]; then
+        rm "${SNAPDIR}/${SIM}_ObjectSnapshot.xml"
+    fi
+    if [ -f "${SNAPDIR}/${SIM}_EstateSnapshot.xml" ]; then
+        rm "${SNAPDIR}/${SIM}_EstateSnapshot.xml"
+    fi
+    if [ -f "${SNAPDIR}/${SIM}_LandSnapshot.xml" ]; then
+        rm "${SNAPDIR}/${SIM}_LandSnapshot.xml"
+    fi
+
     # Make sure opensim.exe runs in the SLT time zone:
     export TZ=${VIEWER_TIME}
     export LANG=C
