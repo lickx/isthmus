@@ -6,7 +6,7 @@ fi
 
 OPENSIM_DIR=$1
 SIMCTL="${OPENSIM_DIR}/bin/simctl"
-LOGFILE="${OPENSIM_DIR}/var/log/backup.log"
+LOGFILE="${OPENSIM_DIR}/var/log/isthmus.log"
 SCREEN="/usr/bin/screen"
 GREP="/bin/grep"
 START_DELAY=60

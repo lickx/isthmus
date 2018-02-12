@@ -10,6 +10,7 @@ export OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 REGIONS_DIR="${OPENSIM_DIR}/etc/regions"
 OAR_PATH="${OPENSIM_DIR}/var/backup"
 OAR_OPTIONS=
+LOGFILE="${OPENSIM_DIR}/var/log/isthmus.log"
 
 # Second Life time is the US/Pacific-New timezone
 VIEWER_TIME="US/Pacific-New"
@@ -34,6 +35,12 @@ show_help() {
     echo "status <simname>    Returns online status"
     echo "backup <simname>    Ensure database is saved"
     echo "saveoar <simname>    Saves regions in sim to an .oar bundle"
+    echo "list                List available sims"
+}
+
+do_log() {
+    logline="`date` - $1"
+    echo $logline >> $LOGFILE
 }
 
 check_user() {
@@ -165,6 +172,7 @@ do_start() {
     if ! is_running ${SIM}; then
         rm "${OPENSIM_DIR}/var/ports_sim/${PORT_SIM}"
         echo "[${SIM}] Failed to start"
+        do_log "[${SIM}] Has problems with starting"
         exit 1
     else
         echo "[${SIM}] Started"
@@ -235,6 +243,7 @@ do_stop() {
                         elif [ ${STOPTIME} -ge 120 ]; then
                             echo " killing"
                             do_kill ${SIM}
+                            do_log "[${SIM}] Took a long time to shutdown"
                             exit 1
                         fi
                     done
@@ -346,6 +355,13 @@ do_saveoar() {
     fi
 }
 
+do_list() {
+    for simulator in ${OPENSIM_DIR}/etc/regions/*.ini; do
+        simname=`basename ${simulator} .ini`
+        echo "${simname}"
+    done;
+}
+
 case "$1" in
     start)
         do_start $2
@@ -374,6 +390,9 @@ case "$1" in
         ;;
     backup)
         do_backup $2
+        ;;
+    list)
+        do_list
         ;;
     *)
         show_help
