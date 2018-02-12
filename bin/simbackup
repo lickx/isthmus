@@ -32,8 +32,8 @@ do_log "Starting daily backup"
 
 ERRORS=0
 
-for simulator in $OPENSIM_DIR/sims-enabled/*; do
-    SIM=`basename $simulator`
+for simulator in ${OPENSIM_DIR}/etc/regions/*.ini; do
+    SIM=`basename ${simulator} .ini`
     SCREENRET=`${SCREEN} -ls ${SIM}`
     if [[ ${SCREENRET} == "No Sockets"* ]]; then
         do_log "${SIM} not online; skipping backup for simulator"
