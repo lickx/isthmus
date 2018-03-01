@@ -13,7 +13,7 @@ if [ $? -ne 0 ]; then
 fi
 
 OMC_ZIP="${OPENSIM_DIR}/var/distfiles/OMEModule-opensim-0.9.0.zip"
-TARGET_DIR="${OPENSIM_DIR}/lib/bin"
+TARGET_DIR="${OPENSIM_DIR}/runtime/bin"
 unzip -q -o -d "${TARGET_DIR}" "${OMC_ZIP}" &>/dev/null
 
 if [ $? -ne 0 ]; then

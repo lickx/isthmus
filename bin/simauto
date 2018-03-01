@@ -28,7 +28,7 @@ MSG_REGION_STOP="ATTENTION: REGION MAINTENANCE - This region will be going down 
 
 show_help() {
     echo "Usage: `basename $0` [ start | stop | restart | reload | status | audit ]"
-    echo "Starts or stops all simulators in ${OPENSIM_DIR}/sims-enabled"
+    echo "Starts or stops all simulators in ${OPENSIM_DIR}/etc/regions"
 }
 
 is_running() {
@@ -42,15 +42,22 @@ is_running() {
     fi
 }
 
+is_enabled() {
+    SIM=$1
+
+    if [ -r "$OPENSIM_DIR/etc/regions/${SIM}.ini" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 do_start() {
-    for simulator in $OPENSIM_DIR/sims-enabled/*; do
-        simname=`basename $simulator`
-        if is_running ${simname}; then
-           echo "[${simname}] Already running"
-        else
-           echo "[${simname}] Starting (${START_DELAY}s)"
-           ${SIMCTL} start ${simname}
-           sleep ${START_DELAY}
+    for simulator in ${OPENSIM_DIR}/etc/regions/*.ini; do
+        simname=`basename ${simulator} .ini`
+        if ! is_running ${simname}; then
+            ${SIMCTL} start ${simname}
+            sleep ${START_DELAY}
         fi
     done;
     echo "All sims have started."
@@ -58,8 +65,8 @@ do_start() {
 
 do_stop() {
     # Phase 1: Alert
-    for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
-        simname=`basename ${simulator}`  
+    for simulator in ${OPENSIM_DIR}/etc/regions/*.ini; do
+        simname=`basename ${simulator} .ini`
         if is_running ${simname}; then
             echo "[${simname}] Sending inworld alert"
             ${SIMCTL} alert ${simname} "${MSG_REGION_STOP}"
@@ -70,23 +77,12 @@ do_stop() {
     echo "Pausing (${ALERT_DELAY}s) before stopping"
     sleep ${ALERT_DELAY}
     # Phase 2: Stop
-    for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
-        simname=`basename ${simulator}`
+    for simulator in ${OPENSIM_DIR}/etc/regions/*.ini; do
+        simname=`basename ${simulator} .ini`
         if is_running ${simname}; then
-            echo "[${simname}] Stopping"
             ${SIMCTL} stop ${simname}
         else
             echo "[${simname}] Already offline"
-        fi
-    done;
-    echo "Pausing (${STOP_DELAY}s) before killcheck"
-    sleep ${STOP_DELAY}
-    # Phase 3: Kill
-    for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
-        simname=`basename ${simulator}`
-        if is_running ${simname}; then
-            echo "[${simname}] Killing"
-            ${SIMCTL} kill ${simname}
         fi
     done;
     echo "All sims have stopped."
@@ -94,11 +90,11 @@ do_stop() {
 
 do_restart() {
     # Phase 1: Alert
-    for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
-        simname=`basename ${simulator}`
+    for simulator in ${OPENSIM_DIR}/etc/regions/*.ini; do
+        simname=`basename ${simulator} .ini`
         if is_running ${simname}; then
             echo "[${simname}] Alerting (${ALERT_DELAY}s)"
-            ${SIMCTL} alert ${simname} "$MSG_REGION_RESTART"
+            ${SIMCTL} alert ${simname} "${MSG_REGION_RESTART}"
             sleep 2
             ${SIMCTL} backup ${simname}
         fi
@@ -106,72 +102,48 @@ do_restart() {
     echo "Pausing (${ALERT_DELAY}s) before stopping sims"
     sleep ${ALERT_DELAY}
     # Phase 2: Stop
-    for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
-        simname=`basename ${simulator}`
+    for simulator in ${OPENSIM_DIR}/etc/regions/*.ini; do
+        simname=`basename ${simulator} .ini`
         if is_running ${simname}; then
-            echo "[${simname}] Stopping (${STOP_DELAY}s)"
             ${SIMCTL} stop ${simname}
         fi
     done;
-    echo "Pausing (${STOP_DELAY}s) before starting sims"
-    sleep ${STOP_DELAY}
+    echo "All sims have been stopped"
+    #echo "Pausing (${STOP_DELAY}s) before starting sims"
+    #sleep ${STOP_DELAY}
     # Phase 3: Start
-    for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
-        simname=`basename ${simulator}`
-        if is_running ${simname}; then
-            # Kill it in case it was stuck
-            echo "[${simname}] Killing (unclean shutdown)"
-            ${SIMCTL} kill ${simname}
-        fi
-        echo "[${simname}] Starting (${START_DELAY}s)"
+    for simulator in ${OPENSIM_DIR}/etc/regions/*.ini; do
+        simname=`basename ${simulator} .ini`
         ${SIMCTL} start ${simname}
         sleep ${START_DELAY}
     done;
-    echo "All sims have been restarted."
+    echo "All sims have been started."
 }
 
 do_reload() {
-    for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
-        simname=`basename ${simulator}`
+    for simulator in ${OPENSIM_DIR}/etc/regions/*.ini; do
+        simname=`basename ${simulator} .ini`
         if is_running ${simname}; then
             # Alert
             echo "[${simname}] Alerting (${ALERT_DELAY}s)"
-            ${SIMCTL} alert ${simname} "$MSG_REGION_RESTART"
+            ${SIMCTL} alert ${simname} "${MSG_REGION_RESTART}"
             sleep 2
             ${SIMCTL} backup ${simname}
             sleep ${ALERT_DELAY}
             # Stop
-            echo "[${simname}] Stopping (${STOP_DELAY}s)"
             ${SIMCTL} stop ${simname}
-            sleep ${STOP_DELAY}
-            # Kill
-            if [ -f "${simulator}/pid" ]; then
-                if ps -p `cat "${simulator}/pid"` > /dev/null; then
-                    # Kill it in case it was stuck
-                    echo "[${simname}] Killing (unclean shutdown)"
-                    ${SIMCTL} kill ${simname}
-                fi
-            fi
         fi
         # Start
-        echo "[${simname}] Starting (${START_DELAY}s)"
         ${SIMCTL} start ${simname}
         sleep ${START_DELAY}
     done;
     echo "All sims have been reloaded."
 }
 
-do_status() {
-    for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
-        simname=`basename ${simulator}`
-        ${SIMCTL} status ${simname}
-    done;
-}
-
-do_audit() {
-    for simulator in ${OPENSIM_DIR}/sims-enabled/*; do
-        simname=`basename ${simulator}`
-        ${SIMCTL} audit ${simname}
+do_batch() {
+    for simulator in ${OPENSIM_DIR}/etc/regions/*.ini; do
+        simname=`basename ${simulator} .ini`
+        ${SIMCTL} $1 ${simname}
     done;
 }
 
@@ -201,10 +173,10 @@ case "$1" in
         rm ${SIMAUTO_LOCK}
         ;;
     status)
-        do_status
+        do_batch $1
         ;;
     audit)
-        do_audit
+        do_batch $1
         ;;
     *)
         show_help

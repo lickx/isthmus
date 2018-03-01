@@ -1,0 +1,88 @@
+.
+|-- bin
+|-- doc
+|-- etc
+|   `-- regions
+|-- runtime
+|   |-- bin
+|   |   |-- addin-db-002
+|   |   |   |-- addin-data
+|   |   |   |   `-- 1
+|   |   |   |-- addin-dir-data
+|   |   |   `-- hosts
+|   |   |-- addon-modules
+|   |   |-- assets
+|   |   |   |-- AnimationsAssetSet
+|   |   |   |-- Avatar
+|   |   |   |   `-- Newruth
+|   |   |   |-- BodyPartsAssetSet
+|   |   |   |-- ClothingAssetSet
+|   |   |   |-- CollisionSoundsAssetSet
+|   |   |   |-- GesturesAssetSet
+|   |   |   |-- LandmarksAssetSet
+|   |   |   |-- MyAssetSet
+|   |   |   |-- NotecardsAssetSet
+|   |   |   |-- ObjectsAssetSet
+|   |   |   |-- PhotosAssetSet
+|   |   |   |-- ScriptsAssetSet
+|   |   |   |-- SoundsAssetSet
+|   |   |   `-- TexturesAssetSet
+|   |   |-- data
+|   |   |-- inventory
+|   |   |   |-- AnimationsLibrary
+|   |   |   |-- BodyPartsLibrary
+|   |   |   |-- ClothingLibrary
+|   |   |   |-- GesturesLibrary
+|   |   |   |-- LandmarksLibrary
+|   |   |   |-- NotecardsLibrary
+|   |   |   |-- ObjectsLibrary
+|   |   |   |-- OpenSimLibrary
+|   |   |   |-- PhotosLibrary
+|   |   |   |-- ScriptsLibrary
+|   |   |   |-- SoundsLibrary
+|   |   |   `-- TexturesLibrary
+|   |   |-- lib
+|   |   |   `-- NET
+|   |   |-- lib32
+|   |   |-- lib64
+|   |   |-- Library
+|   |   `-- openmetaverse_data
+|   `-- ThirdPartyLicenses
+|-- share
+|   |-- common
+|   |   |-- etc
+|   |   `-- runtime
+|   |       `-- bin
+|   `-- grids
+|       |-- metropolis
+|       |   `-- etc
+|       |-- osgrid
+|       |   |-- etc
+|       |   `-- runtime
+|       |       `-- bin
+|       `-- phpgridserver
+|           |-- etc
+|           `-- runtime
+|               `-- bin
+`-- var
+    |-- AssetCache
+    |   |-- 179
+    |   |-- 44b
+    |   |-- 5fd
+    |   |-- 881
+    |   |-- 8af
+    |   |-- abb
+    |   |-- b8d
+    |   |-- beb
+    |   `-- e86
+    |-- DataSnapshot
+    |-- log
+    |   `-- LotekTest919
+    |-- maptiles
+    |-- MeshCache
+    |-- pid
+    |-- ports_sim
+    `-- ScriptEngines
+        `-- d45253e8-9080-4f46-b743-ca87818e4033
+
+85 directories

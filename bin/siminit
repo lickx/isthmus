@@ -21,7 +21,7 @@ if [ ! -d "${OPENSIM_DIR}/share/grids/${GRID}" ]; then
 fi
 
 mkdir -p "${OPENSIM_DIR}/etc"
-mkdir -p "${OPENSIM_DIR}/lib/bin"
+mkdir -p "${OPENSIM_DIR}/runtime/bin"
 
 echo "Installing files needed for ${GRID}"
 cp -r "${OPENSIM_DIR}/share/grids/${GRID}/." "${OPENSIM_DIR}"
@@ -34,4 +34,18 @@ chmod 600 "${OPENSIM_DIR}/etc/database.ini"
 chmod 600 "${OPENSIM_DIR}/etc/Gloebit.ini"
 chmod 600 "${OPENSIM_DIR}/etc/voice.ini"
 
-echo "Done"
+DefaultEstateName="My Estate"
+read -r -p "Default estate name (${DefaultEstateName}: "
+if [ "${REPLY}" != "" ]; then
+    DefaultEstateName=${REPLY}
+fi
+
+DefaultEstateOwnerName="Firstname Lastname"
+read -r -p "Default estate owner (${DefaultEstateOwnerName}): "
+if [ "${REPLY}" != "" ]; then
+    DefaultEstateOwnerName=${REPLY}
+fi
+
+echo -e "[Estates]\nDefaultEstateName = \"${DefaultEstateName}\"\nDefaultEstateOwnerName = \"${DefaultEstateOwnerName}\"\n" > "${OPENSIM_DIR}/etc/estate.ini"
+
+echo "Done. Don't forget to setup database settings in etc/database.ini"

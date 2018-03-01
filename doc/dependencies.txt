@@ -1,14 +1,14 @@
 The following packages are required:
 
   bash
-  dialog
   grep
   screen
   sed
   unzip
-  which
   zip
+  which
   mono-complete
+  uuid-runtime
 
 In addition, one of the following databases is required:
 

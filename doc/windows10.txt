@@ -17,7 +17,7 @@
 
   Install the needed dependencies:
 
-# sudo apt-get install screen mono-complete dialog zip unzip
+# sudo apt-get install screen mono-complete dialog zip unzip grep sed uuid-runtime
 
   (Yes, you do need mono even on Windows)
 
@@ -30,14 +30,13 @@
 
 -----------------------------------------------------------------------------
 
-  Possibly, ports need to be opened on Windows Firewall. That is out of the
-  scope of this readme, but I suggest:
+  Ports need to be opened on Windows Firewall:
 
-  TCP  20000-20003  For 4 simulators
-  UDP  30000-30003  For the regions run by the respective simulators
+  TCP  9000-9100  For 100 simulators, you'll never run that many at once :D
+  UDP  9000-9100  For the regions run by the respective simulators
 
-  TIP: 'simadd' reserves an UDP region port 10000 higher for each simulator
-  port. So if you choose 9000 for the sim, the region port will be 19000.
+  TCP  12046      llRequestURL()
+  TCP  12043      llRequestSecureURL()
 
 -----------------------------------------------------------------------------
 

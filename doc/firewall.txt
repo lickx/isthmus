@@ -1,0 +1,10 @@
+The TCP sim ports use the range starting at 9000..9100 TCP
+They will be auto assigned to the simulators
+
+For the UDP region ports you can choose your own range or just 9000..9100 UDP
+The region ports don't get assigned automatically (at this time)
+
+LSL Scripting:
+For llRequestURL port 12046 TCP needs to be open
+For llRequestSecureURL port 12043 TCP needs to be open
+
