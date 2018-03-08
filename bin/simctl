@@ -239,12 +239,12 @@ do_stop() {
                         if ! is_running ${SIM}; then
                             echo " stopped"
                             rm "${OPENSIM_DIR}/var/ports_sim/${port}"
-                            exit 0
+                            return 0
                         elif [ ${STOPTIME} -ge 120 ]; then
                             echo " killing"
                             do_kill ${SIM}
                             do_log "[${SIM}] Took a long time to shutdown"
-                            exit 1
+                            return 1
                         fi
                     done
                 fi
