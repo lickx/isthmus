@@ -1,12 +1,9 @@
-# Note: WIP rewrite
-
-This branch only works with custom opensim from https://github.com/lickx/opensim (lickx branch)
-Large parts are yet unfinished but siminit, siminstall, simadd and simctl should work
-
 # isthmus
 Easy and modular OpenSimulator management and deployment for Linux. I made this system for my own 25 regions in OsGrid. Designed for OpenSim 0.9 and higher.
 
 It's probably not good for commercial-grade grids but makes life a lot easier for hobbyists running multiple sims in an open grid.
+
+This branch only works with opensim from https://github.com/lickx/opensim (lickx branch or its descendants inventorybase or nani)
 
 ## Features
   * Easily upgrade all sims at once
