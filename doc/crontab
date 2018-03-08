@@ -31,5 +31,13 @@
 # For more information see the manual pages of crontab(5) and cron(8)
 # 
 # m h  dom mon dow   command
-*/10 * * * * /home/opensim/isthmus/bin/simwatchdog /home/opensim/isthmus
-0 4 * * * /home/opensim/isthmus/bin/simbackup /home/opensim/isthmus
+
+# Re-scan every 10 minutes for crashed sims:
+*/10 * * * * /home/opensim/isthmus/osgrid/bin/simwatchdog /home/opensim/isthmus/osgrid
+
+# Make daily OARs 4:00am every day
+0 4 * * * /home/opensim/isthmus/osgrid/bin/simbackup /home/opensim/isthmus/osgrid
+
+# Make weekly OARs 12:00am every monday
+#0 12 * * 1 /home/opensim/isthmus/osgrid/bin/simbackup /home/opensim/isthmus/osgrid
+
