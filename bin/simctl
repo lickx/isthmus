@@ -150,7 +150,7 @@ do_start() {
 	${MONO} --debug OpenSim.exe \
             -inifile="${OPENSIM_DIR}/etc/opensim.ini" \
             -http_listener_port=${PORT_SIM} \
-            -pidfile="${PID}" \
+            -PIDFile="${PID}" \
             -regionload_regionfile="${REGIONS_DIR}/${SIM}.ini"
 
     sleep 3
