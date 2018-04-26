@@ -28,7 +28,7 @@ if [ -f ${SIMAUTO_LOCK} ]; then
     exit 0
 fi
 
-do_log "Starting daily backup"
+do_log "Starting backup"
 
 ERRORS=0
 
@@ -48,7 +48,7 @@ for simulator in ${OPENSIM_DIR}/etc/regions/*.ini; do
 done;
 
 if [ ${ERRORS} -ne 0 ]; then
-    do_log "Daily backup completed with ${ERRORS} errors"
+    do_log "Backup completed with ${ERRORS} errors"
 else
-    do_log "Daily backup completed succesfully"
+    do_log "Backup completed succesfully"
 fi
