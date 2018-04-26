@@ -1,6 +1,12 @@
 #!/bin/bash
 OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 
+# Install isthmus config file if not already there, and then source it
+if [ ! -f "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
+    cp "${OPENSIM_DIR}/share/common/etc/isthmus.conf" "${OPENSIM_DIR}/etc"
+fi
+source "${OPENSIM_DIR}/etc/isthmus.conf"
+
 region_name="My Region"
 read -r -p "New region name (${region_name}): "
 if [ "${REPLY}" != "" ]; then
@@ -13,7 +19,8 @@ if [ "${REPLY}" != "" ]; then
     region_coords=${REPLY}
 fi
 
-region_port="9000"
+# Take UDP of TCP_RANGE_START as default region port
+region_port="${TCP_RANGE_START}"
 read -r -p "New region port (${region_port}): "
 if [ "${REPLY}" != "" ]; then
     region_port=${REPLY}

@@ -12,8 +12,11 @@ OAR_PATH="${OPENSIM_DIR}/var/backup"
 OAR_OPTIONS=
 LOGFILE="${OPENSIM_DIR}/var/log/isthmus.log"
 
-# Second Life time is the US/Pacific-New timezone
-VIEWER_TIME="US/Pacific-New"
+# Install isthmus config file if not already there, and then source it
+if [ ! -f "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
+    cp "${OPENSIM_DIR}/share/common/etc/isthmus.conf" "${OPENSIM_DIR}/etc"
+fi
+source "${OPENSIM_DIR}/etc/isthmus.conf"
 
 # Mono optimizations
 export MONO_GC_PARAMS="nursery-size=32m,promotion-age=14,minor=split,major=marksweep,no-lazy-sweep,alloc-ratio=50"
@@ -21,7 +24,6 @@ export MONO_GC_DEBUG=""
 export MONO_ENV_OPTIONS="--desktop"
 export MONO_THREADS_PER_CPU=250
 
-MONO="/usr/bin/mono"
 SCREEN="/usr/bin/screen"
 GREP="/bin/grep"
 
@@ -116,7 +118,7 @@ setup() {
     fi
 
     mkdir -p "${OPENSIM_DIR}/var/ports_sim"
-    for port in {9000..9100..1}
+    for (( port=${TCP_RANGE_START}; port<=${TCP_RANGE_END}; port++ ))
     do
         if [ ! -f "${OPENSIM_DIR}/var/ports_sim/${port}" ]; then
             PORT_SIM=${port}
@@ -141,13 +143,13 @@ do_start() {
     setup ${SIM}
     check_user
 
-    # Make sure opensim.exe runs in the SLT time zone:
-    export TZ=${VIEWER_TIME}
+    # Second Life time is the US/Pacific-New timezone
+    export TZ="US/Pacific-New"
     export LANG=C
     ulimit -s 262144
     echo "${SIM}" > "${OPENSIM_DIR}/var/ports_sim/${PORT_SIM}"
     cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SIM} -d -m -l \
-	${MONO} --debug OpenSim.exe \
+	${MONO} OpenSim.exe \
             -inifile="${OPENSIM_DIR}/etc/opensim.ini" \
             -http_listener_port=${PORT_SIM} \
             -PIDFile="${PID}" \
@@ -182,8 +184,8 @@ do_kill() {
         if [ -f ${PID} ]; then
             kill -9 `cat ${PID}`
             rm ${PID}
-	    for port in {9000..9100..1}
-	    do
+            for (( port=${TCP_RANGE_START}; port<=${TCP_RANGE_END}; port++ ))
+                do
 		if [ -f "${OPENSIM_DIR}/var/ports_sim/${port}" ]; then
                     if [ `cat "${OPEN_DIR}/var/ports_sim/${port}"` == "${SIM}" ]; then
                         rm "${OPENSIM_DIR}/var/ports_sim/${port}"
@@ -210,7 +212,7 @@ do_stop() {
     if is_running ${SIM}; then
         echo -n "[${SIM}] Stopping"
         ${SCREEN} -r ${SIM} -X exec .\!\! echo "\nquit"
-	for port in {9000..9100..1}
+        for (( port=${TCP_RANGE_START}; port<=${TCP_RANGE_END}; port++ ))
 	do
 	    if [ -f "${OPENSIM_DIR}/var/ports_sim/${port}" ]; then
                 contents=`cat "${OPENSIM_DIR}/var/ports_sim/${port}"`
@@ -286,7 +288,7 @@ do_audit() {
     fi
 
     if is_sim ${SIM}; then
-        for port in {9000..9100..1}
+        for (( port=${TCP_RANGE_START}; port<=${TCP_RANGE_END}; port++ ))
         do
             contents=`cat "${OPENSIM_DIR}/var/ports_sim/${port}"`
             if [ "${contents}" == "${SIM}" ]; then
@@ -362,6 +364,8 @@ case "$1" in
         ;;
     restart)
         do_stop $2
+        # Take time for the pid file to clear
+        sleep 1
         do_start $2
         ;;
     status)
