@@ -6,9 +6,6 @@
 
   Base setup
 
-  Have an opensimulator archive (distribution zipfile) handy. If you connect
-  to OsGrid you can use the one on their download page https://www.osgrid.org
-
 $ git clone https://github.com/lickx/isthmus.git 
 $ cd isthmus/bin
 $ ./siminit
@@ -16,7 +13,11 @@ $ ./siminit
   (Follow instructions on screen)
   If you skipped the installation of the simulator software, this can be done:
 
-$ ./siminstall ~/Downloads/opensimulator-0.9.0.zip
+  !! IMPORTANT
+  This will only work with the isthmus branch which can be found at
+  https://github.com/lickx/opensim/tree/isthmus
+
+$ ./siminstall ~/Downloads/opensim-isthmus-2018-07-02_f2587f75c9.zip
 
 ------------------------------------------------------------------------------
 
