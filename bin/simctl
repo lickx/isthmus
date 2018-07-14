@@ -55,6 +55,8 @@ check_user() {
 is_sim() {
     if [ -r "${REGIONS_DIR}/$1.ini" ]; then
         return 0
+    elif [ -d "${REGIONS_DIR}/$1" ]; then
+        return 0
     else
         return 1
     fi
@@ -148,12 +150,21 @@ do_start() {
     export LANG=C
     ulimit -s 262144
     echo "${SIM}" > "${OPENSIM_DIR}/var/ports_sim/${PORT_SIM}"
-    cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SIM} -d -m -l \
-	${MONO} OpenSim.exe \
+    if [ -f "${REGIONS_DIR}/${SIM}.ini" ]; then
+        cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SIM} -d -m -l \
+            ${MONO} OpenSim.exe \
             -inifile="${OPENSIM_DIR}/etc/opensim.ini" \
             -http_listener_port=${PORT_SIM} \
             -PIDFile="${PID}" \
             -regionload_regionfile="${REGIONS_DIR}/${SIM}.ini"
+    elif [ -d "${REGIONS_DIR}/${SIM}" ]; then
+        cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SIM} -d -m -l \
+            ${MONO} OpenSim.exe \
+            -inifile="${OPENSIM_DIR}/etc/opensim.ini" \
+            -http_listener_port=${PORT_SIM} \
+            -PIDFile="${PID}" \
+            -regionload_regiondir="${REGIONS_DIR}/${SIM}"
+    fi
 
     sleep 3
     if ! is_running ${SIM}; then
@@ -186,14 +197,14 @@ do_kill() {
             rm ${PID}
             for (( port=${TCP_RANGE_START}; port<=${TCP_RANGE_END}; port++ ))
                 do
-		if [ -f "${OPENSIM_DIR}/var/ports_sim/${port}" ]; then
+                if [ -f "${OPENSIM_DIR}/var/ports_sim/${port}" ]; then
                     if [ `cat "${OPEN_DIR}/var/ports_sim/${port}"` == "${SIM}" ]; then
                         rm "${OPENSIM_DIR}/var/ports_sim/${port}"
                         echo "[${SIM}] Killed"
                         exit 0
                     fi
-		fi
-	    done
+                fi
+            done
         fi
     fi
 }
@@ -213,8 +224,8 @@ do_stop() {
         echo -n "[${SIM}] Stopping"
         ${SCREEN} -r ${SIM} -X exec .\!\! echo "\nquit"
         for (( port=${TCP_RANGE_START}; port<=${TCP_RANGE_END}; port++ ))
-	do
-	    if [ -f "${OPENSIM_DIR}/var/ports_sim/${port}" ]; then
+        do
+            if [ -f "${OPENSIM_DIR}/var/ports_sim/${port}" ]; then
                 contents=`cat "${OPENSIM_DIR}/var/ports_sim/${port}"`
                 if [ "${contents}" == "${SIM}" ]; then
                     STOPTIME=0
@@ -236,7 +247,7 @@ do_stop() {
                     done
                 fi
             fi
-	done
+        done
     else
         echo "[${SIM}] Not running"
         exit 1
@@ -290,21 +301,33 @@ do_audit() {
     if is_sim ${SIM}; then
         for (( port=${TCP_RANGE_START}; port<=${TCP_RANGE_END}; port++ ))
         do
-            contents=`cat "${OPENSIM_DIR}/var/ports_sim/${port}"`
-            if [ "${contents}" == "${SIM}" ]; then
-                simport=${port}
-                break;
+            if [ -f "${OPENSIM_DIR}/var/ports_sim/${port}" ]; then
+                contents=`cat "${OPENSIM_DIR}/var/ports_sim/${port}"`
+                if [ "${contents}" == "${SIM}" ]; then
+                    simport=${port}
+                    break;
+                fi
             fi
         done
-        echo -e "${simport}\tTCP\t${SIM}"
-        # Todo: region ports
-        #for INIFILE in ${SIMS_AVAILABLE}/${SIM}/regions/*.ini ; do
-        #    SECTION=`head -n 1 ${INIFILE}`
-        #    REGION="${SECTION:1: -1}"
-        #    REGIONPORT=`${GREP} InternalPort ${INIFILE} | ${GREP} -ho '[0-9]*'`
-        #    echo -e "${REGIONPORT}\tUDP\t${SIM} - ${REGION}"
-        #done
-#        echo "\n"
+        if [ "${simport}" == "" ]; then
+            echo -e " --\tTCP\t${SIM}"
+        else
+            echo -e "${simport}\tTCP\t${SIM}"
+        fi
+        if [ -d "${REGIONS_DIR}/${SIM}" ]; then
+            for INIFILE in ${REGIONS_DIR}/${SIM}/*.ini ; do
+                SECTION=`head -n 1 ${INIFILE}`
+                REGION="${SECTION:1: -1}"
+                REGIONPORT=`${GREP} InternalPort ${INIFILE} | ${GREP} -ho '[0-9]*'`
+                echo -e "${REGIONPORT}\tUDP\t${SIM} - ${REGION}"
+            done
+        else
+            INIFILE=${REGIONS_DIR}/${SIM}.ini
+            SECTION=`head -n 1 ${INIFILE}`
+            REGION="${SECTION:1: -1}"
+            REGIONPORT=`${GREP} InternalPort ${INIFILE} | ${GREP} -ho '[0-9]*'`
+            echo -e "${REGIONPORT}\tUDP\t${SIM} - ${REGION}"
+        fi
     fi
 }
 
@@ -336,14 +359,35 @@ do_saveoar() {
         ${SCREEN} -r ${SIM} -X exec .\!\! echo "\nalert \"SYSTEM NOTICE: Region backup in progress. Performance might be a bit slower for a few minutes..\""
         sleep 3
 
-        # Following would save all regions in one oar: 
-        OAR_FILE="${LOCAL_OAR_PATH}/${SIM}-`date -I'date'`.oar"
-        ${SCREEN} -r ${SIM} -X exec .\!\! echo "\nsave oar ${OAR_OPTIONS} --all \"${OAR_FILE}\""
+        if [ -d "${REGIONS_DIR}/${SIM}" ]; then
+            # Multi region sim, requires special handling
+            for INIFILE in ${REGIONS_DIR}/${SIM}/*.ini ; do
+                SECTION=`head -n 1 ${INIFILE}`
+                REGION="${SECTION:1: -1}"
+
+                # Change region first
+                ${SCREEN} -r ${SIM} -X exec .\!\! echo "change region \"${REGION}\""
+                sleep 3
+
+                # Backup the region
+                OAR_FILE="${LOCAL_OAR_PATH}/${REGION}-`date -I'date'`.oar"
+                ${SCREEN} -r ${SIM} -X exec .\!\! echo "save oar ${OAR_OPTIONS} \"${OAR_FILE}\""
+
+                # Pause a bit. TODO: check whether oar file is not open
+                # anymore and only then continue (lsof)
+                sleep 120
+            done
+        else
+            # Sim has just 1 region
+            OAR_FILE="${LOCAL_OAR_PATH}/${SIM}-`date -I'date'`.oar"
+            ${SCREEN} -r ${SIM} -X exec .\!\! echo "\nsave oar ${OAR_OPTIONS} \"${OAR_FILE}\""
+            sleep 120
+        fi
     fi
 }
 
 do_list() {
-    for simulator in ${OPENSIM_DIR}/etc/regions/*.ini; do
+    for simulator in ${OPENSIM_DIR}/etc/regions/*; do
         simname=`basename ${simulator} .ini`
         echo "${simname}"
     done;
