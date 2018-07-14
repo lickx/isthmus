@@ -12,7 +12,7 @@ This branch only works with opensim compiled from https://github.com/lickx/opens
   * Issue mass commands (simauto) or per-sim (simctl)
   * Flexible OAR backups
   * Crash detection (and restart if needed)
-  * Dynamic TCP port assignment (range 9000-9100)
+  * Dynamic TCP port assignment (user definable range)
   
 ## Preconfigured
 Works out of the box for:
