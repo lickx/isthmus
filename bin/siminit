@@ -35,7 +35,7 @@ chmod 600 "${OPENSIM_DIR}/etc/Gloebit.ini"
 chmod 600 "${OPENSIM_DIR}/etc/voice.ini"
 
 DefaultEstateName="My Estate"
-read -r -p "Default estate name (${DefaultEstateName}: "
+read -r -p "Default estate name (${DefaultEstateName}): "
 if [ "${REPLY}" != "" ]; then
     DefaultEstateName=${REPLY}
 fi
