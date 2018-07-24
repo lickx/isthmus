@@ -1,6 +1,6 @@
 
   i s t h m u s
-  Quick Setup guide                                                 17.04.24
+  Quick Setup guide                                                 18.07.23
 
 ------------------------------------------------------------------------------
 
@@ -14,10 +14,10 @@ $ ./siminit
   If you skipped the installation of the simulator software, this can be done:
 
   !! IMPORTANT
-  This will only work with the isthmus branch which can be found at
-  https://github.com/lickx/opensim/tree/isthmus
+  This will only work with the lickx branch which can be found at
+  https://github.com/lickx/opensim
 
-$ ./siminstall ~/Downloads/opensim-isthmus-2018-07-02_f2587f75c9.zip
+$ ./siminstall ~/Downloads/opensim-lickx.zip
 
 ------------------------------------------------------------------------------
 
@@ -44,6 +44,13 @@ template1=# \q
   Note: If you have multiple installations of isthmus and use Gloebit, you'll
   probably also want a seperate database for Gloebit usage to be shared by all
   isthmus installations. See the end of Gloebit.ini
+
+  !! IMPORTANT
+  The default 16M packet size is no longer enough for running OpenSim with sql.
+  Edit your mariadb/mysql config to set it higher. In Ubuntu this is
+  /etc/mysql/mariadb.conf.d/50-server.cnf:
+  
+  max_allowed_packet      = 32M
 
 ------------------------------------------------------------------------------
 
