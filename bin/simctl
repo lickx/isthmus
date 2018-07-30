@@ -163,7 +163,7 @@ do_start() {
             -inifile="${OPENSIM_DIR}/etc/opensim.ini" \
             -http_listener_port=${PORT_SIM} \
             -PIDFile="${PID}" \
-            -regionload_regiondir="${REGIONS_DIR}/${SIM}"
+            -regionload_regionsdir="${REGIONS_DIR}/${SIM}"
     fi
 
     sleep 3
