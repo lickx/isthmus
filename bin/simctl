@@ -284,7 +284,7 @@ do_backup() {
     check_user
 
     if is_running ${SIM}; then
-        ${SCREEN} -r ${SIM} -X exec .\!\! echo "\nbackup"
+        ${SCREEN} -r ${SIM} -X exec .\!\! echo "backup"
     else
         echo "${SIM} not running"
     fi
