@@ -34,18 +34,28 @@ chmod 600 "${OPENSIM_DIR}/etc/database.ini"
 chmod 600 "${OPENSIM_DIR}/etc/Gloebit.ini"
 chmod 600 "${OPENSIM_DIR}/etc/voice.ini"
 
-DefaultEstateName="My Estate"
-read -r -p "Default estate name (${DefaultEstateName}): "
-if [ "${REPLY}" != "" ]; then
-    DefaultEstateName=${REPLY}
+if [ -r "${OPENSIM_DIR}/etc/estate.ini" ]; then
+   echo "Preserving existing estate settings"
+else
+    DefaultEstateName="My Estate"
+    read -r -p "Default estate name (${DefaultEstateName}): "
+    if [ "${REPLY}" != "" ]; then
+        DefaultEstateName=${REPLY}
+    fi
+
+    DefaultEstateOwnerName="Firstname Lastname"
+    read -r -p "Default estate owner (${DefaultEstateOwnerName}): "
+    if [ "${REPLY}" != "" ]; then
+        DefaultEstateOwnerName=${REPLY}
+    fi
+    echo -e "[Estates]\nDefaultEstateName = \"${DefaultEstateName}\"\nDefaultEstateOwnerName = \"${DefaultEstateOwnerName}\"\n" > "${OPENSIM_DIR}/etc/estate.ini"
 fi
 
-DefaultEstateOwnerName="Firstname Lastname"
-read -r -p "Default estate owner (${DefaultEstateOwnerName}): "
-if [ "${REPLY}" != "" ]; then
-    DefaultEstateOwnerName=${REPLY}
+if [ -r "${OPENSIM_DIR}/etc/database.ini" ]; then
+    echo "Preserving existing database settings"
+else
+    echo "Installing template for etc/database.ini - please edit this file"
+    echo -e "[DatabaseService]\nStorageProvider = \"OpenSim.Data.MySQL.dll\"\nConnectionString = \"DataSource=localhost;Database=SQL_DATABASE_NAME;User Id=SQL_USER_NAME;password=SQL_USER_PASSWORD;Old Guids=true\"" > "${OPENSIM_DIR}/etc/database.ini"
 fi
 
-echo -e "[Estates]\nDefaultEstateName = \"${DefaultEstateName}\"\nDefaultEstateOwnerName = \"${DefaultEstateOwnerName}\"\n" > "${OPENSIM_DIR}/etc/estate.ini"
-
-echo "Done. Don't forget to setup database settings in etc/database.ini"
+echo "Done"
