@@ -145,6 +145,11 @@ do_start() {
     setup ${SIM}
     check_user
 
+    # Rotate log file if existing already
+    if [ -r "${OPENSIM_DIR}/var/log/${SIM}.log" ]; then
+        mv -f "${OPENSIM_DIR}/var/log/${SIM}.log" "${OPENSIM_DIR}/var/log/${SIM}.old.log"
+    fi
+
     # Second Life time is the US/Pacific-New timezone
     export TZ="US/Pacific-New"
     export LANG=C
