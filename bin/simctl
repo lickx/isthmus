@@ -19,10 +19,7 @@ fi
 source "${OPENSIM_DIR}/etc/isthmus.conf"
 
 # Mono optimizations
-export MONO_GC_PARAMS="nursery-size=32m,promotion-age=14,minor=split,major=marksweep,no-lazy-sweep,alloc-ratio=50"
-export MONO_GC_DEBUG=""
-export MONO_ENV_OPTIONS="--desktop"
-export MONO_THREADS_PER_CPU=250
+export MONO_GC_PARAMS="nursery-size=32m,minor=split,promotion-age=14"
 
 SCREEN="/usr/bin/screen"
 GREP="/bin/grep"
@@ -153,18 +150,17 @@ do_start() {
     # Second Life time is the US/Pacific-New timezone
     export TZ="US/Pacific-New"
     export LANG=C
-    ulimit -s 262144
-    echo "${SIM}" > "${OPENSIM_DIR}/var/ports_sim/${PORT_SIM}"
+    ulimit -n 4096
     if [ -f "${REGIONS_DIR}/${SIM}.ini" ]; then
         cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SIM} -d -m -l \
-            ${MONO} OpenSim.exe \
+            ${MONO} --desktop OpenSim.exe \
             -inifile="${OPENSIM_DIR}/etc/opensim.ini" \
             -http_listener_port=${PORT_SIM} \
             -PIDFile="${PID}" \
             -regionload_regionfile="${REGIONS_DIR}/${SIM}.ini"
     elif [ -d "${REGIONS_DIR}/${SIM}" ]; then
         cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SIM} -d -m -l \
-            ${MONO} OpenSim.exe \
+            ${MONO} --desktop OpenSim.exe \
             -inifile="${OPENSIM_DIR}/etc/opensim.ini" \
             -http_listener_port=${PORT_SIM} \
             -PIDFile="${PID}" \
@@ -173,11 +169,11 @@ do_start() {
 
     sleep 3
     if ! is_running ${SIM}; then
-        rm "${OPENSIM_DIR}/var/ports_sim/${PORT_SIM}"
         echo "[${SIM}] Failed to start"
         do_log "[${SIM}] Has problems with starting"
         exit 1
     else
+        echo "${SIM}" > "${OPENSIM_DIR}/var/ports_sim/${PORT_SIM}"
         echo "[${SIM}] Started"
     fi
 }
