@@ -97,6 +97,19 @@ get_status() {
     fi
 }
 
+findfreeport() {
+    mkdir -p "${OPENSIM_DIR}/var/ports"
+    for (( port=${TCP_RANGE_START}; port<=${TCP_RANGE_END}; port++ ))
+    do
+        grep -q ${port} ${OPENSIM_DIR}/var/ports/*
+        if [ $? -ne 0 ]; then
+            echo ${port}
+            return
+        fi
+    done
+    echo ${TCP_RANGE_START}
+}
+
 setup() {
     if [ ! $1 ]; then
         show_help
@@ -116,14 +129,11 @@ setup() {
         exit 1;
     fi
 
-    mkdir -p "${OPENSIM_DIR}/var/ports_sim"
-    for (( port=${TCP_RANGE_START}; port<=${TCP_RANGE_END}; port++ ))
-    do
-        if [ ! -f "${OPENSIM_DIR}/var/ports_sim/${port}" ]; then
-            PORT_SIM=${port}
-            break;
-        fi
-    done
+    if [ -f "${OPENSIM_DIR}/var/ports/${SIM}.port" ]; then
+        PORT_SIM=`cat ${OPENSIM_DIR}/var/ports/${SIM}.port`
+    else
+        PORT_SIM=$(findfreeport)
+    fi
 }
 
 do_start() {
@@ -173,7 +183,7 @@ do_start() {
         do_log "[${SIM}] Has problems with starting"
         exit 1
     else
-        echo "${SIM}" > "${OPENSIM_DIR}/var/ports_sim/${PORT_SIM}"
+        echo "${PORT_SIM}" > "${OPENSIM_DIR}/var/ports/${SIM}.port"
         echo "[${SIM}] Started"
     fi
 }
@@ -196,15 +206,9 @@ do_kill() {
         if [ -f ${PID} ]; then
             kill -9 `cat ${PID}`
             rm ${PID}
-            for (( port=${TCP_RANGE_START}; port<=${TCP_RANGE_END}; port++ ))
-                do
-                if [ -f "${OPENSIM_DIR}/var/ports_sim/${port}" ]; then
-                    if [ `cat "${OPEN_DIR}/var/ports_sim/${port}"` == "${SIM}" ]; then
-                        rm "${OPENSIM_DIR}/var/ports_sim/${port}"
-                        exit 0
-                    fi
-                fi
-            done
+            if [ -f "${OPENSIM_DIR}/var/ports/${SIM}.port" ]; then
+                rm "${OPENSIM_DIR}/var/ports/${SIM}.port"
+            fi
 	    echo "[${SIM}] Killed"
         fi
     fi
@@ -231,15 +235,9 @@ do_stop() {
             STOPTIME=$((STOPTIME + 5))
             echo -n "."
             if ! is_running ${SIM}; then
-		for (( port=${TCP_RANGE_START}; port<=${TCP_RANGE_END}; port++ ))
-		do
-		    if [ -f "${OPENSIM_DIR}/var/ports_sim/${port}" ]; then
-			contents=`cat "${OPENSIM_DIR}/var/ports_sim/${port}"`
-			if [ "${contents}" == "${SIM}" ]; then
-			    rm "${OPENSIM_DIR}/var/ports_sim/${port}"
-			fi
-		    fi
-		done
+                if [ -f "${OPENSIM_DIR}/var/ports/${SIM}.port" ]; then
+                    rm "${OPENSIM_DIR}/var/ports/${SIM}.port"
+                fi
                 echo " stopped"
                 return 0
             elif [ ${STOPTIME} -ge 120 ]; then
@@ -300,35 +298,28 @@ do_audit() {
     fi
 
     if is_sim ${SIM}; then
-        for (( port=${TCP_RANGE_START}; port<=${TCP_RANGE_END}; port++ ))
-        do
-            if [ -f "${OPENSIM_DIR}/var/ports_sim/${port}" ]; then
-                contents=`cat "${OPENSIM_DIR}/var/ports_sim/${port}"`
-                if [ "${contents}" == "${SIM}" ]; then
-                    simport=${port}
-                    break;
-                fi
-            fi
-        done
-        if [ "${simport}" == "" ]; then
-            echo -e " --\tTCP\t${SIM}"
+        if [ -f "${OPENSIM_DIR}/var/ports/${SIM}.port" ]; then
+           tcp_port=`cat ${OPENSIM_DIR}/var/ports/${SIM}.port`
+           echo -e "TCP\t${tcp_port}\t${SIM}"
+
         else
-            echo -e "${simport}\tTCP\t${SIM}"
+           echo -e "TCP\t -- \t${SIM}"
         fi
         if [ -d "${REGIONS_DIR}/${SIM}" ]; then
             for INIFILE in ${REGIONS_DIR}/${SIM}/*.ini ; do
                 SECTION=`head -n 1 ${INIFILE}`
                 REGION="${SECTION:1: -1}"
                 REGIONPORT=`${GREP} InternalPort ${INIFILE} | ${GREP} -ho '[0-9]*'`
-                echo -e "${REGIONPORT}\tUDP\t${SIM} - ${REGION}"
+                echo -e "UDP\t${REGIONPORT}\t${SIM} - ${REGION}"
             done
-        else
+         else
             INIFILE=${REGIONS_DIR}/${SIM}.ini
             SECTION=`head -n 1 ${INIFILE}`
             REGION="${SECTION:1: -1}"
             REGIONPORT=`${GREP} InternalPort ${INIFILE} | ${GREP} -ho '[0-9]*'`
-            echo -e "${REGIONPORT}\tUDP\t${SIM} - ${REGION}"
-        fi
+            echo -e "UDP\t${REGIONPORT}\t${SIM} - ${REGION}"
+         fi
+
     fi
 }
 
