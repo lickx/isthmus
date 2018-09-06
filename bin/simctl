@@ -101,7 +101,7 @@ findfreeport() {
     mkdir -p "${OPENSIM_DIR}/var/ports"
     for (( port=${TCP_RANGE_START}; port<=${TCP_RANGE_END}; port++ ))
     do
-        grep -q ${port} ${OPENSIM_DIR}/var/ports/*
+        grep -q ${port} ${OPENSIM_DIR}/var/ports/* 2&> /dev/null
         if [ $? -ne 0 ]; then
             echo ${port}
             return
