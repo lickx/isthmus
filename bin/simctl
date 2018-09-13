@@ -227,7 +227,7 @@ do_stop() {
 
     if is_running ${SIM}; then
         echo -n "[${SIM}] Stopping"
-        kill -SIGTERM `cat ${PID}`
+        ${SCREEN} -r ${SIM} -X exec .\!\! echo "\nquit"
         STOPTIME=0
         while :
         do
