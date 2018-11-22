@@ -1,0 +1,48 @@
+#!/bin/bash
+export OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
+SIMCTL="${OPENSIM_DIR}/bin/simctl"
+SCREEN="/usr/bin/screen"
+GREP="/bin/grep"
+SIMAUTO_LOCK="${OPENSIM_DIR}/var/simauto.lock"
+
+show_help() {
+    echo -e "`basename $0` - Tool for opensim\n"
+    echo "clearscripts        Clear all non-.state files from ScriptEngines" 
+}
+
+do_log() {
+    LOGFILE="${OPENSIM_DIR}/var/log/isthmus.log"
+    logline="`date` - $1"
+    echo $logline >> $LOGFILE
+}
+
+clear_scripts() {
+    if [ -f "${SIMAUTO_LOCK}" ]; then
+        echo "Error: sims are running"
+        exit 1
+    fi
+    SCRIPT_DIR="${OPENSIM_DIR}/var/ScriptEngines"
+    mkdir -p "${SCRIPT_DIR}"
+    cd "${SCRIPT_DIR}"
+
+    find "${SCRIPT_DIR}" -name "*.dll" -exec rm {} \;
+    find "${SCRIPT_DIR}" -name "*.map" -exec rm {} \;
+    find "${SCRIPT_DIR}" -name "*.mdb" -exec rm {} \;
+    find "${SCRIPT_DIR}" -name "*.text" -exec rm {} \;
+    do_log "Cleared non-state files from ${SCRIPT_DIR}"
+}
+
+case "$1" in
+    help)
+        show_help
+        exit 0
+        ;;
+    clearscripts)
+        clear_scripts
+        exit 0
+        ;;
+    *)
+        show_help
+        exit 0
+        ;;
+esac
