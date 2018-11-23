@@ -10,10 +10,9 @@ export OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 REGIONS_DIR="${OPENSIM_DIR}/etc/regions"
 OAR_PATH="${OPENSIM_DIR}/var/backup"
 OAR_OPTIONS=
-LOGFILE="${OPENSIM_DIR}/var/log/robust.log"
+LOGFILE="${OPENSIM_DIR}/var/log/isthmus.log"
 mkdir -p "${OPENSIM_DIR}/var/log"
 mkdir -p "${OPENSIM_DIR}/var/fsassets"
-touch "${LOGFILE}"
 
 # Install isthmus config file if not already there, and then source it
 if [ ! -f "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
