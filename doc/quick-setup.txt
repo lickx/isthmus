@@ -1,6 +1,6 @@
 
   i s t h m u s
-  Quick Setup guide                                                 18.07.23
+  Quick Setup guide                                                 18.11.23
 
 ------------------------------------------------------------------------------
 
@@ -11,7 +11,8 @@ $ cd isthmus/bin
 $ ./siminit
 
   (Follow instructions on screen)
-  If you skipped the installation of the simulator software, this can be done:
+
+  To install the simulator software, this can be done now:
 
   !! IMPORTANT
   This will only work with the lickx branch which can be found at
@@ -28,20 +29,11 @@ $ ./siminstall ~/Downloads/opensim-lickx.zip
   By default each region runs in its own simulator instance, which is managed
   by GNU Screen.
 
-  If you chose MySQL/MariaDB:
-
-$ sudo mysql --user root --password
+  $ sudo mysql --user root --password
 MariaDB [(none)]> create database isthmus_gridname;
-MariaDB [(none)]> grant all on isthmus_gridname.* to DbUser@localhost identified by 'DbUserPassword';
+MariaDB [(none)]> grant all on isthmus_gridname.* to isthmus_gridname@localhost identified by 'PASSWORD';
 
-  If you chose PostgreSQL:
-
-$ sudo -u postgres psql template1
-template1=# CREATE USER DbUser WITH PASSWORD 'DbPassword';
-template1=# GRANT ALL PRIVILEGES ON DATABASE "isthmus_gridname" to DbUser;
-template1=# \q
-
-  Note: If you have multiple installations of isthmus and use Gloebit, you'll
+    Note: If you have multiple installations of isthmus and use Gloebit, you'll
   probably also want a seperate database for Gloebit usage to be shared by all
   isthmus installations. See the end of Gloebit.ini
 
@@ -56,9 +48,25 @@ template1=# \q
 
   Adding your first simulator
 
+  If you chose 'localgrid' or 'localgrid-nohg' when using siminit before,
+  then now it is time to start robust. Else skip to the simadd bit.
+  
+./robust start
+
+  Then, create the first user; the owner of the sim we're going to add next
+  
+./screen -r ROBUST
+  (type 'create user' and follow instructions. When done, press <CTRL-A D> to
+  detach the ROBUST screen)
+
+  Now, we're going to add the first sim. I suggest to call it 'Welcome' if it
+  is your own grid because robust will use that as the default region:
+
 ./simadd
 (Follow instructions on screen)
 
+  Finally, login and see if everything runs ok.
+  
 ------------------------------------------------------------------------------
 
   Command line commands
