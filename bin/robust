@@ -1,0 +1,159 @@
+#!/bin/bash
+# Original code by Dave Coyle (http://coyled.com)
+# Tweaks by Gwyneth Llewelyn (http://gwynethllewelyn.net/)
+# Additional code by Lotek Ixtar
+
+# Requires bash 4
+
+# Get the root folder of the isthmus tree
+export OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
+REGIONS_DIR="${OPENSIM_DIR}/etc/regions"
+OAR_PATH="${OPENSIM_DIR}/var/backup"
+OAR_OPTIONS=
+LOGFILE="${OPENSIM_DIR}/var/log/robust.log"
+mkdir -p "${OPENSIM_DIR}/var/log"
+mkdir -p "${OPENSIM_DIR}/var/fsassets"
+touch "${LOGFILE}"
+
+# Install isthmus config file if not already there, and then source it
+if [ ! -f "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
+    cp "${OPENSIM_DIR}/share/common/etc/isthmus.conf" "${OPENSIM_DIR}/etc"
+fi
+source "${OPENSIM_DIR}/etc/isthmus.conf"
+
+# Mono optimizations
+export MONO_GC_PARAMS="nursery-size=32m,minor=split,promotion-age=14"
+
+SCREEN="/usr/bin/screen"
+GREP="/bin/grep"
+
+show_help() {
+    echo -e "`basename $0` - Control grid services\n"
+    echo "start               Start robust"
+    echo "stop                Stop robust"
+    echo "kill                Stop by sending SIGHUP (unclean)"
+    echo "restart             Issues a stop, then start command"
+    echo "status              Returns status"
+}
+
+do_log() {
+    logline="`date` - $1"
+    echo $logline >> $LOGFILE
+}
+
+check_user() {
+    if [ `whoami` == 'root' ]; then
+        echo "Refusing to run as root"
+        exit 1
+    fi
+}
+
+is_running() {
+    if [ -f ${OPENSIM_DIR}/var/Robust.exe.pid ]; then
+        return 0
+    else
+        return 1 
+    fi
+}
+
+get_status() {
+    if is_running; then
+        echo "[ROBUST] is online"
+        exit 1
+    else
+        echo "[ROBUST] is offline"
+        exit 0 
+    fi
+}
+
+do_start() {
+    if is_running; then
+        echo "[ROBUST] Already started"
+        exit 1
+    fi
+
+    # Rotate log file if existing already
+    #if [ -r "${OPENSIM_DIR}/var/log/${SIM}.log" ]; then
+    #    mv -f "${OPENSIM_DIR}/var/log/${SIM}.log" "${OPENSIM_DIR}/var/log/${SIM}.old.log"
+    #fi
+
+    # Second Life time is the US/Pacific-New timezone
+    export TZ="US/Pacific-New"
+    export LANG=C
+    ulimit -n 4096
+    cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ROBUST -d -m -l \
+        ${MONO} --desktop Robust.exe -inifile "../../etc/robust.ini"
+
+    sleep 5
+    if ! is_running; then
+        echo "[ROBUST] Failed to start"
+        do_log "[ROBUST] Has problems with starting"
+        exit 1
+    else
+        echo "[ROBUST] Started"
+    fi
+}
+
+do_kill() {
+    if is_running; then
+        PID="${OPENSIM_DIR}/var/Robust.exe.pid"
+        if [ -f ${PID} ]; then
+            kill -9 `cat ${PID}`
+            rm ${PID}
+	    echo "[ROBUST] Killed"
+        fi
+    fi
+}
+
+do_stop() {
+    if is_running; then
+        echo -n "[ROBUST] Stopping"
+        ${SCREEN} -r ROBUST -X exec .\!\! echo "\nquit"
+        STOPTIME=0
+        while :
+        do
+            sleep 5
+            STOPTIME=$((STOPTIME + 5))
+            echo -n "."
+            if ! is_running; then
+                echo " stopped"
+                return 0
+            elif [ ${STOPTIME} -ge 120 ]; then
+                echo " killing"
+                do_kill
+                do_log "[ROBUST] Took a long time to shutdown"
+                return 1
+            fi
+        done
+    else
+        echo "[ROBUST] Not running"
+        exit 1
+    fi
+}
+
+check_user
+case "$1" in
+    start)
+        do_start
+        ;; 
+    stop)
+        do_stop
+        ;;
+    kill)
+        do_kill
+        ;;
+    restart)
+        do_stop
+        # Take time for the pid file to clear
+        sleep 1
+        do_start
+        ;;
+    status)
+        get_status
+        ;;
+    *)
+        show_help
+        exit 1
+        ;;
+esac
+
