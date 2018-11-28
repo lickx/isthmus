@@ -76,6 +76,11 @@ do_start() {
     #    mv -f "${OPENSIM_DIR}/var/log/${SIM}.log" "${OPENSIM_DIR}/var/log/${SIM}.old.log"
     #fi
 
+    if [ ! -r "${OPENSIM_DIR}/etc/robust.ini" ]; then
+        echo "[ROBUST] No rubust.ini"
+        return 1;
+    fi
+
     # Second Life time is the US/Pacific-New timezone
     export TZ="US/Pacific-New"
     export LANG=C
