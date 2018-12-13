@@ -17,7 +17,7 @@ do_log() {
 }
 
 clear_scripts() {
-    if [ -f "${SIMAUTO_LOCK}" ]; then
+    if [ ! -f "${SIMAUTO_LOCK}" ]; then
         echo "Error: sims are running"
         exit 1
     fi
