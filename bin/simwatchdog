@@ -23,15 +23,27 @@ if [ -f ${SIMAUTO_LOCK} ]; then
     exit 0
 fi
 
-for simulator in ${OPENSIM_DIR}/etc/regions/*.ini; do
+for simulator in ${OPENSIM_DIR}/etc/regions/*; do
     SIM=`basename ${simulator} .ini`
     SCREENRET=`${SCREEN} -ls ${SIM}`
     if [[ ${SCREENRET} == "No Sockets"* ]]; then
-        do_log "[${SIM}] Not online, restarting"
-        ${SIMCTL} kill ${SIM}
-        sleep 10
-        ${SIMCTL} start ${SIM}
-        sleep ${START_DELAY}
+        if [ -d "${simulator}" ]; then
+            # Multiple regions within sim intance
+            if [ -x "${simulator}" ]; then
+                # -x, so should be processed
+	        do_log "[${SIM}] Not online, restarting"
+                ${SIMCTL} kill ${SIM}
+                sleep 10
+                ${SIMCTL} start ${SIM}
+            fi
+        elif [ -r "${simulator}" ]; then
+            # Single region instance, readable so should be processed
+            do_log "[${SIM}] Not online, restarting"
+            ${SIMCTL} kill ${SIM}
+            sleep 10
+            ${SIMCTL} start ${SIM}
+            sleep ${START_DELAY}
+        fi
     #else
     #    do_log "[${SIM}] is running OK"
     fi
