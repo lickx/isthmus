@@ -32,11 +32,11 @@ do_log "Starting backup"
 
 ERRORS=0
 
-for simulator in ${OPENSIM_DIR}/etc/regions/*.ini; do
+for simulator in ${OPENSIM_DIR}/etc/regions/*; do
     SIM=`basename ${simulator} .ini`
     SCREENRET=`${SCREEN} -ls ${SIM}`
     if [[ ${SCREENRET} == "No Sockets"* ]]; then
-        do_log "${SIM} not online; skipping backup for simulator"
+        do_log "${SIM} not online; backup skipped for simulator"
     else
         ${SIMCTL} saveoar "${SIM}" "${OAR_PATH}" >> "${LOGFILE}"
         if [ $? -ne 0 ]; then
