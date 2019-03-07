@@ -53,7 +53,9 @@ is_sim() {
     if [ -r "${REGIONS_DIR}/$1.ini" ]; then
         return 0
     elif [ -d "${REGIONS_DIR}/$1" ]; then
-        return 0
+        if [ -x "${REGIONS_DIR}/$1" ]; then
+            return 0
+        fi
     else
         return 1
     fi
@@ -125,7 +127,7 @@ setup() {
         mkdir -p "${OPENSIM_DIR}/var/pid"
         PID="${OPENSIM_DIR}/var/pid/${SIM}.pid"
     else
-        echo "Sorry, I've never heard of sim ${SIM}.  Exiting."
+        echo "[${SIM}] Does not exist or is not enabled. Exiting."
         exit 1;
     fi
 
@@ -401,7 +403,7 @@ case "$1" in
     restart)
         do_stop $2
         # Take time for the pid file to clear
-        sleep 1
+        sleep 3
         do_start $2
         ;;
     status)

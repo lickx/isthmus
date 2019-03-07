@@ -58,8 +58,15 @@ do_start() {
     for simulator in ${OPENSIM_DIR}/etc/regions/*; do
         simname=`basename ${simulator} .ini`
         if ! is_running ${simname}; then
-            ${SIMCTL} start ${simname}
-            sleep ${START_DELAY}
+            if [ -d "${simulator}" ]; then
+                if [ -x "${simulator}" ]; then
+                    ${SIMCTL} start ${simname}
+                    sleep ${START_DELAY}
+                fi
+            elif [ -r "${simulator}" ]; then
+                ${SIMCTL} start ${simname}
+                sleep ${START_DELAY}
+            fi
         fi
     done;
     echo "All sims have started."
@@ -116,8 +123,15 @@ do_restart() {
     # Phase 3: Start
     for simulator in ${OPENSIM_DIR}/etc/regions/*; do
         simname=`basename ${simulator} .ini`
-        ${SIMCTL} start ${simname}
-        sleep ${START_DELAY}
+        if [ -d "${simulator}" ]; then
+            if [ -x "${simulator}" ]; then
+                ${SIMCTL} start ${simname}
+                sleep ${START_DELAY}
+            fi
+        elif [ -r "${simulator}" ]; then
+            ${SIMCTL} start ${simname}
+            sleep ${START_DELAY}
+        fi
     done;
     echo "All sims have been started."
 }
