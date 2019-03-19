@@ -1,0 +1,90 @@
+#!/bin/bash
+export OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
+REGIONS_DIR="${OPENSIM_DIR}/etc/regions"
+
+# Install isthmus config file if not already there, and then source it
+if [ ! -f "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
+    cp "${OPENSIM_DIR}/share/common/etc/isthmus.conf" "${OPENSIM_DIR}/etc"
+fi
+source "${OPENSIM_DIR}/etc/isthmus.conf"
+
+is_enabled() {
+    if [ -f "${REGIONS_DIR}/$1.ini" ] && [ -r "${REGIONS_DIR}/$1.ini" ]; then
+        return 0
+    elif [ -d "${REGIONS_DIR}/$1" ] && [ -x "${REGIONS_DIR}/$1" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+is_running() {
+    if [ ! $1 ]; then
+        show_help
+        exit 1
+    else
+        SIM=$1
+    fi
+
+    SCREENRET=`${SCREEN} -ls ${SIM}`
+    if [[ ${SCREENRET} == "No Sockets"* ]]; then
+        return 1
+    else
+        return 0
+    fi
+}
+
+is_cluster() {
+    if [ -f "${REGIONS_DIR}/$1.ini" ] && [ -r "${REGIONS_DIR}/$1.ini" ]; then
+        return 1
+    elif [ -d "${REGIONS_DIR}/$1" ] && [ -x "${REGIONS_DIR}/$1" ]; then
+        return 0
+    fi
+}
+
+if [ $# -eq 0 ]; then
+    echo No region specified
+    exit 1
+fi
+
+REGION=$1
+
+if [ -f "${REGIONS_DIR}/$1.ini" ]; then
+    SIM=${REGION}
+else
+    for simulator in ${OPENSIM_DIR}/etc/regions/* ; do
+        SIM=`basename ${simulator} .ini`
+        if [ -r "${REGIONS_DIR}/${SIM}/${REGION}.ini" ]; then
+            break;
+        else
+            SIM=""
+        fi
+    done
+fi
+
+if [ "${SIM}" == "" ]; then
+    echo "Region ${REGION} not found."
+    exit 1
+fi
+
+echo "Region ${REGION} is in simulator ${SIM}"
+
+if ! is_running ${SIM} ; then
+    echo "Can't delete ${REGION} while sim ${SIM} is offline"
+fi
+
+echo "Removing region"
+${SCREEN} -r ${SIM} -X exec .\!\! echo "change region root"
+${SCREEN} -r ${SIM} -X exec .\!\! echo "delete-region \"${REGION}\""
+sleep 5
+
+if is_cluster ${SIM} ; then
+    rm "${REGIONS_DIR}/${SIM}/${REGION}.ini"
+else
+    echo "Removing simulator"
+    ./simctl stop ${SIM}
+    sleep 5
+    rm "${REGIONS_DIR}/${REGION}.ini"
+fi
+
+echo "Done"
