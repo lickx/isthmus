@@ -33,7 +33,7 @@ show_help() {
     echo "restart <simname>   Issues a stop, then start command"
     echo "status <simname>    Returns online status"
     echo "backup <simname>    Ensure database is saved"
-    echo "saveoar <simname>    Saves regions in sim to an .oar bundle"
+    echo "saveoar <simname>   Saves regions in sim to an .oar bundle"
     echo "list                List available sims"
 }
 
@@ -49,13 +49,11 @@ check_user() {
     fi
 }
 
-is_sim() {
-    if [ -r "${REGIONS_DIR}/$1.ini" ]; then
+is_enabled() {
+    if [ -f "${REGIONS_DIR}/$1.ini" ] && [ -r "${REGIONS_DIR}/$1.ini" ]; then
         return 0
-    elif [ -d "${REGIONS_DIR}/$1" ]; then
-        if [ -x "${REGIONS_DIR}/$1" ]; then
-            return 0
-        fi
+    elif [ -d "${REGIONS_DIR}/$1" ] && [ -x "${REGIONS_DIR}/$1" ]; then
+        return 0
     else
         return 1
     fi
@@ -85,7 +83,7 @@ get_status() {
         SIM=$1
     fi
 
-    if is_sim ${SIM}; then
+    if is_enabled ${SIM}; then
         if is_running ${SIM}; then
             echo "[${SIM}] is online"
             exit 1
@@ -94,7 +92,7 @@ get_status() {
             exit 0 
         fi
     else
-        echo "[${SIM}] does not exist"
+        echo "[${SIM}] is disabled"
         exit -1
     fi
 }
@@ -120,7 +118,7 @@ setup() {
         SIM=$1
     fi
 
-    if is_sim ${SIM}; then
+    if is_enabled ${SIM}; then
         # SIM_LOG_FILE is used by log4net (OpenSim.exe.config) for sim logs
         mkdir -p "${OPENSIM_DIR}/var/log"
         export SIM_LOG_FILE="${OPENSIM_DIR}/var/log/${SIM}.log"
@@ -144,6 +142,11 @@ do_start() {
         exit 1
     else
         SIM=$1
+    fi
+
+    if ! is_enabled ${SIM}; then
+        echo "[${SIM}] Not enabled"
+        exit 1
     fi
 
     if is_running ${SIM}; then
@@ -299,11 +302,10 @@ do_audit() {
         SIM=$1
     fi
 
-    if is_sim ${SIM}; then
+    if is_enabled ${SIM}; then
         if [ -f "${OPENSIM_DIR}/var/ports/${SIM}.port" ]; then
            tcp_port=`cat ${OPENSIM_DIR}/var/ports/${SIM}.port`
            echo -e "TCP\t${tcp_port}\t${SIM}"
-
         else
            echo -e "TCP\t -- \t${SIM}"
         fi
@@ -321,7 +323,6 @@ do_audit() {
             REGIONPORT=`${GREP} InternalPort ${INIFILE} | ${GREP} -ho '[0-9]*'`
             echo -e "UDP\t${REGIONPORT}\t${SIM} - ${REGION}"
          fi
-
     fi
 }
 

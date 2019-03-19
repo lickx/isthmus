@@ -45,9 +45,9 @@ is_running() {
 is_enabled() {
     SIM=$1
 
-    if [ -r "$OPENSIM_DIR/etc/regions/${SIM}.ini" ]; then
+    if [ -f "${OPENSIM_DIR}/etc/regions/${SIM}.ini" ] && [ -r "${OPENSIM_DIR}/etc/regions/${SIM}.ini" ]; then
         return 0
-    elif [ -d "$OPENSIM_DIR/etc/regions/${SIM}" ]; then
+    elif [ -d "${OPENSIM_DIR}/etc/regions/${SIM}" ] && [ -x "${OPENSIM_DIR}/etc/regions/${SIM}" ]; then
         return 0
     else
         return 1
@@ -57,16 +57,9 @@ is_enabled() {
 do_start() {
     for simulator in ${OPENSIM_DIR}/etc/regions/*; do
         simname=`basename ${simulator} .ini`
-        if ! is_running ${simname}; then
-            if [ -d "${simulator}" ]; then
-                if [ -x "${simulator}" ]; then
-                    ${SIMCTL} start ${simname}
-                    sleep ${START_DELAY}
-                fi
-            elif [ -r "${simulator}" ]; then
-                ${SIMCTL} start ${simname}
-                sleep ${START_DELAY}
-            fi
+        if is_enabled ${simname} && ! is_running ${simname}; then
+            ${SIMCTL} start ${simname}
+            sleep ${START_DELAY}
         fi
     done;
     echo "All sims have started."
@@ -90,7 +83,7 @@ do_stop() {
         simname=`basename ${simulator} .ini`
         if is_running ${simname}; then
             ${SIMCTL} stop ${simname}
-        else
+        elif is_enabled ${simname}; then
             echo "[${simname}] Already offline"
         fi
     done;
@@ -123,12 +116,7 @@ do_restart() {
     # Phase 3: Start
     for simulator in ${OPENSIM_DIR}/etc/regions/*; do
         simname=`basename ${simulator} .ini`
-        if [ -d "${simulator}" ]; then
-            if [ -x "${simulator}" ]; then
-                ${SIMCTL} start ${simname}
-                sleep ${START_DELAY}
-            fi
-        elif [ -r "${simulator}" ]; then
+        if is_enabled ${simname}; then
             ${SIMCTL} start ${simname}
             sleep ${START_DELAY}
         fi
@@ -149,9 +137,11 @@ do_reload() {
             # Stop
             ${SIMCTL} stop ${simname}
         fi
-        # Start
-        ${SIMCTL} start ${simname}
-        sleep ${START_DELAY}
+        # Start if simulator enabled
+        if is_enabled ${simname}; then
+            ${SIMCTL} start ${simname}
+            sleep ${START_DELAY}
+        fi
     done;
     echo "All sims have been reloaded."
 }
