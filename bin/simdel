@@ -80,6 +80,12 @@ sleep 5
 
 if is_cluster ${SIM} ; then
     rm "${REGIONS_DIR}/${SIM}/${REGION}.ini"
+    if [ ! -n "$(ls -A "${REGIONS_DIR}/${SIM}")" ]; then
+        echo "No more regions in sim ${SIM}, stopping and removing sim.."
+        ./simctl stop ${SIM}
+        sleep 5
+        rmdir "${REGIONS_DIR}/${SIM}"
+    fi
 else
     echo "Removing simulator"
     ./simctl stop ${SIM}
