@@ -26,11 +26,11 @@ is_running() {
         SIM=$1
     fi
 
-    SCREENRET=`${SCREEN} -ls ${SIM}`
-    if [[ ${SCREENRET} == "No Sockets"* ]]; then
-        return 1
+    if [ -f "${PIDFILE}" ]; then
+        SCREENPID=`${SCREEN} -ls ${SIM} | grep -P "${SIM}\t" | cut -f1 -d'.' | sed 's/W//g'`
+        return $?
     else
-        return 0
+        return 1
     fi
 }
 
@@ -73,23 +73,22 @@ if ! is_running ${SIM} ; then
     echo "Can't delete ${REGION} while sim ${SIM} is offline"
 fi
 
-echo "Removing region"
-${SCREEN} -r ${SIM} -X exec .\!\! echo "change region root"
-${SCREEN} -r ${SIM} -X exec .\!\! echo "delete-region \"${REGION}\""
-sleep 5
+echo -n "Removing region..."
+${SCREEN} -r ${SCREENPID} -X exec .\!\! echo "change region root"
+${SCREEN} -r ${SCREENPID} -X exec .\!\! echo "delete-region \"${REGION}\""
+sleep 30
+echo "done"
 
 if is_cluster ${SIM} ; then
     rm "${REGIONS_DIR}/${SIM}/${REGION}.ini"
     if [ ! -n "$(ls -A "${REGIONS_DIR}/${SIM}")" ]; then
         echo "No more regions in sim ${SIM}, stopping and removing sim.."
         ./simctl stop ${SIM}
-        sleep 5
         rmdir "${REGIONS_DIR}/${SIM}"
     fi
 else
     echo "Removing simulator"
     ./simctl stop ${SIM}
-    sleep 5
     rm "${REGIONS_DIR}/${REGION}.ini"
 fi
 

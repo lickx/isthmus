@@ -25,8 +25,8 @@ fi
 
 for simulator in ${OPENSIM_DIR}/etc/regions/*; do
     SIM=`basename ${simulator} .ini`
-    SCREENRET=`${SCREEN} -ls ${SIM}`
-    if [[ ${SCREENRET} == "No Sockets"* ]]; then
+    SCREENRET=`${SCREEN} -ls ${SIM} | grep -P "${SIM}\t"`
+    if [ $? -ne 0 ]; then
         if [ -d "${simulator}" ] && [ -x "${simulator}" ]; then
             # Multiple regions within sim intance
 	    do_log "[${SIM}] Not online, restarting"
