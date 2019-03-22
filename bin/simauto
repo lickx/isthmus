@@ -34,11 +34,11 @@ show_help() {
 is_running() {
     SIM=$1
 
-    SCREENRET=`${SCREEN} -ls ${SIM}`
-    if [[ ${SCREENRET} == "No Sockets"* ]]; then
-        return 1
-    else
+    SCREENPID=`${SCREEN} -ls ${SIM} | grep -P "${SIM}\t" | cut -f1 -d'.' | sed 's/W//g'`
+    if [ "${SCREENPID}" != "" ]; then
         return 0
+    else
+        return 1
     fi
 }
 

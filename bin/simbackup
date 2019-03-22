@@ -35,7 +35,7 @@ ERRORS=0
 for simulator in ${OPENSIM_DIR}/etc/regions/*; do
     SIM=`basename ${simulator} .ini`
     SCREENPID=`${SCREEN} -ls ${SIM} | grep -P "${SIM}\t" | cut -f1 -d'.' | sed 's/W//g'`
-    if [ $? -ne 0 ]; then
+    if [ "${SCREENPID}" == "" ]; then
         do_log "${SIM} not online; backup skipped for simulator"
     else
         ${SIMCTL} saveoar "${SIM}" "${OAR_PATH}" >> "${LOGFILE}"

@@ -27,7 +27,11 @@ is_running() {
     fi
 
     SCREENPID=`${SCREEN} -ls ${SIM} | grep -P "${SIM}\t" | cut -f1 -d'.' | sed 's/W//g'`
-    return $?
+    if [ "${SCREENPID}" != "" ]; then
+        return 0;
+    else
+        return 1;
+    fi
 }
 
 is_cluster() {

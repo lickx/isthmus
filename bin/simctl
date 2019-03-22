@@ -67,9 +67,9 @@ is_running() {
         SIM=$1
     fi
 
-    if [ -f "${PIDFILE}" ]; then
-        SCREENPID=`${SCREEN} -ls ${SIM} | grep -P "${SIM}\t" | cut -f1 -d'.' | sed 's/W//g'`
-        return $?
+    SCREENPID=`${SCREEN} -ls ${SIM} | grep -P "${SIM}\t" | cut -f1 -d'.' | sed 's/W//g'`
+    if [ "${SCREENPID}" != "" ]; then
+        return 0
     else
         return 1
     fi
