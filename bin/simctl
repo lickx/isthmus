@@ -206,7 +206,7 @@ do_kill() {
 
     if is_running ${SIM}; then
         # Send backup command and wait 1 minute
-        ${SCREEN} -r ${SCREENPID} -X exec .\!\! echo "\nbackup"
+        ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nbackup"
         sleep 60
         if [ -f ${PIDFILE} ]; then
             kill -9 `cat ${PIDFILE}`
@@ -232,7 +232,7 @@ do_stop() {
 
     if is_running ${SIM}; then
         echo -n "[${SIM}] Stopping"
-        ${SCREEN} -r ${SCREENPID} -X exec .\!\! echo "\nquit"
+        ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nquit"
         STOPTIME=0
         while :
         do
@@ -270,7 +270,7 @@ do_alert() {
     check_user
 
     if is_running ${SIM}; then
-        ${SCREEN} -r ${SCREENPID} -X exec .\!\! echo "\nalert $2"
+        ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nalert $2"
     else
         echo "${SIM} not running"
     fi
@@ -288,7 +288,7 @@ do_backup() {
     check_user
 
     if is_running ${SIM}; then
-        ${SCREEN} -r ${SCREENPID} -X exec .\!\! echo "backup"
+        ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "backup"
     else
         echo "${SIM} not running"
     fi
@@ -351,7 +351,7 @@ do_saveoar() {
 
     if is_running ${SIM}; then
         # Alert inworld about temporary degraded performance"
-        ${SCREEN} -r ${SCREENPID} -X exec .\!\! echo "\nalert \"SYSTEM NOTICE: Region backup in progress. Performance might be a bit slower for a few minutes..\""
+        ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nalert \"SYSTEM NOTICE: Region backup in progress. Performance might be a bit slower for a few minutes..\""
         sleep 3
 
         if [ -d "${REGIONS_DIR}/${SIM}" ]; then
@@ -361,12 +361,12 @@ do_saveoar() {
                 REGION="${SECTION:1: -1}"
 
                 # Change region first
-                ${SCREEN} -r ${SCREENPID} -X exec .\!\! echo "change region \"${REGION}\""
+                ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "change region \"${REGION}\""
                 sleep 3
 
                 # Backup the region
                 OAR_FILE="${LOCAL_OAR_PATH}/${REGION}-`date -I'date'`.oar"
-                ${SCREEN} -r ${SCREENPID} -X exec .\!\! echo "save oar ${OAR_OPTIONS} \"${OAR_FILE}\""
+                ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "save oar ${OAR_OPTIONS} \"${OAR_FILE}\""
 
                 # Pause a bit. TODO: check whether oar file is not open
                 # anymore and only then continue (lsof)
@@ -375,7 +375,7 @@ do_saveoar() {
         else
             # Sim has just 1 region
             OAR_FILE="${LOCAL_OAR_PATH}/${SIM}-`date -I'date'`.oar"
-            ${SCREEN} -r ${SCREENPID} -X exec .\!\! echo "\nsave oar ${OAR_OPTIONS} \"${OAR_FILE}\""
+            ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nsave oar ${OAR_OPTIONS} \"${OAR_FILE}\""
             sleep 120
         fi
     fi

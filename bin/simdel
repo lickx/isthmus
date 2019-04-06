@@ -74,8 +74,8 @@ if ! is_running ${SIM} ; then
 fi
 
 echo -n "Removing region..."
-${SCREEN} -r ${SCREENPID} -X exec .\!\! echo "change region root"
-${SCREEN} -r ${SCREENPID} -X exec .\!\! echo "delete-region \"${REGION}\""
+${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "change region root"
+${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "delete-region \"${REGION}\""
 sleep 30
 echo "done"
 
