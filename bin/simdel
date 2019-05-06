@@ -1,22 +1,12 @@
 #!/bin/bash
 export OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
-REGIONS_DIR="${OPENSIM_DIR}/etc/regions"
+REGIONS_DIR="${OPENSIM_DIR}/etc/sims-enabled"
 
 # Install isthmus config file if not already there, and then source it
 if [ ! -f "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
     cp "${OPENSIM_DIR}/share/common/etc/isthmus.conf" "${OPENSIM_DIR}/etc"
 fi
 source "${OPENSIM_DIR}/etc/isthmus.conf"
-
-is_enabled() {
-    if [ -f "${REGIONS_DIR}/$1.ini" ] && [ -r "${REGIONS_DIR}/$1.ini" ]; then
-        return 0
-    elif [ -d "${REGIONS_DIR}/$1" ] && [ -x "${REGIONS_DIR}/$1" ]; then
-        return 0
-    else
-        return 1
-    fi
-}
 
 is_running() {
     if [ ! $1 ]; then
@@ -34,43 +24,26 @@ is_running() {
     fi
 }
 
-is_cluster() {
-    if [ -f "${REGIONS_DIR}/$1.ini" ] && [ -r "${REGIONS_DIR}/$1.ini" ]; then
-        return 1
-    elif [ -d "${REGIONS_DIR}/$1" ] && [ -x "${REGIONS_DIR}/$1" ]; then
-        return 0
-    fi
-}
-
 if [ $# -eq 0 ]; then
-    echo No region specified
+    echo No sim specified
     exit 1
 fi
 
-REGION=$1
+SIM=$1
 
-if [ -f "${REGIONS_DIR}/$1.ini" ]; then
-    SIM=${REGION}
+if [ -r "${REGIONS_DIR}/${SIM}.ini" ]; then
+    INIFILE="${REGIONS_DIR}/${SIM}.ini"
 else
-    for simulator in ${OPENSIM_DIR}/etc/regions/* ; do
-        SIM=`basename ${simulator} .ini`
-        if [ -r "${REGIONS_DIR}/${SIM}/${REGION}.ini" ]; then
-            break;
-        else
-            SIM=""
-        fi
-    done
-fi
-
-if [ "${SIM}" == "" ]; then
-    echo "Region ${REGION} not found."
+    echo "${SIM}: No such sim or not enabled"
     exit 1
 fi
 
-echo "Region ${REGION} is in simulator ${SIM}"
+SECTION=`sed -r '/\[.*?\]/ q' ${INIFILE}`
+REGION="${SECTION:1: -1}"
 
 if ! is_running ${SIM} ; then
     echo "Can't delete ${REGION} while sim ${SIM} is offline"
+    exit 1
 fi
 
 echo -n "Removing region..."
@@ -79,17 +52,8 @@ ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "delete-region \"${REGION}\"
 sleep 30
 echo "done"
 
-if is_cluster ${SIM} ; then
-    rm "${REGIONS_DIR}/${SIM}/${REGION}.ini"
-    if [ ! -n "$(ls -A "${REGIONS_DIR}/${SIM}")" ]; then
-        echo "No more regions in sim ${SIM}, stopping and removing sim.."
-        ./simctl stop ${SIM}
-        rmdir "${REGIONS_DIR}/${SIM}"
-    fi
-else
-    echo "Removing simulator"
-    ./simctl stop ${SIM}
-    rm "${REGIONS_DIR}/${REGION}.ini"
-fi
+echo "Removing simulator"
+./simctl stop ${SIM}
+rm "${INIFILE}"
 
 echo "Done"

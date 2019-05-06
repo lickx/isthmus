@@ -7,7 +7,7 @@
 
 # Get the root folder of the isthmus tree
 export OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
-REGIONS_DIR="${OPENSIM_DIR}/etc/regions"
+REGIONS_DIR="${OPENSIM_DIR}/etc/sims-enabled"
 OAR_PATH="${OPENSIM_DIR}/var/backup"
 OAR_OPTIONS=
 LOGFILE="${OPENSIM_DIR}/var/log/isthmus.log"
@@ -33,7 +33,7 @@ show_help() {
     echo "restart <simname>   Issues a stop, then start command"
     echo "status <simname>    Returns online status"
     echo "backup <simname>    Ensure database is saved"
-    echo "saveoar <simname>   Saves regions in sim to an .oar bundle"
+    echo "saveoar <simname>   Saves region contents to an .oar archive"
     echo "list                List available sims"
 }
 
@@ -46,16 +46,6 @@ check_user() {
     if [ `whoami` == 'root' ]; then
         echo "Refusing to run as root"
         exit 1
-    fi
-}
-
-is_enabled() {
-    if [ -f "${REGIONS_DIR}/$1.ini" ] && [ -r "${REGIONS_DIR}/$1.ini" ]; then
-        return 0
-    elif [ -d "${REGIONS_DIR}/$1" ] && [ -x "${REGIONS_DIR}/$1" ]; then
-        return 0
-    else
-        return 1
     fi
 }
 
@@ -83,17 +73,12 @@ get_status() {
         SIM=$1
     fi
 
-    if is_enabled ${SIM}; then
-        if is_running ${SIM}; then
-            echo "[${SIM}] is online"
-            exit 1
-        else
-            echo "[${SIM}] is offline"
-            exit 0 
-        fi
+    if is_running ${SIM}; then
+        echo "[${SIM}] is online"
+        exit 1
     else
-        echo "[${SIM}] is disabled"
-        exit -1
+        echo "[${SIM}] is offline"
+        exit 0 
     fi
 }
 
@@ -118,16 +103,11 @@ setup() {
         SIM=$1
     fi
 
-    if is_enabled ${SIM}; then
-        # SIM_LOG_FILE is used by log4net (OpenSim.exe.config) for sim logs
-        mkdir -p "${OPENSIM_DIR}/var/log"
-        export SIM_LOG_FILE="${OPENSIM_DIR}/var/log/${SIM}.log"
-        mkdir -p "${OPENSIM_DIR}/var/pid"
-        PIDFILE="${OPENSIM_DIR}/var/pid/${SIM}.pid"
-    else
-        echo "[${SIM}] Does not exist or is not enabled. Exiting."
-        exit 1;
-    fi
+    # SIM_LOG_FILE is used by log4net (OpenSim.exe.config) for sim logs
+    mkdir -p "${OPENSIM_DIR}/var/log"
+    export SIM_LOG_FILE="${OPENSIM_DIR}/var/log/${SIM}.log"
+    mkdir -p "${OPENSIM_DIR}/var/pid"
+    PIDFILE="${OPENSIM_DIR}/var/pid/${SIM}.pid"
 
     if [ -f "${OPENSIM_DIR}/var/ports/${SIM}.port" ]; then
         PORT_SIM=`cat ${OPENSIM_DIR}/var/ports/${SIM}.port`
@@ -144,11 +124,6 @@ do_start() {
         SIM=$1
     fi
 
-    if ! is_enabled ${SIM}; then
-        echo "[${SIM}] Not enabled"
-        exit 1
-    fi
-
     if is_running ${SIM}; then
         echo "[${SIM}] Already started"
         exit 1
@@ -162,25 +137,19 @@ do_start() {
         mv -f "${OPENSIM_DIR}/var/log/${SIM}.log" "${OPENSIM_DIR}/var/log/${SIM}.old.log"
     fi
 
+    # Change UDP region port to match TCP sim port
+    sed -i -e "s/InternalPort.*/InternalPort = ${PORT_SIM}/" "${REGIONS_DIR}/${SIM}.ini"
+
     # Second Life time is the US/Pacific-New timezone
     export TZ="US/Pacific-New"
     export LANG=C
     ulimit -n 4096
-    if [ -f "${REGIONS_DIR}/${SIM}.ini" ]; then
-        cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SIM} -d -m -l \
-            ${MONO} --desktop OpenSim.exe \
-            -inifile="${OPENSIM_DIR}/etc/opensim.ini" \
-            -http_listener_port=${PORT_SIM} \
-            -PIDFile="${PIDFILE}" \
-            -regionload_regionfile="${REGIONS_DIR}/${SIM}.ini"
-    elif [ -d "${REGIONS_DIR}/${SIM}" ]; then
-        cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SIM} -d -m -l \
-            ${MONO} --desktop OpenSim.exe \
-            -inifile="${OPENSIM_DIR}/etc/opensim.ini" \
-            -http_listener_port=${PORT_SIM} \
-            -PIDFile="${PIDFILE}" \
-            -regionload_regionsdir="${REGIONS_DIR}/${SIM}"
-    fi
+    cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SIM} -d -m -l \
+        ${MONO} --desktop OpenSim.exe \
+        -inifile="${OPENSIM_DIR}/etc/opensim.ini" \
+        -http_listener_port=${PORT_SIM} \
+        -PIDFile="${PIDFILE}" \
+        -regionload_regionfile="${REGIONS_DIR}/${SIM}.ini"
 
     sleep 3
     if ! is_running ${SIM}; then
@@ -302,33 +271,27 @@ do_audit() {
         SIM=$1
     fi
 
-    if is_enabled ${SIM}; then
-        if [ -f "${OPENSIM_DIR}/var/ports/${SIM}.port" ]; then
-           tcp_port=`cat ${OPENSIM_DIR}/var/ports/${SIM}.port`
-           echo -e "TCP\t${tcp_port}\t${SIM}"
-        else
-           echo -e "TCP\t -- \t${SIM}"
-        fi
-        if [ -d "${REGIONS_DIR}/${SIM}" ]; then
-            for INIFILE in ${REGIONS_DIR}/${SIM}/*.ini ; do
-                SECTION=`head -n 1 ${INIFILE}`
-                REGION="${SECTION:1: -1}"
-                REGIONPORT=`${GREP} InternalPort ${INIFILE} | ${GREP} -ho '[0-9]*'`
-                echo -e "UDP\t${REGIONPORT}\t${SIM} - ${REGION}"
-            done
-         else
-            INIFILE=${REGIONS_DIR}/${SIM}.ini
-            SECTION=`head -n 1 ${INIFILE}`
-            REGION="${SECTION:1: -1}"
-            REGIONPORT=`${GREP} InternalPort ${INIFILE} | ${GREP} -ho '[0-9]*'`
-            echo -e "UDP\t${REGIONPORT}\t${SIM} - ${REGION}"
-         fi
+    if [ ! -r ${REGIONS_DIR}/${SIM}.ini ]; then
+        echo "${SIM}: No such sim or not enabled"
+        exit 1
     fi
+
+    if [ -f "${OPENSIM_DIR}/var/ports/${SIM}.port" ]; then
+       tcp_port=`cat ${OPENSIM_DIR}/var/ports/${SIM}.port`
+       echo -e "TCP\t${tcp_port}\t${SIM}"
+    else
+       echo -e "TCP\t -- \t${SIM}"
+    fi
+    INIFILE=${REGIONS_DIR}/${SIM}.ini
+    SECTION=`sed -r '/\[.*?\]/ q' ${INIFILE}`
+    REGION="${SECTION:1: -1}"
+    REGIONPORT=`${GREP} InternalPort ${INIFILE} | ${GREP} -ho '[0-9]*'`
+    echo -e "UDP\t${REGIONPORT}\t${SIM} - ${REGION}"
 }
 
 
 # do_saveoar simname (oarpath)
-# Saves oars for all regions in simulator
+# Saves oars for region in simulator
 # If no oarpath specified, use default var/backup/yyyy-mm-dd
 do_saveoar() {
     if [ ! $1 ]; then
@@ -354,35 +317,14 @@ do_saveoar() {
         ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nalert \"SYSTEM NOTICE: Region backup in progress. Performance might be a bit slower for a few minutes..\""
         sleep 3
 
-        if [ -d "${REGIONS_DIR}/${SIM}" ]; then
-            # Multi region sim, requires special handling
-            for INIFILE in ${REGIONS_DIR}/${SIM}/*.ini ; do
-                SECTION=`head -n 1 ${INIFILE}`
-                REGION="${SECTION:1: -1}"
-
-                # Change region first
-                ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "change region \"${REGION}\""
-                sleep 3
-
-                # Backup the region
-                OAR_FILE="${LOCAL_OAR_PATH}/${REGION}-`date -I'date'`.oar"
-                ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "save oar ${OAR_OPTIONS} \"${OAR_FILE}\""
-
-                # Pause a bit. TODO: check whether oar file is not open
-                # anymore and only then continue (lsof)
-                sleep 120
-            done
-        else
-            # Sim has just 1 region
-            OAR_FILE="${LOCAL_OAR_PATH}/${SIM}-`date -I'date'`.oar"
-            ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nsave oar ${OAR_OPTIONS} \"${OAR_FILE}\""
-            sleep 120
-        fi
+        OAR_FILE="${LOCAL_OAR_PATH}/${SIM}-`date -I'date'`.oar"
+        ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nsave oar ${OAR_OPTIONS} \"${OAR_FILE}\""
+        sleep 120
     fi
 }
 
 do_list() {
-    for simulator in ${OPENSIM_DIR}/etc/regions/*; do
+    for simulator in ${REGIONS_DIR}/*; do
         simname=`basename ${simulator} .ini`
         echo "${simname}"
     done;

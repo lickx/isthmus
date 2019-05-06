@@ -5,6 +5,7 @@ if [ $# -eq 0 ]; then
 fi
 
 OPENSIM_DIR=$1
+REGIONS_DIR="${OPENSIM_DIR}/etc/sims-enabled"
 SIMCTL="${OPENSIM_DIR}/bin/simctl"
 LOGFILE="${OPENSIM_DIR}/var/log/isthmus.log"
 SCREEN="/usr/bin/screen"
@@ -32,7 +33,7 @@ do_log "Starting backup"
 
 ERRORS=0
 
-for simulator in ${OPENSIM_DIR}/etc/regions/*; do
+for simulator in ${REGIONS_DIR}/*; do
     SIM=`basename ${simulator} .ini`
     SCREENPID=`${SCREEN} -ls ${SIM} | grep -P "${SIM}\t" | cut -f1 -d'.' | sed 's/W//g'`
     if [ "${SCREENPID}" == "" ]; then

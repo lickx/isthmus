@@ -32,8 +32,9 @@ if [ "${REPLY}" != "" ]; then
     region_uuid=${REPLY}
 fi
 
-mkdir -p "${OPENSIM_DIR}/etc/regions"
-regions_ini="${OPENSIM_DIR}/etc/regions/${region_name//[[:space:]]/}.ini"
+mkdir -p "${OPENSIM_DIR}/etc/sims-available"
+mkdir -p "${OPENSIM_DIR}/etc/sims-enabled"
+regions_ini="${OPENSIM_DIR}/etc/sims-available/${region_name//[[:space:]]/}.ini"
 echo "Populating ${regions_ini}..."
 echo "[${region_name}]" > "${regions_ini}"
 echo "RegionUUID = ${region_uuid}" >> "${regions_ini}"
@@ -45,5 +46,9 @@ echo "ExternalHostName = SYSTEMIP" >> "${regions_ini}"
 #echo "MaxPrims = 20000"            >> "${regions_ini}"
 #echo "MaxAgents = 10"              >> "${regions_ini}"
 #echo "RegionType = \"Mainland\""   >> "${regions_ini}"
+
+echo "Enabling sim.."
+cd "${OPENSIM_DIR}/etc/sims-enabled"
+ln -s "../sims-available/${region_name//[[:space:]]/}.ini"
 
 echo "Done"

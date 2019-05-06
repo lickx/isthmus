@@ -21,6 +21,8 @@ if [ ! -d "${OPENSIM_DIR}/share/grids/${GRID}" ]; then
 fi
 
 mkdir -p "${OPENSIM_DIR}/etc"
+mkdir -p "${OPENSIM_DIR}/etc/sims-available"
+mkdir -p "${OPENSIM_DIR}/etc/sims-enabled"
 mkdir -p "${OPENSIM_DIR}/runtime/bin"
 
 echo "Installing files needed for ${GRID}"
