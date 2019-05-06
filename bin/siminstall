@@ -16,6 +16,6 @@ EXCLUDE="bin/config-include/* bin/Regions/* bin/OpenSim.ini bin/OpenSim.exe.conf
 cd "${OPENSIM_DIR}"
 unzip -q -o -d "${TARGET_DIR}" "$1" -x ${EXCLUDE} &>/dev/null
 
-echo "Does this upgrade have database migrations? Then issue ./simauto restart"
-echo "Else, issue ./simauto reload"
+echo "After minor upgrades: issue ./simauto restart"
+echo "Database migrations, script API changes and other major upgrades: ./simauto stop && ./simtool clearscripts && ./simauto start"
 
