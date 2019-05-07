@@ -245,6 +245,25 @@ do_alert() {
     fi
 }
 
+do_bluebox() {
+    if [ ! $1 ]; then
+        show_help
+        exit 1
+    else
+        SIM=$1
+    fi
+
+    setup ${SIM}
+    check_user
+
+    if is_running ${SIM}; then
+        ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nregion restart bluebox \"$2\" $3"
+        echo "[${SIM}] Scheduled for stopping in $3 seconds.."
+    else
+        echo "[${SIM}] not running"
+    fi
+}
+
 do_backup() {
     if [ ! $1 ]; then
         show_help
@@ -342,6 +361,9 @@ case "$1" in
         ;;
     alert)
         do_alert $2 "$3"
+        ;;
+    bluebox)
+        do_bluebox $2 "$3" $4
         ;;
     restart)
         do_stop $2

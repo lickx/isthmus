@@ -46,95 +46,44 @@ is_running() {
 do_start() {
     for simulator in ${REGIONS_DIR}/*; do
         simname=`basename ${simulator} .ini`
+        ${SIMCTL} start ${simname}
+        sleep ${START_DELAY}
+    done;
+}
+
+do_stop() {
+    for simulator in ${REGIONS_DIR}/*; do
+        simname=`basename ${simulator} .ini`
+        if is_running ${simname}; then
+            if [ "$1" == "NOW" ]; then
+                # Stop immediately
+                ${SIMCTL} stop ${simname}
+            else
+                # Stop with bluebox delay
+                ${SIMCTL} bluebox ${simname} "${MSG_REGION_STOP}" ${ALERT_DELAY}
+            fi
+        fi
+    done;
+}
+
+# Restarts sims sequentially, e.g. for loading new configuration
+do_reload() {
+    for simulator in ${REGIONS_DIR}/*; do
+        simname=`basename ${simulator} .ini`
+        if is_running ${simname}; then
+            if [ "$1" == "NOW" ]; then
+                ${SIMCTL} stop ${simname}
+            else
+                ${SIMCTL} bluebox ${simname} "${MSG_REGION_STOP}" ${ALERT_DELAY}
+                sleep ${ALERT_DELAY}
+                sleep 30
+            fi
+        fi
         if ! is_running ${simname}; then
             ${SIMCTL} start ${simname}
             sleep ${START_DELAY}
         fi
     done;
-    echo "All sims have started."
-}
-
-do_stop() {
-    # Alert and delay if no extra parameter given to the stop command
-    if [ $# -eq 0 ]; then
-        # Phase 1: Alert
-        for simulator in ${REGIONS_DIR}/*; do
-            simname=`basename ${simulator} .ini`
-            if is_running ${simname}; then
-                echo "[${simname}] Sending inworld alert"
-                ${SIMCTL} alert ${simname} "${MSG_REGION_STOP}"
-                sleep 2
-                ${SIMCTL} backup ${simname}
-            fi
-        done;
-        echo "Pausing (${ALERT_DELAY}s) before stopping"
-        sleep ${ALERT_DELAY}
-    fi
-    # Phase 2: Stop
-    for simulator in ${REGIONS_DIR}/*; do
-        simname=`basename ${simulator} .ini`
-        if is_running ${simname}; then
-            ${SIMCTL} stop ${simname}
-        fi
-    done;
-    echo "All sims have stopped."
-}
-
-do_restart() {
-    # Alert and delay if no extra parameter given to the restart command
-    if [ $# -eq 0 ]; then
-        # Phase 1: Alert
-        for simulator in ${REGIONS_DIR}/*; do
-            simname=`basename ${simulator} .ini`
-            if is_running ${simname}; then
-                echo "[${simname}] Alerting (${ALERT_DELAY}s)"
-                ${SIMCTL} alert ${simname} "${MSG_REGION_RESTART}"
-                sleep 2
-                ${SIMCTL} backup ${simname}
-            fi
-        done;
-        echo "Pausing (${ALERT_DELAY}s) before stopping sims"
-        sleep ${ALERT_DELAY}
-    fi
-    # Phase 2: Stop
-    for simulator in ${REGIONS_DIR}/*; do
-        simname=`basename ${simulator} .ini`
-        if is_running ${simname}; then
-            ${SIMCTL} stop ${simname}
-        fi
-    done;
-    echo "All sims have been stopped"
-    #echo "Pausing (${STOP_DELAY}s) before starting sims"
-    #sleep ${STOP_DELAY}
-    # Phase 3: Start
-    for simulator in ${REGIONS_DIR}/*; do
-        simname=`basename ${simulator} .ini`
-        ${SIMCTL} start ${simname}
-        sleep ${START_DELAY}
-    done;
-    echo "All sims have been started."
-}
-
-do_reload() {
-    for simulator in ${REGIONS_DIR}/*; do
-        simname=`basename ${simulator} .ini`
-        if is_running ${simname}; then
-            # Alert/delay if no extra parameter given to the reload command
-            if [ $# -eq 0 ]; then
-                # Alert
-                echo "[${simname}] Alerting (${ALERT_DELAY}s)"
-                ${SIMCTL} alert ${simname} "${MSG_REGION_RESTART}"
-                sleep 2
-                ${SIMCTL} backup ${simname}
-                sleep ${ALERT_DELAY}
-            fi
-            # Stop
-            ${SIMCTL} stop ${simname}
-        fi
-        ${SIMCTL} start ${simname}
-        sleep ${START_DELAY}
-    done;
-    echo "All sims have been reloaded."
 }
 
 do_batch() {
@@ -147,26 +96,28 @@ do_batch() {
 case "$1" in
     start)
         touch "${SIMAUTO_LOCK}"
-        echo "Starting all sims delayed"
         do_start
         rm ${SIMAUTO_LOCK}
         ;;
     stop)
         touch "${SIMAUTO_LOCK}"
-        echo "Stopping all sims"
-        do_stop $1
+        do_stop $2
         # Deliberately don't remove lock
         ;;
     restart)
         touch "${SIMAUTO_LOCK}"
-        echo "Restarting all sims delayed"
-        time do_restart $1
+        do_stop $2
+        if [ "$2" != "NOW" ]; then
+            echo "Waiting until all sims have shut down.. (~${ALERT_DELAY}s)" 
+            sleep ${ALERT_DELAY}
+            sleep 30
+        fi
+        do_start
         rm ${SIMAUTO_LOCK}
         ;;
     reload)
         touch "${SIMAUTO_LOCK}"
-        echo "Reloading all sims delayed"
-        time do_reload $1
+        do_reload $2
         rm ${SIMAUTO_LOCK}
         ;;
     status)
