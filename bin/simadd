@@ -19,12 +19,8 @@ if [ "${REPLY}" != "" ]; then
     region_coords=${REPLY}
 fi
 
-# Take UDP of TCP_RANGE_START as default region port
+# Region UDP port will automatically use same as sim TCP port
 region_port="${TCP_RANGE_START}"
-read -r -p "New region port (${region_port}): "
-if [ "${REPLY}" != "" ]; then
-    region_port=${REPLY}
-fi
 
 region_uuid=`uuidgen`
 read -r -p "New region UUID (${region_uuid}): "
