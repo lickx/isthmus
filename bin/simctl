@@ -31,9 +31,12 @@ show_help() {
     echo "kill <simname>      Stop by sending SIGHUP (unclean)"
     echo "alert <simname> \"This is an alert message\"    Send an inworld alert msg"
     echo "restart <simname>   Issues a stop, then start command"
+    echo "bluebox <simname> <warning> <seconds>  Stop after an inworld warning"
     echo "status <simname>    Returns online status"
     echo "backup <simname>    Ensure database is saved"
     echo "saveoar <simname>   Saves region contents to an .oar archive"
+    echo "enable <simname>    Enable a sim"
+    echo "disable <simname>   Disable a sim"
     echo "list                List available sims"
 }
 
@@ -349,6 +352,50 @@ do_list() {
     done;
 }
 
+do_enable() {
+    if [ ! $1 ]; then
+        show_help
+        exit 1
+    else
+        SIM=$1
+    fi
+
+    if [ ! -r "${OPENSIM_DIR}/etc/sims-available/${SIM}.ini" ]; then
+        echo "${SIM}: No such sim"
+        exit 1
+    fi
+
+    if [ -r "${REGIONS_DIR}/${SIM}.ini" ]; then
+        echo "${SIM}: Already enabled"
+        exit 1
+    fi
+
+    cd "${OPENSIM_DIR}/etc/sims-enabled"
+    ln -s "../sims-available/${SIM}.ini"
+}
+
+do_disable() {
+    if [ ! $1 ]; then
+        show_help
+        exit 1
+    else
+        SIM=$1
+    fi
+
+    if [ ! -r "${OPENSIM_DIR}/etc/sims-available/${SIM}.ini" ]; then
+        echo "${SIM}: No such sim"
+        exit 1
+    fi
+
+    if [ -r "${REGIONS_DIR}/${SIM}.ini" ]; then
+        rm "${REGIONS_DIR}/${SIM}.ini"
+        exit 0
+    else
+        echo "${SIM}: Already disabled"
+        exit 1
+    fi
+}
+
 case "$1" in
     start)
         do_start $2
@@ -385,6 +432,12 @@ case "$1" in
         ;;
     list)
         do_list
+        ;;
+    enable)
+        do_enable $2
+        ;;
+    disable)
+        do_disable $2
         ;;
     *)
         show_help
