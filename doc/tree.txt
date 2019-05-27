@@ -2,7 +2,8 @@
 |-- bin
 |-- doc
 |-- etc
-|   `-- regions
+|   `-- regions-available
+|   `-- regions-enabled
 |-- runtime
 |   |-- bin
 |   |   |-- addin-db-002
@@ -77,12 +78,12 @@
     |   `-- e86
     |-- DataSnapshot
     |-- log
-    |   `-- LotekTest919
     |-- maptiles
     |-- MeshCache
     |-- pid
-    |-- ports_sim
-    `-- ScriptEngines
-        `-- d45253e8-9080-4f46-b743-ca87818e4033
+    |-- ports
+    |-- ScriptEngines
+    |   `-- d45253e8-9080-4f46-b743-ca87818e4033
+    `-- SculptCache
 
 85 directories
