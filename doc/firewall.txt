@@ -1,10 +1,47 @@
-The TCP sim ports use the range starting at 9000..9100 TCP
-They will be auto assigned to the simulators
+The TCP and UDP sim ports by default use the range 9000..9100
+They will be auto assigned (picked from this range)
 
-For the UDP region ports you can choose your own range or just 9000..9100 UDP
-The region ports don't get assigned automatically (at this time)
+If also using Robust (microgrid), 8002 TCP needs to be open
 
 LSL Scripting:
 For llRequestURL port 12046 TCP needs to be open
 For llRequestSecureURL port 12043 TCP needs to be open
 
+Also important for scripts! In isthmus/etc/opensim.ini put your hostname:
+ExternalHostNameForLSL = "opensim.example.com"
+This will work with a hostname from a "dynamic domain" provider as well.
+
+
+It is strongly recommended to disable ipv6 for OpenSim. You do that in /etc/sysctl.conf:
+
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+net.ipv6.conf.lo.disable_ipv6 = 1
+
+Afterwards reboot.
+
+
+Here is an example firewall for a Ubuntu server:
+
+# Set up default rules
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+# Allow us to manage via ssh
+sudo ufw allow ssh
+
+# Enable the firewall: 
+sudo ufw enable (press y)
+
+# Set up isthmus ports
+# We use TCP and UDP 9000-9100 for the simulators and their regions:
+sudo ufw allow 9000:9100
+
+# Allow prim servers to be contacted with http-in - see http://wiki.secondlife.com/wiki/LlRequestURL
+sudo ufw allow 12046/tcp
+
+# Allow prim servers to be contacted with http-in - see http://wiki.secondlife.com/wiki/LlRequestSecureURL
+sudo ufw allow 12043/tcp
+
+# Now you should be all set up:
+sudo ufw status verbose
