@@ -3,7 +3,9 @@ Easy and modular OpenSimulator management and deployment for Linux. I made this 
 
 It's probably not good enough for commercial-grade grids but makes life a lot easier for hobbyists running multiple sims in an open-to-connect grid.
 
-Isthmus only works with opensim compiled from https://github.com/lickx/opensim/tree/lickx-mono5 and needs Mono 5.11 or better
+Isthmus only works with the isthmus specific opensim runtime and needs Mono 5.11 or better:
+https://github.com/lickx/opensim/tree/isthmus-koda (stable)
+https://github.com/lickx/opensim/tree/isthmus (experimental)
 
 ## Features
   * Easily upgrade all sims at once
