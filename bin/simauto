@@ -46,8 +46,10 @@ is_running() {
 do_start() {
     for simulator in ${REGIONS_DIR}/*; do
         simname=`basename ${simulator} .ini`
-        ${SIMCTL} start ${simname}
-        sleep ${START_DELAY}
+        if ! is_running ${simname}; then
+            ${SIMCTL} start ${simname}
+            sleep ${START_DELAY}
+        fi
     done;
 }
 
