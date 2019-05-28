@@ -70,19 +70,21 @@ do_stop() {
 do_reload() {
     for simulator in ${REGIONS_DIR}/*; do
         simname=`basename ${simulator} .ini`
-        if is_running ${simname}; then
-            if [ "$1" == "NOW" ]; then
-                ${SIMCTL} stop ${simname}
+        if [ "$1" == "NOW" ]; then
+            if is_running ${simname}; then
+                ${SIMCTL} restart ${simname}
             else
+                ${SIMCTL} start ${simname}
+            fi
+        else
+            if is_running ${simname}; then
                 ${SIMCTL} bluebox ${simname} "${MSG_REGION_STOP}" ${ALERT_DELAY}
                 sleep ${ALERT_DELAY}
                 sleep 30
             fi
-        fi
-        if ! is_running ${simname}; then
             ${SIMCTL} start ${simname}
-            sleep ${START_DELAY}
         fi
+        sleep ${START_DELAY}
     done;
 }
 
