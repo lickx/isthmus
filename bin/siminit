@@ -60,5 +60,11 @@ else
     echo -e "[Estates]\nDefaultEstateName = \"${DefaultEstateName}\"\nDefaultEstateOwnerName = \"${DefaultEstateOwnerName}\"\n" > "${OPENSIM_DIR}/etc/estate.ini"
 fi
 
+CFG_FQDN=`hostname`
+if [ "${CFG_FQDN}" != "" ]; then
+    # Use proper FQDN in scripts with llHttpRequest etc
+    echo "Using '${CFG_FQDN}' for ExternalHostNameForLSL in etc/opensim.ini"
+    sed -i -e "s/.*ExternalHostNameForLSL.*/ExternalHostNameForLSL = ${CFG_FQDN}/" "${OPENSIM_DIR}/etc/opensim.ini"
+fi
 
 echo "Done"
