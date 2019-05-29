@@ -154,15 +154,25 @@ do_start() {
         -PIDFile="${PIDFILE}" \
         -regionload_regionfile="${REGIONS_DIR}/${SIM}.ini"
 
-    sleep 3
-    if ! is_running ${SIM}; then
-        echo "[${SIM}] Failed to start"
-        do_log "[${SIM}] Has problems with starting"
-        exit 1
-    else
-        echo "${PORT_SIM}" > "${OPENSIM_DIR}/var/ports/${SIM}.port"
-        echo "[${SIM}] Started"
-    fi
+    echo -n "[${SIM}] Starting"
+    STARTTIME=0
+    while :
+    do
+        sleep 5
+        STARTTIME=$((STARTTIME + 5))
+        echo -n "."
+        if is_running ${SIM}; then
+            echo "${PORT_SIM}" > "${OPENSIM_DIR}/var/ports/${SIM}.port"
+            echo " Started"
+            exit 0
+        elif [ ${STARTTIME} -ge 30 ]; then
+            echo " Failed. Disabling sim!"
+            do_log "[${SIM}] Has problems with starting. Disabling sim!"
+            ./simctl disable ${SIM}
+            exit 1
+        fi
+    done
+
 }
 
 do_kill() {
