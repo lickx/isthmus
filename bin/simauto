@@ -82,8 +82,6 @@ do_reload() {
         else
             if is_running ${simname}; then
                 ${SIMCTL} bluebox ${simname} "${MSG_REGION_STOP}" ${ALERT_DELAY}
-                sleep ${ALERT_DELAY}
-                sleep 30
             fi
             ${SIMCTL} start ${simname}
         fi
