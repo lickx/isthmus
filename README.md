@@ -14,7 +14,7 @@ https://github.com/lickx/opensim/tree/isthmus (experimental)
   * Issue mass commands (simauto) or per-sim (simctl)
   * Flexible OAR backups
   * Crash detection (and restart if needed)
-  * Dynamic TCP port assignment (user definable range)
+  * Dynamic port assignment (user definable range)
   * Easily set up a microgrid using the robust tool
   
 ## Preconfigured
