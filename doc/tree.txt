@@ -2,8 +2,9 @@
 |-- bin
 |-- doc
 |-- etc
-|   `-- regions-available
-|   `-- regions-enabled
+|   |-- addon-modules
+|   |-- sims-available
+|   `-- sims-enabled
 |-- runtime
 |   |-- bin
 |   |   |-- addin-db-002
@@ -52,6 +53,7 @@
 |-- share
 |   |-- common
 |   |   |-- etc
+|   |   |   `-- addon-modules
 |   |   `-- runtime
 |   |       `-- bin
 |   `-- grids
