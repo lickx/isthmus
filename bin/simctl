@@ -21,6 +21,8 @@ source "${OPENSIM_DIR}/etc/isthmus.conf"
 # Mono optimizations
 export MONO_GC_PARAMS="nursery-size=32m,minor=split,promotion-age=14"
 
+export ISTHMUS_HOSTNAME=`hostname`
+
 SCREEN="/usr/bin/screen"
 GREP="/bin/grep"
 
@@ -168,6 +170,7 @@ do_start() {
         elif [ ${STARTTIME} -ge 30 ]; then
             echo " Failed. Disabling sim!"
             do_log "[${SIM}] Has problems with starting. Disabling sim!"
+            cd "${OPENSIM_DIR}/bin"
             ./simctl disable ${SIM}
             exit 1
         fi
