@@ -112,13 +112,15 @@ setup() {
     mkdir -p "${OPENSIM_DIR}/var/log"
     export SIM_LOG_FILE="${OPENSIM_DIR}/var/log/${SIM}.log"
     mkdir -p "${OPENSIM_DIR}/var/pid"
-    PIDFILE="${OPENSIM_DIR}/var/pid/${SIM}.pid"
+    ISTHMUS_PIDFILE="${OPENSIM_DIR}/var/pid/${SIM}.pid"
+    export ISTHMUS_PIDFILE
 
     if [ -f "${OPENSIM_DIR}/var/ports/${SIM}.port" ]; then
-        PORT_SIM=`cat ${OPENSIM_DIR}/var/ports/${SIM}.port`
+        ISTHMUS_PORT=`cat ${OPENSIM_DIR}/var/ports/${SIM}.port`
     else
-        PORT_SIM=$(findfreeport)
+        ISTHMUS_PORT=$(findfreeport)
     fi
+    export ISTHMUS_PORT
 }
 
 do_start() {
@@ -143,7 +145,7 @@ do_start() {
     fi
 
     # Change UDP region port to match TCP sim port
-    sed -i -e "s/InternalPort.*/InternalPort = ${PORT_SIM}/" "${REGIONS_DIR}/${SIM}.ini"
+    sed -i -e "s/InternalPort.*/InternalPort = ${ISTHMUS_PORT}/" "${REGIONS_DIR}/${SIM}.ini"
 
     # Second Life time is the US/Pacific-New timezone
     export TZ="US/Pacific-New"
@@ -152,8 +154,6 @@ do_start() {
     cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SIM} -d -m -l \
         ${MONO} --desktop OpenSim.exe \
         -inifile="${OPENSIM_DIR}/etc/opensim.ini" \
-        -http_listener_port=${PORT_SIM} \
-        -PIDFile="${PIDFILE}" \
         -regionload_regionfile="${REGIONS_DIR}/${SIM}.ini"
 
     echo -n "[${SIM}] Starting"
@@ -164,8 +164,8 @@ do_start() {
         STARTTIME=$((STARTTIME + 5))
         echo -n "."
         if is_running ${SIM}; then
-            echo "${PORT_SIM}" > "${OPENSIM_DIR}/var/ports/${SIM}.port"
-            echo " Started"
+            echo "${ISTHMUS_PORT}" > "${OPENSIM_DIR}/var/ports/${SIM}.port"
+            echo " started"
             exit 0
         elif [ ${STARTTIME} -ge 30 ]; then
             echo " Failed. Disabling sim!"
@@ -193,9 +193,9 @@ do_kill() {
         # Send backup command and wait 1 minute
         ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nbackup"
         sleep 60
-        if [ -f ${PIDFILE} ]; then
-            kill -9 `cat ${PIDFILE}`
-            rm ${PIDFILE}
+        if [ -f "${ISTHMUS_PIDFILE}" ]; then
+            kill -9 `cat ${ISTHMUS_PIDFILE}`
+            rm "${ISTHMUS_PIDFILE}"
             if [ -f "${OPENSIM_DIR}/var/ports/${SIM}.port" ]; then
                 rm "${OPENSIM_DIR}/var/ports/${SIM}.port"
             fi
