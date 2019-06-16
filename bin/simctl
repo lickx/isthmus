@@ -87,7 +87,7 @@ get_status() {
 
 findfreeport() {
     mkdir -p "${OPENSIM_DIR}/var/ports"
-    for (( port=${TCP_RANGE_START}; port<=${TCP_RANGE_END}; port++ ))
+    for (( port=${PORT_RANGE_START}; port<=${PORT_RANGE_END}; port++ ))
     do
         grep -q ${port} ${OPENSIM_DIR}/var/ports/* 2&> /dev/null
         if [ $? -ne 0 ]; then
@@ -95,7 +95,7 @@ findfreeport() {
             return
         fi
     done
-    echo ${TCP_RANGE_START}
+    echo ${PORT_RANGE_START}
 }
 
 setup() {
@@ -330,15 +330,10 @@ do_audit() {
 
     if [ -f "${OPENSIM_DIR}/var/ports/${SIM}.port" ]; then
        tcp_port=`cat ${OPENSIM_DIR}/var/ports/${SIM}.port`
-       echo -e "TCP\t${tcp_port}\t${SIM}"
+       echo -e "${tcp_port}\t${SIM}"
     else
-       echo -e "TCP\t -- \t${SIM}"
+       echo -e " -- \t${SIM}"
     fi
-    INIFILE=${REGIONS_DIR}/${SIM}.ini
-    SECTION=`sed -r '/\[.*?\]/ q' ${INIFILE}`
-    REGION="${SECTION:1: -1}"
-    REGIONPORT=`${GREP} InternalPort ${INIFILE} | ${GREP} -ho '[0-9]*'`
-    echo -e "UDP\t${REGIONPORT}\t${SIM} - ${REGION}"
 }
 
 

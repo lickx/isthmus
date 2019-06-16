@@ -20,7 +20,7 @@ if [ "${REPLY}" != "" ]; then
 fi
 
 # Region UDP port will automatically use same as sim TCP port
-region_port="${TCP_RANGE_START}"
+region_port="${PORT_RANGE_START}"
 
 region_uuid=`uuidgen`
 read -r -p "New region UUID (${region_uuid}): "
