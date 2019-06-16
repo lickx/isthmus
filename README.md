@@ -6,6 +6,7 @@ It's probably not good enough for commercial-grade grids but makes life a lot ea
 Isthmus only works with the isthmus specific opensim runtime and needs Mono 5.11 or better:  
 https://github.com/lickx/opensim/tree/isthmus-koda (stable)  
 https://github.com/lickx/opensim/tree/isthmus (experimental)  
+Alternatively, you can use your own opensim runtime, after applying the patches in doc/opensim-patches
 
 ## Features
   * Easily upgrade all sims at once
