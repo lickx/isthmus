@@ -10,7 +10,6 @@ export OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 REGIONS_DIR="${OPENSIM_DIR}/etc/sims-enabled"
 OAR_PATH="${OPENSIM_DIR}/var/backup"
 OAR_OPTIONS=
-LOGFILE="${OPENSIM_DIR}/var/log/isthmus.log"
 
 # Install isthmus config file if not already there, and then source it
 if [ ! -f "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
@@ -44,7 +43,7 @@ show_help() {
 
 do_log() {
     logline="`date` - $1"
-    echo $logline >> $LOGFILE
+    echo $logline >> "${OPENSIM_DIR}/var/log/isthmus.log"
 }
 
 check_user() {
@@ -88,7 +87,6 @@ get_status() {
 }
 
 findfreeport() {
-    mkdir -p "${OPENSIM_DIR}/var/ports"
     for (( port=${PORT_RANGE_START}; port<=${PORT_RANGE_END}; port++ ))
     do
         grep -q ${port} ${OPENSIM_DIR}/var/ports/* 2&> /dev/null
@@ -108,13 +106,13 @@ setup() {
         SIM=$1
     fi
 
-    # SIM_LOG_FILE is used by log4net (OpenSim.exe.config) for sim logs
     mkdir -p "${OPENSIM_DIR}/var/log"
-    export SIM_LOG_FILE="${OPENSIM_DIR}/var/log/${SIM}.log"
-    mkdir -p "${OPENSIM_DIR}/var/pid"
-    ISTHMUS_PIDFILE="${OPENSIM_DIR}/var/pid/${SIM}.pid"
-    export ISTHMUS_PIDFILE
+    export ISTHMUS_LOGFILE="${OPENSIM_DIR}/var/log/${SIM}.log"
 
+    mkdir -p "${OPENSIM_DIR}/var/pid"
+    export ISTHMUS_PIDFILE="${OPENSIM_DIR}/var/pid/${SIM}.pid"
+
+    mkdir -p "${OPENSIM_DIR}/var/ports"
     if [ -f "${OPENSIM_DIR}/var/ports/${SIM}.port" ]; then
         ISTHMUS_PORT=`cat ${OPENSIM_DIR}/var/ports/${SIM}.port`
     else
@@ -140,8 +138,8 @@ do_start() {
     check_user
 
     # Rotate log file if existing already
-    if [ -r "${OPENSIM_DIR}/var/log/${SIM}.log" ]; then
-        mv -f "${OPENSIM_DIR}/var/log/${SIM}.log" "${OPENSIM_DIR}/var/log/${SIM}.old.log"
+    if [ -r "${ISTHMUS_LOGFILE}" ]; then
+        mv -f "${ISTHMUS_LOGFILE}" "${ISTHMUS_LOGFILE}.old"
     fi
 
     # Change UDP region port to match TCP sim port
