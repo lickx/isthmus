@@ -59,6 +59,10 @@
 |   `-- grids
 |       |-- metropolis
 |       |   `-- etc
+        |-- microgrid
+        |   `-- etc
+        |-- microgrid-nohg
+        |   `-- etc
 |       |-- osgrid
 |       |   |-- etc
 |       |   `-- runtime
