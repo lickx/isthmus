@@ -40,7 +40,7 @@ fi
 
 echo "Protecting passwords"
 chmod 600 "${OPENSIM_DIR}/etc/database.ini"
-chmod 600 "${OPENSIM_DIR}/etc/Gloebit.ini"
+chmod 600 "${OPENSIM_DIR}/etc/addon-modules/*"
 chmod 600 "${OPENSIM_DIR}/etc/voice.ini"
 
 if [ -r "${OPENSIM_DIR}/etc/estate.ini" ]; then
