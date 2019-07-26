@@ -20,6 +20,8 @@ if [ ! -f "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
 fi
 source "${OPENSIM_DIR}/etc/isthmus.conf"
 
+export ISTHMUS_HOSTNAME=`hostname`
+
 # Mono optimizations
 export MONO_GC_PARAMS="nursery-size=32m,minor=split,promotion-age=14"
 

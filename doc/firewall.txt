@@ -1,18 +1,17 @@
-The TCP and UDP sim ports by default use the range 9000..9100
+The TCP and UDP sim ports by default use the range 9000..9100 (see etc/isthmus.conf)
 They will be auto assigned (picked from this range)
 
 If also using Robust (microgrid), 8002 TCP needs to be open
+
+Your server's FQDN will automatically be used for Robust and ExternalHostNameForLSL
+It is advised to set up reverse DNS correctly (make the ip adress resolve to your FQDN),
+you usually do that in the web control panel that your server provider offers.
 
 LSL Scripting:
 For llRequestURL port 12046 TCP needs to be open
 For llRequestSecureURL port 12043 TCP needs to be open
 
-Also important for scripts! In isthmus/etc/opensim.ini put your hostname:
-ExternalHostNameForLSL = "opensim.example.com"
-This will work with a hostname from a "dynamic domain" provider as well.
-
-
-It is strongly recommended to disable ipv6 for OpenSim. You do that in /etc/sysctl.conf:
+It is strongly recommended to disable ipv6 on OpenSim servers. You do that in /etc/sysctl.conf:
 
 net.ipv6.conf.all.disable_ipv6 = 1
 net.ipv6.conf.default.disable_ipv6 = 1
@@ -21,7 +20,7 @@ net.ipv6.conf.lo.disable_ipv6 = 1
 Afterwards reboot.
 
 
-Here is an example firewall for a Ubuntu server:
+Here is an example firewall for an Ubuntu server:
 
 # Set up default rules
 sudo ufw default deny incoming
@@ -42,6 +41,9 @@ sudo ufw allow 12046/tcp
 
 # Allow prim servers to be contacted with http-in - see http://wiki.secondlife.com/wiki/LlRequestSecureURL
 sudo ufw allow 12043/tcp
+
+# Optional, if you will have a microgrid running Robust:
+sudo ufw allow 8002/tcp
 
 # Now you should be all set up:
 sudo ufw status verbose
