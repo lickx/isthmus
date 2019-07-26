@@ -129,6 +129,11 @@ do_start() {
         SIM=$1
     fi
 
+    if [ ! -r "${REGIONS_DIR}/${SIM}.ini" ]; then
+        echo "[${SIM}] Not enabled or does not exist"
+        exit 1
+    fi
+
     if is_running ${SIM}; then
         echo "[${SIM}] Already started"
         exit 1
