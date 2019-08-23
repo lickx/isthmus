@@ -50,10 +50,11 @@ check_user() {
 }
 
 is_running() {
-    if [ -f ${OPENSIM_DIR}/var/Robust.exe.pid ]; then
+    SCREENPID=`${SCREEN} -ls ${SIM} | grep -P "ROBUST\t" | cut -f1 -d'.' | sed 's/W//g'`
+    if [ "${SCREENPID}" != "" ]; then
         return 0
     else
-        return 1 
+        return 1
     fi
 }
 
