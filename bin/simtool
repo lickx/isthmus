@@ -17,8 +17,8 @@ do_log() {
 }
 
 clear_scripts() {
-    if [ ! -f "${SIMAUTO_LOCK}" ]; then
-        echo "Error: sims are running"
+    if ls ${OPENSIM_DIR}/var/pid/*.pid >/dev/null 2>&1; then
+        echo "Error: Can't clear script cache while sim(s) are running"
         exit 1
     fi
     SCRIPT_DIR="${OPENSIM_DIR}/var/ScriptEngines"
