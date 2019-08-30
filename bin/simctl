@@ -22,9 +22,6 @@ export MONO_GC_PARAMS="nursery-size=32m,minor=split,promotion-age=14"
 
 export ISTHMUS_HOSTNAME=`hostname`
 
-SCREEN="/usr/bin/screen"
-GREP="/bin/grep"
-
 show_help() {
     echo "`basename $0` - Control opensim simulators\n\n"
     echo "start <simname>     Start a simulator"
