@@ -7,12 +7,11 @@
 
 # Get the root folder of the isthmus tree
 export OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
-REGIONS_DIR="${OPENSIM_DIR}/etc/regions"
-OAR_PATH="${OPENSIM_DIR}/var/backup"
-OAR_OPTIONS=
+ROBUST_DIR="${OPENSIM_DIR}/etc/robust"
 LOGFILE="${OPENSIM_DIR}/var/log/isthmus.log"
 mkdir -p "${OPENSIM_DIR}/var/log"
 mkdir -p "${OPENSIM_DIR}/var/fsassets"
+mkdir -p "${OPENSIM_DIR}/var/pid/robust"
 
 # Install isthmus config file if not already there, and then source it
 if [ ! -f "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
@@ -20,13 +19,10 @@ if [ ! -f "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
 fi
 source "${OPENSIM_DIR}/etc/isthmus.conf"
 
-export ISTHMUS_HOSTNAME=`hostname`
+export ROBUST_HOSTNAME=`hostname`
 
 # Mono optimizations
 export MONO_GC_PARAMS="nursery-size=32m,minor=split,promotion-age=14"
-
-SCREEN="/usr/bin/screen"
-GREP="/bin/grep"
 
 show_help() {
     echo -e "`basename $0` - Control grid services\n"
@@ -50,7 +46,14 @@ check_user() {
 }
 
 is_running() {
-    SCREENPID=`${SCREEN} -ls ${SIM} | grep -P "ROBUST\t" | cut -f1 -d'.' | sed 's/W//g'`
+    if [ ! $1 ]; then
+        show_help
+        exit 1
+    else
+        INSTANCE=$1
+    fi
+
+    SCREENPID=`${SCREEN} -ls ROBUST-${INSTANCE} | grep -P "ROBUST-${INSTANCE}\t" | cut -f1 -d'.' | sed 's/W//g'`
     if [ "${SCREENPID}" != "" ]; then
         return 0
     else
@@ -59,81 +62,123 @@ is_running() {
 }
 
 get_status() {
-    if is_running; then
-        echo "[ROBUST] is online"
+    if is_running ${INSTANCE}; then
+        echo "[${INSTANCE}] is online"
         exit 1
     else
-        echo "[ROBUST] is offline"
+        echo "[${INSTANCE}] is offline"
         exit 0 
     fi
 }
 
+setup() {
+    INSTANCE=$1
+
+    mkdir -p "${OPENSIM_DIR}/var/log"
+    export ROBUST_LOGFILE="${OPENSIM_DIR}/var/log/robust.${INSTANCE}.log"
+
+    mkdir -p "${OPENSIM_DIR}/var/pid/robust"
+    export ROBUST_PIDFILE="${OPENSIM_DIR}/var/pid/robust/${INSTANCE}.pid"
+}
+
 do_start() {
-    if is_running; then
-        echo "[ROBUST] Already started"
+    if [ ! $1 ]; then
+        show_help
+        exit 1
+    else
+        INSTANCE=$1
+    fi
+
+    if [ ! -r "${ROBUST_DIR}/${INSTANCE}.ini" ]; then
+        echo "[${INSTANCE}] Not enabled or does not exist"
         exit 1
     fi
 
-    # Rotate log file if existing already
-    #if [ -r "${OPENSIM_DIR}/var/log/${SIM}.log" ]; then
-    #    mv -f "${OPENSIM_DIR}/var/log/${SIM}.log" "${OPENSIM_DIR}/var/log/${SIM}.old.log"
-    #fi
+    if is_running ${INSTANCE}; then
+        echo "[${INSTANCE}] Already started"
+        exit 1
+    fi
 
-    if [ ! -r "${OPENSIM_DIR}/etc/robust.ini" ]; then
-        echo "[ROBUST] No rubust.ini"
-        return 1;
+    setup ${INSTANCE}
+
+    # Rotate log file if existing already
+    if [ -r "${ROBUST_LOGFILE}" ]; then
+        mv -f "${ROBUST_LOGFILE}" "${ROBUST_LOGFILE}.old"
     fi
 
     # Second Life time is the US/Pacific-New timezone
     export TZ="US/Pacific-New"
     export LANG=C
     ulimit -n 4096
-    cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ROBUST -d -m -l \
-        ${MONO} --desktop Robust.exe -inifile "../../etc/robust.ini"
+    cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ROBUST-${INSTANCE} -d -m -l \
+        ${MONO} --desktop Robust.exe \
+        -inifile="${ROBUST_DIR}/${INSTANCE}.ini"
 
-    sleep 5
-    if ! is_running; then
-        echo "[ROBUST] Failed to start"
-        do_log "[ROBUST] Has problems with starting"
-        exit 1
-    else
-        echo "[ROBUST] Started"
-    fi
+    echo -n "[${INSTANCE}] Starting"
+    STARTTIME=0
+    while :
+    do
+        sleep 5
+        STARTTIME=$((STARTTIME + 5))
+        echo -n "."
+        if is_running ${INSTANCE}; then
+            echo " started"
+            exit 0
+        elif [ ${STARTTIME} -ge 30 ]; then
+            echo " failed!"
+            do_log "[${INSTANCE}] Robust instance has problems with starting"
+            exit 1
+        fi
+    done
 }
 
 do_kill() {
-    if is_running; then
+    if [ ! $1 ]; then
+        show_help
+        exit 1
+    else
+        setup $1
+    fi
+
+    if is_running ${INSTANCE}; then
         PID="${OPENSIM_DIR}/var/Robust.exe.pid"
-        if [ -f ${PID} ]; then
-            kill -9 `cat ${PID}`
-            rm ${PID}
-	    echo "[ROBUST] Killed"
+        if [ -f ${ROBUST_PIDFILE} ]; then
+            kill -9 `cat ${ROBUST_PIDFILE}`
+            rm ${ROBUST_PIDFILE}
+            echo "[${INSTANCE}] Killed"
         fi
     fi
 }
 
 do_stop() {
-    if is_running; then
-        echo -n "[ROBUST] Stopping"
-        ${SCREEN} -r ROBUST -X exec .\!\! echo "\nquit"
+    if [ ! $1 ]; then
+        show_help
+        exit 1
+    else
+        setup $1
+    fi
+
+    if is_running ${INSTANCE}; then
+        echo -n "[${INSTANCE}] Stopping"
+        ${SCREEN} -r ${SCREENPID}.ROBUST-${INSTANCE} -X exec .\!\! echo "\nquit"
         STOPTIME=0
         while :
         do
             sleep 5
             STOPTIME=$((STOPTIME + 5))
             echo -n "."
-            if ! is_running; then
+            if ! is_running ${INSTANCE}; then
                 echo " stopped"
                 return 0
-            elif [ ${STOPTIME} -ge 120 ]; then
+            elif [ $(STOPTIME) -ge 120 ]; then
                 echo " killing"
-                do_kill
-                do_log "[ROBUST] Took a long time to shutdown"
+                do_kill ${INSTANCE}
+                do_log "[${INSTANCE}] Robust instance took a long time to shutdown"
                 return 1
             fi
         done
     else
-        echo "[ROBUST] Not running"
+        echo "[${INSTANCE}] Not running"
         exit 1
     fi
 }
@@ -141,22 +186,22 @@ do_stop() {
 check_user
 case "$1" in
     start)
-        do_start
+        do_start $2
         ;; 
     stop)
-        do_stop
+        do_stop $2
         ;;
     kill)
-        do_kill
+        do_kill $2
         ;;
     restart)
-        do_stop
+        do_stop $2
         # Take time for the pid file to clear
         sleep 1
-        do_start
+        do_start $2
         ;;
     status)
-        get_status
+        get_status $2
         ;;
     *)
         show_help
