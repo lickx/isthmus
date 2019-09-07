@@ -170,7 +170,7 @@ do_stop() {
             if ! is_running ${INSTANCE}; then
                 echo " stopped"
                 return 0
-            elif [ $(STOPTIME) -ge 120 ]; then
+            elif [ ${STOPTIME} -ge 120 ]; then
                 echo " killing"
                 do_kill ${INSTANCE}
                 do_log "[${INSTANCE}] Robust instance took a long time to shutdown"
