@@ -199,7 +199,7 @@ do_kill() {
             if [ -f "${OPENSIM_DIR}/var/ports/${SIM}.port" ]; then
                 rm "${OPENSIM_DIR}/var/ports/${SIM}.port"
             fi
-	    echo "[${SIM}] Killed"
+            echo "[${SIM}] Killed"
         fi
     fi
 }
@@ -229,6 +229,10 @@ do_stop() {
                     rm "${OPENSIM_DIR}/var/ports/${SIM}.port"
                 fi
                 echo " stopped"
+                # OpenSim sometimes doesn't clear up PID file
+                if [ -f "${ISTHMUS_PIDFILE}" ]; then
+                    rm "${ISTHMUS_PIDFILE}"
+                fi
                 return 0
             elif [ ${STOPTIME} -ge 120 ]; then
                 echo " killing"
