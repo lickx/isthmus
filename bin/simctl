@@ -147,6 +147,9 @@ do_start() {
     # Change UDP region port to match TCP sim port
     sed -i -e "s/InternalPort.*/InternalPort = ${ISTHMUS_PORT}/" "${REGIONS_DIR}/${SIM}.ini"
 
+    # Change external hostname
+    sed -i -e "s/ExternalHostName.*/ExternalHostName = ${ISTHMUS_HOSTNAME}/" "${REGIONS_DIR}/${SIM}.ini"
+
     # Second Life time is the US/Pacific-New timezone
     export TZ="US/Pacific-New"
     export LANG=C
