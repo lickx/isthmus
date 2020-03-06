@@ -9,43 +9,5 @@ CONFIG_DIR="../../etc/addins"
 # runtime/addins
 ADDIN_DIR="../addins"
 
-show_help() {
-    echo -e "`basename $0` - Manage OpenSim addin registry\n"
-    echo "reg-update      Populates the registry with the OpenSim core addins"
-    echo "rep-add <repo>  Add a repository of addins"
-    echo "rep-update      Update contents of repositories"
-    echo "list-av         List all the available addins"
-    echo "list-update     Update list of all available addins"
-    echo "install <addin> Install an addin"
-    echo "update <addin>  Update an addin"
-    echo -e "\nSuggested repo: http://metaverseink.com/repo"
-    echo "Suggested addin: Diva.Wifi"
-}
-
-case "$1" in
-    reg-update)
-        ${MONO} mautil.exe -reg "${ADDIN_DIR}" reg-update
-        ;;
-    rep-add)
-        ${MONO} mautil.exe -reg "${ADDIN_DIR}" rep-add "${2}"
-        ;;
-    rep-update)
-        ${MONO} mautil.exe -reg "${ADDIN_DIR}" rep-update
-        ;;
-    list-av)
-        ${MONO} mautil.exe -reg "${ADDIN_DIR}" list-av
-        ;;
-    list-update)
-        ${MONO} mautil.exe -reg "${ADDIN_DIR}" list-update
-        ;;
-    install)
-        ${MONO} mautil.exe -reg "${ADDIN_DIR}" install "${2}"
-        ;;
-    update)
-        ${MONO} mautil.exe -reg "${ADDIN_DIR}" update "${2}"
-        ;;
-    *)
-        show_help
-        exit 1
-        ;;
-esac
+# See http://www.metaverseink.com/blog/diva-addons/wifi-and-other-diva-addons/
+${MONO} mautil.exe -reg "${ADDIN_DIR}" $@
