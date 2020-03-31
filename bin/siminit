@@ -25,11 +25,24 @@ mkdir -p "${OPENSIM_DIR}/etc/sims-available"
 mkdir -p "${OPENSIM_DIR}/etc/sims-enabled"
 mkdir -p "${OPENSIM_DIR}/runtime/bin"
 
-echo "Installing files needed for ${GRID}"
+echo "Installing files and settings needed for ${GRID}"
 cp -r "${OPENSIM_DIR}/share/grids/${GRID}/." "${OPENSIM_DIR}"
 
-echo "Installing common files"
+echo "Installing common files and settings"
 cp -r "${OPENSIM_DIR}/share/common/." "${OPENSIM_DIR}"
+
+if [ -L "${OPENSIM_DIR}/etc/opensim.ini" ]; then
+    echo "System settings already installed"
+else if [ -r "${OPENSIM_DIR}/etc/opensim.ini" ]; then
+    echo "Upgrading system settings"
+    mv "${OPENSIM_DIR}/etc/opensim.ini" "${OPENSIM_DIR}/etc/opensim.ini.old"
+    cd "${OPENSIM_DIR}/etc"
+    ln -s "../share/system/opensim.ini" .
+else
+    echo "Installing system settings"
+    cd "${OPENSIM_DIR}/etc"
+    ln -s "../share/system/opensim.ini" .
+fi
 
 if [ -r "${OPENSIM_DIR}/etc/database.ini" ]; then
     echo "Preserving existing database settings"
