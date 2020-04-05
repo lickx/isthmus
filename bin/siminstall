@@ -1,9 +1,12 @@
 #!/bin/bash
 OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
+REGIONS_DIR="${OPENSIM_DIR}/etc/sims-enabled"
 TARGET_DIR="runtime"
+SCREEN="/usr/bin/screen"
 
 if [ $# -eq 0 ]; then
-    echo "Usage: $0 <opensim_distribution.zip>"
+    echo "Usage: $0 [-p] <opensim_distribution.zip>"
+    echo "-p: Preserve ScriptEngines, install while running (DANGEROUS!)"
     exit 0
 fi
 
@@ -12,10 +15,54 @@ if [ ! -x `which unzip` ]; then
     exit 0
 fi
 
-EXCLUDE="bin/config-include/* bin/Regions/* bin/OpenSim.ini bin/OpenSim.exe.config bin/OpenSim32.exe.config"
-cd "${OPENSIM_DIR}"
-unzip -q -o -d "${TARGET_DIR}" "$1" -x ${EXCLUDE} &>/dev/null
+do_install() {
+    echo "Installing ${ZIP_FILE}"
+    EXCLUDE="bin/config-include/* bin/Regions/* bin/OpenSim.ini bin/OpenSim.exe.config bin/OpenSim32.exe.config"
+    cd "${OPENSIM_DIR}"
+    unzip -q -o -d "${TARGET_DIR}" "${ZIP_FILE}" -x ${EXCLUDE} &>/dev/null
+}
 
-echo "After minor upgrades: issue ./simauto restart"
-echo "Database migrations, script API changes and other major upgrades: ./simauto stop && ./simtool clearscripts && ./simauto start"
+is_running() {
+    SIM=$1
+
+    SCREENPID=`${SCREEN} -ls ${SIM} | grep -P "${SIM}\t" | cut -f1 -d'.' | sed 's/W//g'`
+    if [ "${SCREENPID}" != "" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+any_sims_online() {
+    for simulator in ${REGIONS_DIR}/*; do
+        simname=`basename ${simulator} .ini`
+        if is_running ${simname}; then
+            return 0
+        fi
+    done;
+    return 1
+}
+
+case "$1" in
+    -p)
+        ZIP_FILE=$2
+        do_install
+        exit 0
+        ;;
+    *)
+        if any_sims_online; then
+            echo "All sims need to be stopped first."
+            exit 0
+        fi
+        ZIP_FILE=$1
+        echo "Clearing ScriptEngines, keeping state"
+        if [ -x "simtool" ]; then
+            ./simtool clearscripts
+        fi
+        do_install
+        exit 0
+        ;;
+esac
+
+echo "Done."
 
