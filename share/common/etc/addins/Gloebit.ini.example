@@ -9,9 +9,8 @@
 ;  Logo: An optional picture/logo for your bunch of sims (400x128 pixels)
 ; 4) Note down the generated OAuth Key and OAuth Secret, these need to be filled
 ; in into this ini file
-; 5) After having configured this ini file, uncomment the line starting with
-; Include-Gloebit at the end of opensim.ini
-; 6) Put Gloebit.dll into lib/bin
+; 5) After having configured this ini file, rename it to Gloebit.ini 
+; 6) Put Gloebit.dll into runtime/bin
 ;    The dll can be found here: http://dev.gloebit.com/opensim/downloads/
 
 [Economy]
