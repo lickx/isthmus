@@ -116,7 +116,7 @@ do_start() {
 }
 
 do_kill() {
-    setup $1
+    setup
 
     if is_running; then
         PID="${OPENSIM_DIR}/var/Robust.exe.pid"
@@ -129,7 +129,7 @@ do_kill() {
 }
 
 do_stop() {
-    setup $1
+    setup
 
     if is_running; then
         echo -n "[ROBUST] Stopping"
