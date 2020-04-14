@@ -18,8 +18,29 @@ do_log() {
     echo $logline >> $LOGFILE
 }
 
+is_running() {
+    SIM=$1
+
+    SCREENPID=`${SCREEN} -ls ${SIM} | grep -P "${SIM}\t" | cut -f1 -d'.' | sed 's/W//g'`
+    if [ "${SCREENPID}" != "" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+any_sims_online() {
+    for simulator in ${REGIONS_DIR}/*; do
+        simname=`basename ${simulator} .ini`
+        if is_running ${simname}; then
+            return 0
+        fi
+    done;
+    return 1
+}
+
 clear_scripts() {
-    if ls ${OPENSIM_DIR}/var/pid/*.pid >/dev/null 2>&1; then
+    if any_sims_online; then
         echo "Error: Can't clear script cache while sim(s) are running"
         exit 1
     fi
