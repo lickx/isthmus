@@ -45,7 +45,7 @@ any_sims_online() {
 
 case "$1" in
     -p)
-        ZIP_FILE=$2
+        ZIP_FILE=`readlink -f "$2"`
         do_install
         exit 0
         ;;
@@ -54,7 +54,7 @@ case "$1" in
             echo "All sims need to be stopped first."
             exit 0
         fi
-        ZIP_FILE=$1
+        ZIP_FILE=`readlink -f "$1"`
         echo "Clearing ScriptEngines, keeping state"
         if [ -x "simtool" ]; then
             ./simtool clearscripts
