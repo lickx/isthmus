@@ -90,3 +90,12 @@ economymodule = Gloebit
     ;GLBSpecificConnectionString = "Data Source=localhost;Database=opensim;User ID=opensim;Password=***;Old Guids=true;"
     ;GLBSpecificStorageProvider = "OpenSim.Data.PGSQL.dll"
     ;GLBSpecificConnectionString = "Server=localhost;Database=opensim;User Id=opensim; password=***;"
+
+    ;;;;; CONFIGURE NEW SESSION MESSAGING ;;;;;
+    ;; The following determine if a user receives messaging at the start of a new session
+    ;; A new session is defined as the first time a user enters a Gloebit enabled region for a Gloebit app during a viewer login
+    ;# {GLBShowNewSessionPurchaseIM} {Show purchase gloebits IM to user at session start?} {false, true} false
+    GLBShowNewSessionPurchaseIM = false
+    ;# {GLBShowNewSessionAuthIM} {Show auth app IM to user at session start?} {false, true} true
+    GLBShowNewSessionAuthIM = true
+
