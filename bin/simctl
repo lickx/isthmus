@@ -8,8 +8,6 @@
 # Get the root folder of the isthmus tree
 export OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 REGIONS_DIR="${OPENSIM_DIR}/etc/sims-enabled"
-OAR_PATH="${OPENSIM_DIR}/var/backup"
-OAR_OPTIONS=
 
 # Install isthmus config file if not already there, and then source it
 if [ ! -f "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
@@ -363,12 +361,14 @@ do_saveoar() {
     check_user
 
     if [ ! $3 ]; then
-        LOCAL_OAR_PATH="${OAR_PATH}/`date -I'date'`"
+        LOCAL_OAR_PATH="${OPENSIM_DIR}/var/backup/`date -I'date'`"
     else
         LOCAL_OAR_PATH=$3 
     fi
 
     mkdir -p "${LOCAL_OAR_PATH}"
+
+    GRID_SERVER=`grep GridInfoURI ${OPENSIM_DIR}/etc/grid.ini | cut -d' ' -f3 | tr -d '"'`/
 
     if is_running ${SIM}; then
         # Alert inworld about temporary degraded performance"
@@ -376,7 +376,7 @@ do_saveoar() {
         sleep 3
 
         OAR_FILE="${LOCAL_OAR_PATH}/${SIM}-`date -I'date'`.oar"
-        ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nsave oar ${OAR_OPTIONS} \"${OAR_FILE}\""
+        ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nsave oar --home=${GRID_SERVER} ${OAR_OPTIONS} \"${OAR_FILE}\""
         sleep 120
     fi
 }
