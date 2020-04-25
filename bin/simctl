@@ -368,15 +368,13 @@ do_saveoar() {
 
     mkdir -p "${LOCAL_OAR_PATH}"
 
-    GRID_SERVER=`grep GridInfoURI ${OPENSIM_DIR}/etc/grid.ini | cut -d' ' -f3 | tr -d '"'`/
-
     if is_running ${SIM}; then
         # Alert inworld about temporary degraded performance"
         ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nalert \"SYSTEM NOTICE: Region backup in progress. Performance might be a bit slower for a few minutes..\""
         sleep 3
 
         OAR_FILE="${LOCAL_OAR_PATH}/${SIM}-`date -I'date'`.oar"
-        ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nsave oar --home=${GRID_SERVER} ${OAR_OPTIONS} \"${OAR_FILE}\""
+        ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nsave oar ${OAR_OPTIONS} \"${OAR_FILE}\""
         sleep 120
     fi
 }
