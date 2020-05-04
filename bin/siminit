@@ -31,17 +31,9 @@ cp -r "${OPENSIM_DIR}/share/grids/${GRID}/." "${OPENSIM_DIR}"
 echo "Installing common files and settings"
 cp -r "${OPENSIM_DIR}/share/common/." "${OPENSIM_DIR}"
 
-if [ -L "${OPENSIM_DIR}/etc/opensim.ini" ]; then
-    echo "System settings already installed"
-elif [ -r "${OPENSIM_DIR}/etc/opensim.ini" ]; then
-    echo "Upgrading system settings"
+if [ -r "${OPENSIM_DIR}/etc/opensim.ini" ]; then
+    echo "Renaming old style system settings to etc/opensim.ini.old"
     mv "${OPENSIM_DIR}/etc/opensim.ini" "${OPENSIM_DIR}/etc/opensim.ini.old"
-    cd "${OPENSIM_DIR}/etc"
-    ln -s "../share/system/opensim.ini" .
-else
-    echo "Installing system settings"
-    cd "${OPENSIM_DIR}/etc"
-    ln -s "../share/system/opensim.ini" .
 fi
 
 if [ -r "${OPENSIM_DIR}/etc/database.ini" ]; then

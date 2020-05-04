@@ -155,7 +155,7 @@ do_start() {
     ulimit -n 4096
     cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SIM} -d -m -l \
         ${MONO} --desktop OpenSim.exe \
-        -inifile="${OPENSIM_DIR}/etc/opensim.ini" \
+        -inifile="${OPENSIM_DIR}/share/system/opensim.ini" \
         -regionload_regionfile="${REGIONS_DIR}/${SIM}.ini"
 
     echo -n "[${SIM}] Starting"
