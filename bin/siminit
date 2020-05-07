@@ -40,7 +40,7 @@ if [ -r "${OPENSIM_DIR}/etc/database.ini" ]; then
     echo "Preserving existing database settings"
 else
     echo "Installing template for etc/database.ini - please edit this file"
-    echo -e "[DatabaseService]\nStorageProvider = \"OpenSim.Data.MySQL.dll\"\nConnectionString = \"DataSource=localhost;Database=SQL_DATABASE_NAME;User Id=SQL_USER_NAME;password=SQL_USER_PASSWORD;Old Guids=true\"" > "${OPENSIM_DIR}/etc/database.ini"
+    echo -e "[DatabaseService]\nStorageProvider = \"OpenSim.Data.MySQL.dll\"\nConnectionString = \"DataSource=localhost;Database=SQL_DATABASE_NAME;User Id=SQL_USER_NAME;password=SQL_USER_PASSWORD;Old Guids=true;SslMode=None;\"" > "${OPENSIM_DIR}/etc/database.ini"
 fi
 
 echo "Protecting passwords"
