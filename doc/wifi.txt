@@ -1,0 +1,15 @@
+Long tutorial: http://www.metaverseink.com/blog/diva-addons/wifi-and-other-diva-addons/
+
+When we refer to 'mautil' we refer to the isthmus script bin/mautil which is a handy wrapper for mautil.exe
+that already knows where the addin folder is:
+
+./mautil reg-update
+./mautil rep-add http://metaverseink.com/repo
+./mautil rep-update
+./mautil install Diva.Wifi
+
+Add this point, copy etc/addins/Wifi.ini.example to etc/addins/Wifi.ini and open it to edit to your liking
+
+When all is setup, restart robust (./robust restart) and verify in the console (screen -r ROBUST) that
+Wifi has loaded. Then you should be able to point a webbrowser to your server at port 8002 and start
+using Wifi.
