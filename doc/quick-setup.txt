@@ -48,7 +48,7 @@ MariaDB [(none)]> grant all on isthmus_gridname.* to isthmus_gridname@localhost 
 
   Adding your first simulator
 
-  If you chose 'localgrid' or 'localgrid-nohg' when using setup before,
+  If you chose 'microgrid' or 'microgrid-nohg' when using setup before,
   then now it is time to start robust. Else skip to the simadd bit.
 
 ./robust start
