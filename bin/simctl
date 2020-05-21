@@ -22,7 +22,7 @@ export ROBUST_HOSTNAME=`hostname`
 export ISTHMUS_HOSTNAME=`hostname`
 
 show_help() {
-    echo "`basename $0` - Control opensim simulators\n\n"
+    echo -e "`basename $0` - Control opensim simulators\n"
     echo "start <simname>     Start a simulator"
     echo "stop <simname>      Stop and deregister from the map"
     echo "kill <simname>      Stop by sending SIGHUP (unclean)"
