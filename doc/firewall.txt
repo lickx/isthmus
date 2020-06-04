@@ -36,12 +36,6 @@ sudo ufw enable (press y)
 # We use TCP and UDP 9000-9100 for the simulators and their regions:
 sudo ufw allow 9000:9100
 
-# Allow prim servers to be contacted with http-in - see http://wiki.secondlife.com/wiki/LlRequestURL
-sudo ufw allow 12046/tcp
-
-# Allow prim servers to be contacted with http-in - see http://wiki.secondlife.com/wiki/LlRequestSecureURL
-sudo ufw allow 12043/tcp
-
 # Optional, if you will have a microgrid running Robust:
 sudo ufw allow 8002/tcp
 
