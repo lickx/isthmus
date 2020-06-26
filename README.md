@@ -21,7 +21,6 @@ Alternatively, you can use your own opensim runtime, after applying the patches 
 Works out of the box for:
 
   * OsGrid (https://www.osgrid.org)
-  * Metropolis (https://www.metro.land)
   * Grids using phpgridserver (https://github.com/ft-/phpGridServer)
   * Built-in robust gridserver (either with or without hypergrid)
 
