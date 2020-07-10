@@ -18,7 +18,7 @@ $ ./setup
   This will only work with the isthmus branch which can be
   found at https://github.com/lickx/opensim
 
-$ ./siminstall ~/Downloads/opensim-isthmus.zip
+$ ./rtinstall ~/Downloads/opensim-isthmus.zip
 
 ------------------------------------------------------------------------------
 
