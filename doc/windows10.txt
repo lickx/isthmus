@@ -1,6 +1,6 @@
 
   i s t h m u s
-  Windows 10 support guide [DRAFT]                                  17.04.24
+  Windows 10 support guide [DRAFT]                                  20.07.13
 
   With the 'Creators Update' of Windows 10 released in March/April 2017,
   it's possible to run isthmus in Windows. Older versions of Windows 10 are
@@ -28,6 +28,8 @@
 # mkdir -p /var/run/screen
 # chmod 777 /var/run/screen
 
+  IMPORTANT: Read issue 7: https://github.com/lickx/isthmus/issues/7
+
 -----------------------------------------------------------------------------
 
   Ports need to be opened on Windows Firewall:
@@ -35,8 +37,8 @@
   TCP  9000-9100  For 100 simulators, you'll never run that many at once :D
   UDP  9000-9100  For the regions run by the respective simulators
 
-  TCP  12046      llRequestURL()
-  TCP  12043      llRequestSecureURL()
+  TCP  8002       Public robust port, also accessible through HG by other grids
+  TCP  8003       Private robust port (only your server(s) should have access)
 
 -----------------------------------------------------------------------------
 
