@@ -156,7 +156,7 @@ do_start() {
     cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SIM} -d -m -l \
         ${MONO} --desktop OpenSim.exe \
         -inifile="${OPENSIM_DIR}/share/system/opensim.ini" \
-        -regionload_regionfile="${REGIONS_DIR}/${SIM}.ini"
+        -regionfile="${REGIONS_DIR}/${SIM}.ini"
 
     echo -n "[${SIM}] Starting"
     STARTTIME=0
