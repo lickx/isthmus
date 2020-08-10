@@ -24,7 +24,7 @@ index 976714c11b..05ba146dc8 100644
              {
                  IConfig startupConfig = (IConfig)m_configSource.Configs["Startup"];
 -                regionConfigPath = startupConfig.GetString("regionload_regionsdir", regionConfigPath).Trim();
-+                regionFile = startupConfig.GetString("regionload_regionfile", String.Empty).Trim();
++                regionFile = startupConfig.GetString("regionfile", String.Empty).Trim();
                  allowRegionless = startupConfig.GetBoolean("allow_regionless", false);
              }
              catch (Exception)
