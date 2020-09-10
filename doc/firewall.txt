@@ -7,10 +7,6 @@ Your server's FQDN will automatically be used for Robust and ExternalHostNameFor
 It is advised to set up reverse DNS correctly (make the ip adress resolve to your FQDN),
 you usually do that in the web control panel that your server provider offers.
 
-LSL Scripting:
-For llRequestURL port 12046 TCP needs to be open
-For llRequestSecureURL port 12043 TCP needs to be open
-
 It is strongly recommended to disable ipv6 on OpenSim servers. You do that in /etc/sysctl.conf:
 
 net.ipv6.conf.all.disable_ipv6 = 1
