@@ -54,6 +54,10 @@ case "$1" in
             echo "All sims need to be stopped first."
             exit 0
         fi
+        if is_running ROBUST; then
+            echo "ROBUST must be stopped first."
+            exit 0
+        fi
         ZIP_FILE=`readlink -f "$1"`
         echo "Clearing ScriptEngines, keeping state"
         if [ -x "simtool" ]; then
