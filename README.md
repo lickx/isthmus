@@ -16,6 +16,7 @@ Alternatively, you can use your own opensim runtime, after applying the patches 
   * Crash detection (and restart if needed)
   * Dynamic port assignment (user definable range)
   * Easily set up a microgrid using robust
+  * Only allow modern, non-shady viewers (optional)
   
 ## Preconfigured
 Works out of the box for:
