@@ -100,3 +100,8 @@ economymodule = Gloebit
     ;GLBSpecificConnectionString = "Data Source=localhost;Database=opensim;User ID=opensim;Password=***;Old Guids=true;"
     ;GLBSpecificStorageProvider = "OpenSim.Data.PGSQL.dll"
     ;GLBSpecificConnectionString = "Server=localhost;Database=opensim;User Id=opensim; password=***;"
+
+; These two lines added for land sales to work; see mantis 8779
+GLBNewHTTPFlow = true
+GLBNewLandPassFlow = true
+
