@@ -83,15 +83,44 @@ get_status() {
 }
 
 findfreeport() {
-    for (( port=${PORT_RANGE_START}; port<=${PORT_RANGE_END}; port++ ))
+    for (( port=${TCP_PORT_RANGE_START}; port<=${TCP_PORT_RANGE_END}; port++ ))
     do
-        grep -q ${port} ${OPENSIM_DIR}/var/ports/* 2&> /dev/null
+        grep -q ${port} ${OPENSIM_DIR}/var/ports/sims/* 2&> /dev/null
         if [ $? -ne 0 ]; then
             echo ${port}
             return
         fi
     done
-    echo ${PORT_RANGE_START}
+    echo ${TCP_PORT_RANGE_START}
+}
+
+findfreeudpport() {
+    for (( port=${UDP_PORT_RANGE_START}; port<=${UDP_PORT_RANGE_END}; port++ ))
+    do
+        if [ ! -f "${OPENSIM_DIR}/var/ports/regions/${port}" ]; then
+            echo "${SIM}" > "${OPENSIM_DIR}/var/ports/regions/${port}"
+            echo ${port}
+            return
+        fi
+    done
+    return ${UDP_PORT_RANGE_START}
+}
+
+cleanup_ports() {
+    for (( port=${UDP_PORT_RANGE_START}; port<=${UDP_PORT_RANGE_END}; port++ ))
+    do
+        PORT_FILE="${OPENSIM_DIR}/var/ports/regions/${port}"
+        if [ -r ${PORT_FILE} ]; then
+            USED_BY_SIM=`cat ${PORT_FILE}`
+            if [ "${SIM}" == "${USED_BY_SIM}" ]; then
+                rm ${PORT_FILE}
+            fi
+        fi
+    done
+    PORT_FILE="${OPENSIM_DIR}/var/ports/sims/${SIM}.port"
+    if [ -r ${PORT_FILE} ]; then
+        rm ${PORT_FILE}
+    fi
 }
 
 setup() {
@@ -108,13 +137,15 @@ setup() {
     mkdir -p "${OPENSIM_DIR}/var/pid"
     export ISTHMUS_PIDFILE="${OPENSIM_DIR}/var/pid/${SIM}.pid"
 
-    mkdir -p "${OPENSIM_DIR}/var/ports"
-    if [ -f "${OPENSIM_DIR}/var/ports/${SIM}.port" ]; then
-        ISTHMUS_PORT=`cat ${OPENSIM_DIR}/var/ports/${SIM}.port`
+    mkdir -p "${OPENSIM_DIR}/var/ports/sims"
+    if [ -f "${OPENSIM_DIR}/var/ports/sims/${SIM}.port" ]; then
+        ISTHMUS_PORT=`cat ${OPENSIM_DIR}/var/ports/sims/${SIM}.port`
     else
         ISTHMUS_PORT=$(findfreeport)
     fi
     export ISTHMUS_PORT
+
+    mkdir -p "${OPENSIM_DIR}/var/ports/regions"
 }
 
 do_start() {
@@ -125,7 +156,7 @@ do_start() {
         SIM=$1
     fi
 
-    if [ ! -r "${REGIONS_DIR}/${SIM}.ini" ]; then
+    if [ ! -d "${REGIONS_DIR}/${SIM}" ]; then
         echo "[${SIM}] Not enabled or does not exist"
         exit 1
     fi
@@ -143,20 +174,22 @@ do_start() {
         mv -f "${ISTHMUS_LOGFILE}" "${ISTHMUS_LOGFILE}.old"
     fi
 
-    # Change UDP region port to match TCP sim port
-    sed -i --follow-symlinks -e "s/InternalPort.*/InternalPort = ${ISTHMUS_PORT}/" "${REGIONS_DIR}/${SIM}.ini"
-
-    # Change external hostname
-    sed -i --follow-symlinks -e "s/ExternalHostName.*/ExternalHostName = ${ISTHMUS_HOSTNAME}/" "${REGIONS_DIR}/${SIM}.ini"
+    for region in ${REGIONS_DIR}/${SIM}/*.ini; do
+        # Update hostname
+        sed -i --follow-symlinks -e "s/ExternalHostName.*/ExternalHostName = ${ISTHMUS_HOSTNAME}/" "${region}"
+        REGION_PORT=$(findfreeudpport)
+        # Change UDP region port
+        sed -i --follow-symlinks -e "s/InternalPort.*/InternalPort = ${ISTHMUS_PORT}/" "${region}"
+    done;
 
     # Second Life time is the US/Pacific-New timezone
     export TZ="US/Pacific-New"
     export LANG=C
+    export ISTHMUS_REGIONSDIR="${REGIONS_DIR}/${SIM}"
     ulimit -n 4096
     cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SIM} -d -m -l \
         ${MONO} --desktop OpenSim.exe \
-        -inifile="${OPENSIM_DIR}/share/system/opensim.ini" \
-        -regionfile="${REGIONS_DIR}/${SIM}.ini"
+        -inifile="${OPENSIM_DIR}/share/system/opensim.ini"
 
     echo -n "[${SIM}] Starting"
     STARTTIME=0
@@ -166,7 +199,7 @@ do_start() {
         STARTTIME=$((STARTTIME + 5))
         echo -n "."
         if is_running ${SIM}; then
-            echo "${ISTHMUS_PORT}" > "${OPENSIM_DIR}/var/ports/${SIM}.port"
+            echo "${ISTHMUS_PORT}" > "${OPENSIM_DIR}/var/ports/sims/${SIM}.port"
             echo " started"
             exit 0
         elif [ ${STARTTIME} -ge 30 ]; then
@@ -198,9 +231,7 @@ do_kill() {
         if [ -f "${ISTHMUS_PIDFILE}" ]; then
             kill -9 `cat ${ISTHMUS_PIDFILE}`
             rm "${ISTHMUS_PIDFILE}"
-            if [ -f "${OPENSIM_DIR}/var/ports/${SIM}.port" ]; then
-                rm "${OPENSIM_DIR}/var/ports/${SIM}.port"
-            fi
+            cleanup_ports
             echo "[${SIM}] Killed"
         fi
     fi
@@ -227,9 +258,7 @@ do_stop() {
             STOPTIME=$((STOPTIME + 5))
             echo -n "."
             if ! is_running ${SIM}; then
-                if [ -f "${OPENSIM_DIR}/var/ports/${SIM}.port" ]; then
-                    rm "${OPENSIM_DIR}/var/ports/${SIM}.port"
-                fi
+                cleanup_ports
                 echo " stopped"
                 # OpenSim sometimes doesn't clear up PID file
                 if [ -f "${ISTHMUS_PIDFILE}" ]; then
@@ -246,7 +275,7 @@ do_stop() {
     else
         echo "[${SIM}] Not running"
         exit 1
-    fi 
+    fi
 }
 
 do_alert() {
@@ -289,9 +318,7 @@ do_bluebox() {
             STOPTIME=$((STOPTIME + 5))
             echo -n "."
             if ! is_running ${SIM}; then
-                if [ -f "${OPENSIM_DIR}/var/ports/${SIM}.port" ]; then
-                    rm "${OPENSIM_DIR}/var/ports/${SIM}.port"
-                fi
+                cleanup_ports
                 echo " stopped"
                 return 0
             elif [ ${STOPTIME} -ge 120 ]; then
@@ -337,7 +364,7 @@ do_audit() {
         exit 1
     fi
 
-    if [ -f "${OPENSIM_DIR}/var/ports/${SIM}.port" ]; then
+    if [ -f "${OPENSIM_DIR}/var/ports/sims/${SIM}.port" ]; then
        tcp_port=`cat ${OPENSIM_DIR}/var/ports/${SIM}.port`
        echo -e "${tcp_port}\t${SIM}"
     else
@@ -381,7 +408,6 @@ do_saveoar() {
 
 do_list() {
     for simulator in ${REGIONS_DIR}/*; do
-        simname=`basename ${simulator} .ini`
         echo "${simname}"
     done;
 }
@@ -394,18 +420,18 @@ do_enable() {
         SIM=$1
     fi
 
-    if [ ! -r "${OPENSIM_DIR}/etc/sims-available/${SIM}.ini" ]; then
+    if [ ! -d "${OPENSIM_DIR}/etc/sims-available/${SIM}" ]; then
         echo "${SIM}: No such sim"
         exit 1
     fi
 
-    if [ -r "${REGIONS_DIR}/${SIM}.ini" ]; then
+    if [ -d "${REGIONS_DIR}/${SIM}" ]; then
         echo "${SIM}: Already enabled"
         exit 1
     fi
 
     cd "${OPENSIM_DIR}/etc/sims-enabled"
-    ln -s "../sims-available/${SIM}.ini"
+    ln -s "../sims-available/${SIM}"
 }
 
 do_disable() {
@@ -416,13 +442,13 @@ do_disable() {
         SIM=$1
     fi
 
-    if [ ! -r "${OPENSIM_DIR}/etc/sims-available/${SIM}.ini" ]; then
+    if [ ! -d "${OPENSIM_DIR}/etc/sims-available/${SIM}" ]; then
         echo "${SIM}: No such sim"
         exit 1
     fi
 
-    if [ -r "${REGIONS_DIR}/${SIM}.ini" ]; then
-        rm "${REGIONS_DIR}/${SIM}.ini"
+    if [ -d "${REGIONS_DIR}/${SIM}" ]; then
+        rm "${REGIONS_DIR}/${SIM}"
         exit 0
     else
         echo "${SIM}: Already disabled"

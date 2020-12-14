@@ -45,7 +45,7 @@ is_running() {
 
 do_start() {
     for simulator in ${REGIONS_DIR}/*; do
-        simname=`basename ${simulator} .ini`
+        simname=`basename ${simulator}`
         if ! is_running ${simname}; then
             ${SIMCTL} start ${simname}
             sleep ${START_DELAY}
@@ -55,7 +55,7 @@ do_start() {
 
 do_stop() {
     for simulator in ${REGIONS_DIR}/*; do
-        simname=`basename ${simulator} .ini`
+        simname=`basename ${simulator}`
         if is_running ${simname}; then
             if [ "$1" == "NOW" ]; then
                 # Stop immediately
@@ -71,7 +71,7 @@ do_stop() {
 # Restarts sims sequentially, e.g. for loading new configuration
 do_reload() {
     for simulator in ${REGIONS_DIR}/*; do
-        simname=`basename ${simulator} .ini`
+        simname=`basename ${simulator}`
         if [ "$1" == "NOW" ]; then
             if is_running ${simname}; then
                 ${SIMCTL} restart ${simname}
@@ -90,7 +90,7 @@ do_reload() {
 
 do_batch() {
     for simulator in ${REGIONS_DIR}/*; do
-        simname=`basename ${simulator} .ini`
+        simname=`basename ${simulator}`
         ${SIMCTL} $1 ${simname}
     done;
 }

@@ -19,13 +19,31 @@ if [ "${REPLY}" != "" ]; then
     region_coords=${REPLY}
 fi
 
-# Region UDP port will automatically use same as sim TCP port
-region_port="${PORT_RANGE_START}"
+region_port="${UDP_PORT_RANGE_START}"
 
 region_uuid=`uuidgen`
 read -r -p "New region UUID (${region_uuid}): "
 if [ "${REPLY}" != "" ]; then
     region_uuid=${REPLY}
+fi
+
+target_estate="0"
+read -r -p "Join an existing estate? (y): "
+if [ "${REPLY}" == "y" ]; then
+    # list all estates
+    select ESTATE_FILENAME in ${OPENSIM_DIR}/etc/estates/*.ini; do
+        target_estate=`grep "\[.*\]" ${ESTATE_FILENAME} | cut -c 2- | rev | cut -c 2- | rev"
+        break;
+    done
+else if [ "${REPLY}" == "n" ]; then
+    read -r -p "New estate name (My Estate): "
+    ESTATE_NAME=${REPLY}
+    read -r -p "New estate owner UUID (): "
+    ESTATE_OWNER=${REPLY}
+    ESTATE_FILENAME="${OPENSIM_DIR}/etc/estates/${ESTATE_NAME//[[:space:]]/}.ini"
+    echo "[${ESTATE_NAME}]" > ${ESTATE_FILENAME}
+    echo "Owner = \"${ESTATE_OWNER}\"" >> ${ESTATE_FILENAME}
+    target_estate=${ESTATE_NAME}
 fi
 
 mkdir -p "${OPENSIM_DIR}/etc/sims-available"
@@ -40,7 +58,7 @@ echo "InternalPort = ${region_port}" >> "${regions_ini}"
 echo "AllowAlternatePorts = False" >> "${regions_ini}"
 echo "ExternalHostName = SYSTEMIP" >> "${regions_ini}"
 echo "; TargetEstate: 0 for auto, >=100 for estate id, or the estate name" >> "${regions_ini}"
-echo "TargetEstate = 0" >> "${regions_ini}"
+echo "TargetEstate = \"${target_estate}\"" >> "${regions_ini}"
 #echo "MaxPrims = 20000"            >> "${regions_ini}"
 #echo "MaxAgents = 10"              >> "${regions_ini}"
 #echo "RegionType = \"Mainland\""   >> "${regions_ini}"
