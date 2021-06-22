@@ -45,7 +45,7 @@ check_user() {
 }
 
 is_running() {
-    SCREENPID=`${SCREEN} -ls ROBUST | grep -P "ROBUST\t" | cut -f1 -d'.' | sed 's/W//g'`
+    SCREENPID=`${SCREEN} -ls ${SCREENNAME} | grep -P "${SCREENNAME}\t" | cut -f1 -d'.' | sed 's/W//g'`
     if [ "${SCREENPID}" != "" ]; then
         return 0
     else
@@ -55,10 +55,10 @@ is_running() {
 
 get_status() {
     if is_running; then
-        echo "[ROBUST] is online"
+        echo "[${SCREENNAME}] is online"
         exit 1
     else
-        echo "[ROBUST] is offline"
+        echo "[${SCREENNAME}] is offline"
         exit 0 
     fi
 }
@@ -69,6 +69,8 @@ setup() {
 
     mkdir -p "${OPENSIM_DIR}/var/pid/robust"
     export ROBUST_PIDFILE="${OPENSIM_DIR}/var/pid/robust/robust.pid"
+
+    SCREENNAME="`basename ${OPENSIM_DIR}`-ROBUST"
 }
 
 do_start() {
@@ -78,11 +80,9 @@ do_start() {
     fi
 
     if is_running; then
-        echo "[ROBUST] Already started"
+        echo "[${SCREENNAME}] Already started"
         exit 1
     fi
-
-    setup
 
     # Rotate log file if existing already
     if [ -r "${ROBUST_LOGFILE}" ]; then
@@ -93,11 +93,11 @@ do_start() {
     export TZ="US/Pacific-New"
     export LANG=C
     ulimit -n 4096
-    cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ROBUST -d -m -l \
+    cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SCREENNAME} -d -m -l \
         ${MONO} --desktop Robust.exe \
         -inifile="${OPENSIM_DIR}/etc/robust.ini"
 
-    echo -n "[ROBUST] Starting"
+    echo -n "[${SCREENNAME}] Starting"
     STARTTIME=0
     while :
     do
@@ -109,31 +109,27 @@ do_start() {
             exit 0
         elif [ ${STARTTIME} -ge 30 ]; then
             echo " failed!"
-            do_log "[ROBUST] Robust has problems with starting"
+            do_log "[${SCREENNAME}] Robust has problems with starting"
             exit 1
         fi
     done
 }
 
 do_kill() {
-    setup
-
     if is_running; then
         PID="${OPENSIM_DIR}/var/Robust.exe.pid"
         if [ -f ${ROBUST_PIDFILE} ]; then
             kill -9 `cat ${ROBUST_PIDFILE}`
             rm ${ROBUST_PIDFILE}
-            echo "[ROBUST] Killed"
+            echo "[${SCREENNAME}] Killed"
         fi
     fi
 }
 
 do_stop() {
-    setup
-
     if is_running; then
-        echo -n "[ROBUST] Stopping"
-        ${SCREEN} -r ${SCREENPID}.ROBUST -X exec .\!\! echo "\nquit"
+        echo -n "[${SCREENNAME}] Stopping"
+        ${SCREEN} -r ${SCREENPID}.${SCREENNAME} -X exec .\!\! echo "\nquit"
         STOPTIME=0
         while :
         do
@@ -146,17 +142,18 @@ do_stop() {
             elif [ ${STOPTIME} -ge 120 ]; then
                 echo " killing"
                 do_kill
-                do_log "[ROBUST] Robust took a long time to shutdown"
+                do_log "[${SCREENNAME}] Robust took a long time to shutdown"
                 return 1
             fi
         done
     else
-        echo "[ROBUST] Not running"
+        echo "[${SCREENNAME}] Not running"
         exit 1
     fi
 }
 
 check_user
+setup
 case "$1" in
     start)
         do_start
