@@ -33,6 +33,17 @@ is_running() {
     fi
 }
 
+is_robust_running()
+{
+    SCREENNAME="`basename ${OPENSIM_DIR}`-ROBUST"
+    SCREENPID=`${SCREEN} -ls ${SCREENNAME} | grep -P "${SCREENNAME}\t" | cut -f1 -d'.' | sed 's/W//g'`
+    if [ "${SCREENPID}" != "" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 any_sims_online() {
     for simulator in ${REGIONS_DIR}/*; do
         simname=`basename ${simulator} .ini`
@@ -49,6 +60,15 @@ case "$1" in
         do_install
         exit 0
         ;;
+    -test)
+        if is_robust_running; then
+	    echo "Robust must be stopped first."
+            exit 0
+        else
+            echo "Robust is not running, good."
+	    exit 0
+        fi	    
+	;;
     *)
         if any_sims_online; then
             echo "All sims need to be stopped first."
