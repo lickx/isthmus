@@ -60,15 +60,6 @@ case "$1" in
         do_install
         exit 0
         ;;
-    -test)
-        if is_robust_running; then
-	    echo "Robust must be stopped first."
-            exit 0
-        else
-            echo "Robust is not running, good."
-	    exit 0
-        fi	    
-	;;
     *)
         if any_sims_online; then
             echo "All sims need to be stopped first."
