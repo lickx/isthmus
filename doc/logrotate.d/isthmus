@@ -1,0 +1,12 @@
+# Modify the path to where isthmus stores logs and put this file
+# in /etc/logrotate.d
+# You can test the configuration with: logrotate -d /etc/logrotate.d/isthmus
+/home/opensim/isthmus/var/log/*.log {
+    su opensim opensim
+    daily
+    rotate 7
+    compress
+    missingok
+    notifempty
+}
+
