@@ -52,6 +52,7 @@ clear_scripts() {
     find "${SCRIPT_DIR}" -name "*.map" -exec rm {} \;
     find "${SCRIPT_DIR}" -name "*.mdb" -exec rm {} \;
     find "${SCRIPT_DIR}" -name "*.text" -exec rm {} \;
+    find "${SCRIPT_DIR}" -name "*.yobj" -exec rm {} \;
     do_log "Cleared non-state files from ${SCRIPT_DIR}"
 }
 
