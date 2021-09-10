@@ -2,7 +2,7 @@
 <html>
 <body>
 <?php
-    $isthmus_dir = str_replace("bin/".basename(__FILE__), "", __FILE__) . "etc";
+    $isthmus_dir = str_replace("web/slurl/".basename(__FILE__), "", __FILE__) . "etc";
     $db_ini = parse_ini_file($isthmus_dir . "/database.ini", TRUE)["DatabaseService"];
 
     if(array_key_exists("ConnectionString", $db_ini) == FALSE)
