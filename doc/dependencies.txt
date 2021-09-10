@@ -9,6 +9,8 @@ The following packages are required:
   which
   mono-complete
   uuid-runtime
+  php
+  php7.3-mysql
 
 In addition, one of the following databases is required:
 

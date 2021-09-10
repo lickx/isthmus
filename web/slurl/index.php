@@ -2,14 +2,24 @@
 <html>
 <body>
 <?php
-    require '../../etc/settings.php';
+    $isthmus_dir = str_replace("bin/".basename(__FILE__), "", __FILE__) . "etc";
+    $db_ini = parse_ini_file($isthmus_dir . "/database.ini", TRUE)["DatabaseService"];
+
+    if(array_key_exists("ConnectionString", $db_ini) == FALSE)
+    {
+        print("No ConnectionString found in ".$isthmus_dir."/database.ini");
+        exit;
+    }
+
+    $os_conn_str = str_replace(";","&",$db_ini["ConnectionString"]);
+    parse_str($os_conn_str, $db); // convert string to array seperated by &
 
     if ($_SERVER['REQUEST_METHOD'] == "GET")
     {
-        $region_name = test_input($_GET['regionname'], $welcome_name);
-        $region_x = test_num_input($_GET['x'], $welcome_x);
-        $region_y = test_num_input($_GET['y'], $welcome_y);
-        $region_z = test_num_input($_GET['z'], $welcome_z);
+        $region_name = test_input($_GET['regionname'], "Welcome");
+        $region_x = test_num_input($_GET['x'], 127);
+        $region_y = test_num_input($_GET['y'], 127);
+        $region_z = test_num_input($_GET['z'], 21);
     } else die("");
 
     function test_input($data, $default)
@@ -31,17 +41,21 @@
         return $data;
     }
 
-    $conn = new mysqli($dbserver, $dbuser, $dbpassword, $dbname);
-    if (mysqli_connect_error())
-    {
-        die("Database down");
+    try {
+        $conn = new PDO("mysql:host=".$db["DataSource"].";dbname=".$db["Database"], $db["User_Id"], $db["password"]);
+        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    } catch(PDOException $e) {
+        echo "Database connection failed: " . $e->getMessage();
+        exit;
     }
 
-    $sql = "SELECT locX, locY, sizeX, sizeY FROM regions WHERE regionName='$region_name' LIMIT 1";
-    $result = $conn->query($sql);
-    if ($result->num_rows > 0)
+    $stmt = $conn->prepare("SELECT locX, locY, sizeX, sizeY FROM regions WHERE regionName='$region_name' LIMIT 1");
+    $stmt->execute();
+
+    $result = $stmt->setFetchMode(PDO::FETCH_ASSOC);
+    if ($stmt->rowCount > 0)
     {
-        $row = $result->fetch_assoc();
+        $row = $result->fetch();
         $xcoord = $row["locX"] / 256; // worldmap coord, so div by standard region size
         $ycoord = $row["locY"] / 256;
         $sizeX = $row["sizeX"] / 256;
@@ -49,7 +63,7 @@
     } else {
         die("The region is not online or does not exist");
     }
-    $conn->close();
+    $conn = null;
 
     echo "<h1>" . $region_name . "</h1>\n";
     echo "<table style=\"border-spacing:0; border-collapse: collapse; position: relative;\">\n";
