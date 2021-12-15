@@ -115,6 +115,7 @@ setup() {
         ISTHMUS_PORT=$(findfreeport)
     fi
     export ISTHMUS_PORT
+    export REGION_LOAD_DIR="${OPENSIM_DIR}/var/Regions/${SIM}"
 }
 
 do_start() {
@@ -149,14 +150,17 @@ do_start() {
     # Change external hostname
     sed -i --follow-symlinks -e "s/ExternalHostName.*/ExternalHostName = ${ISTHMUS_HOSTNAME}/" "${REGIONS_DIR}/${SIM}.ini"
 
+    # Copy region ini to its own temp RegionDir
+    mkdir -p "${REGION_LOAD_DIR}"
+    ln -sf "${REGIONS_DIR}/${SIM}.ini" "${REGION_LOAD_DIR}/${SIM}.ini"
+
     # Second Life time is the US/Pacific-New timezone
     export TZ="US/Pacific-New"
     export LANG=C
     ulimit -n 4096
     cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SIM} -d -m -l \
         ${MONO} --desktop OpenSim.exe \
-        -inifile="${OPENSIM_DIR}/share/system/opensim.ini" \
-        -regionfile="${REGIONS_DIR}/${SIM}.ini"
+        -inifile="${OPENSIM_DIR}/share/system/opensim.ini"
 
     echo -n "[${SIM}] Starting"
     STARTTIME=0
@@ -201,6 +205,9 @@ do_kill() {
             if [ -f "${OPENSIM_DIR}/var/ports/${SIM}.port" ]; then
                 rm "${OPENSIM_DIR}/var/ports/${SIM}.port"
             fi
+            if [ -d "${REGION_LOAD_DIR}" ]; then
+                rm -r "${REGION_LOAD_DIR}"
+            fi
             echo "[${SIM}] Killed"
         fi
     fi
@@ -234,6 +241,9 @@ do_stop() {
                 # OpenSim sometimes doesn't clear up PID file
                 if [ -f "${ISTHMUS_PIDFILE}" ]; then
                     rm "${ISTHMUS_PIDFILE}"
+                fi
+                if [ -d "${REGION_LOAD_DIR}" ]; then
+                    rm -r "${REGION_LOAD_DIR}"
                 fi
                 return 0
             elif [ ${STOPTIME} -ge 120 ]; then
