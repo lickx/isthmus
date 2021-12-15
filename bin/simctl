@@ -18,7 +18,6 @@ source "${OPENSIM_DIR}/etc/isthmus.conf"
 # Mono optimizations
 export MONO_GC_PARAMS="nursery-size=32m,minor=split,promotion-age=14"
 
-export ROBUST_HOSTNAME=`hostname`
 export ISTHMUS_HOSTNAME=`hostname`
 
 show_help() {
