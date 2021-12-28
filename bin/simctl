@@ -34,6 +34,7 @@ show_help() {
     echo "saveoar <simname>   Saves region contents to an .oar archive"
     echo "enable <simname>    Enable a sim"
     echo "disable <simname>   Disable a sim"
+    echo "zap <simname>       Delete everything, and turn the region into a void"
     echo "list                List available sims"
 }
 
@@ -440,6 +441,31 @@ do_disable() {
     fi
 }
 
+do_zap() {
+    if [ ! $1 ]; then
+        show_help
+        exit 1
+    else
+        SIM=$1
+    fi
+
+    setup ${SIM}
+    check_user
+
+    if is_running ${SIM}; then
+        echo "Deleting all objects..."
+        ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "delete object name --regex \"\""
+	sleep 5
+	echo "Deleting terrain and generating 'void' map tile"
+        ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "terrain fill 0"
+	sleep 3
+        ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "generate map tile"
+	echo "Done, use 'simdel ${SIM}' to remove the sim and region entirely"
+    else
+        echo "${SIM} not running"
+    fi
+}
+
 case "$1" in
     start)
         do_start $2
@@ -483,6 +509,9 @@ case "$1" in
     disable)
         do_disable $2
         ;;
+    zap)
+	do_zap $2
+	;;
     *)
         show_help
         exit 1
