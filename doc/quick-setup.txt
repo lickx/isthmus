@@ -1,6 +1,6 @@
 
   i s t h m u s
-  Quick Setup guide                                                 18.11.23
+  Quick Setup guide                                               2021.12.16
 
 ------------------------------------------------------------------------------
 
@@ -14,11 +14,7 @@ $ ./setup
 
   To install the simulator software, this can be done now:
 
-  !! IMPORTANT
-  This will only work with the isthmus branch which can be
-  found at https://github.com/lickx/opensim
-
-$ ./rtinstall ~/Downloads/opensim-isthmus.zip
+$ ./rtinstall ~/Downloads/opensim-0.9.2.0.zip
 
 ------------------------------------------------------------------------------
 
@@ -71,9 +67,8 @@ MariaDB [(none)]> grant all on isthmus_gridname.* to isthmus_gridname@localhost 
 
 ./robust stop
 
-  For further wifi instructions, see wifi.txt, else continue manually now.
-  To create a new user manually instead of installing Wifi, type the following
-  while still in the ROBUST console:
+  To create a new user manually, type the following   while still in the ROBUST
+  console:
 
 help create user
 
@@ -117,10 +112,10 @@ $ cd ~/isthmus/bin
   Audit:    ./simauto audit
 
   You'd use restart after big upgrades with drastic changes in OpenSim, such as
-  database migrations. It will take all sims in the isthmus installation down,
-  upgrade, then start them again. Reload is typically used for reloading the
-  configuration settings, and the sims will be restarted one by one. Reload can
-  also be used for automated weekly restarts.
+  database migrations or a new script engine API version. It will take all sims
+  in the isthmus installation down, upgrade, then start them again. Reload is
+  typically used for reloading the configuration settings, and the sims will be
+  restarted one by one. Reload can also be used for automated weekly restarts.
 
   Audit will list all used ports, this can be piped for example:
   ./simauto audit | sort | less
@@ -143,7 +138,8 @@ $ cd ~/isthmus/bin
 
   Optional modules
 
-  To setup voice support provided by Vivox, refer to etc/voice.ini
-  To setup Gloebit currency, refer to etc/addins/Gloebit.ini
+  To set up voice support provided by Vivox, refer to etc/voice.ini
+  To set up Gloebit currency, refer to etc/addins/Gloebit.ini, this requires
+  an additional module (.dll) to be installed.
 
 ------------------------------------------------------------------------------

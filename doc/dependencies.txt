@@ -9,13 +9,15 @@ The following packages are required:
   which
   mono-complete
   uuid-runtime
-  php
-  php7.3-mysql
+
 
 In addition, one of the following databases is required:
 
-  mariadb (recommended)
-  mysql
-  postgresql
+  mariadb-server (recommended)
+  mysql-server
 
 
+The following packages are optional:
+
+  php (for a slurl webpage)
+  php7.3-mysql (for a slurl webpage)
