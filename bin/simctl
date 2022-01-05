@@ -154,8 +154,6 @@ do_start() {
     mkdir -p "${REGION_LOAD_DIR}"
     ln -sf "${REGIONS_DIR}/${SIM}.ini" "${REGION_LOAD_DIR}/${SIM}.ini"
 
-    # Second Life time is the US/Pacific-New timezone
-    export TZ="US/Pacific-New"
     export LANG=C
     ulimit -n 4096
     cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SIM} -d -m -l \
