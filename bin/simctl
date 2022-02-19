@@ -155,7 +155,7 @@ do_start() {
     ln -sf "${REGIONS_DIR}/${SIM}.ini" "${REGION_LOAD_DIR}/${SIM}.ini"
 
     export LANG=C
-    ulimit -n 4096
+    ulimit -n 4096 -s 262144
     cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SIM} -d -m -l \
         ${MONO} --desktop OpenSim.exe \
         -inifile="${OPENSIM_DIR}/share/system/opensim.ini"
