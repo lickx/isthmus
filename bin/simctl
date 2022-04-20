@@ -139,11 +139,6 @@ do_start() {
     setup ${SIM}
     check_user
 
-    # Rotate log file if existing already
-    #if [ -r "${ISTHMUS_LOGFILE}" ]; then
-    #    mv -f "${ISTHMUS_LOGFILE}" "${ISTHMUS_LOGFILE}.old"
-    #fi
-
     # Change UDP region port to match TCP sim port
     sed -i --follow-symlinks -e "s/InternalPort.*/InternalPort = ${ISTHMUS_PORT}/" "${REGIONS_DIR}/${SIM}.ini"
 

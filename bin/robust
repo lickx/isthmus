@@ -84,13 +84,6 @@ do_start() {
         exit 1
     fi
 
-    # Rotate log file if existing already
-    if [ -r "${ROBUST_LOGFILE}" ]; then
-        mv -f "${ROBUST_LOGFILE}" "${ROBUST_LOGFILE}.old"
-    fi
-
-    # Second Life time is the US/Pacific-New timezone
-    export TZ="US/Pacific-New"
     export LANG=C
     ulimit -n 4096
     cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SCREENNAME} -d -m -l \
