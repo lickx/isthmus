@@ -46,6 +46,8 @@ if ! is_running ${SIM} ; then
     exit 1
 fi
 
+UUID=`grep RegionUUID ${INIFILE} | cut -d"=" -f2 | xargs`
+
 echo -n "Removing region..."
 ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "change region root"
 ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "delete-region \"${REGION}\""
@@ -55,5 +57,10 @@ echo "done"
 echo "Removing simulator"
 ./simctl stop ${SIM}
 rm "${INIFILE}"
+
+if [ -w "${OPENSIM_DIR}/var/maptiles/${UUID}.jpg" ]; then
+    echo "Removing maptile"
+    rm "${OPENSIM_DIR}/var/maptiles/${UUID}.jpg"
+fi
 
 echo "Done"
