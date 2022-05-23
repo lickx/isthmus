@@ -44,7 +44,7 @@ echo "TargetEstate = 0" >> "${regions_ini}"
 #echo "MaxPrims = 20000"            >> "${regions_ini}"
 #echo "MaxAgents = 10"              >> "${regions_ini}"
 #echo "RegionType = \"Mainland\""   >> "${regions_ini}"
-echo "MaptileStaticFile = "MAP-${region_uuid}.png" >> "${regions_ini}"
+echo "MaptileStaticFile = \"MAP-${region_uuid}.png\"" >> "${regions_ini}"
 
 echo "Enabling sim.."
 cd "${OPENSIM_DIR}/etc/sims-enabled"
