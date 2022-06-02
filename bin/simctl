@@ -17,8 +17,7 @@ source "${OPENSIM_DIR}/etc/isthmus.conf"
 
 # Mono optimizations
 export MONO_GC_PARAMS="nursery-size=32m,minor=split,promotion-age=14"
-
-export ISTHMUS_HOSTNAME=`hostname`
+export MONO_THREADS_PER_CPU=300
 
 show_help() {
     echo -e "`basename $0` - Control opensim simulators\n"
@@ -143,16 +142,16 @@ do_start() {
     sed -i --follow-symlinks -e "s/InternalPort.*/InternalPort = ${ISTHMUS_PORT}/" "${REGIONS_DIR}/${SIM}.ini"
 
     # Change external hostname
-    sed -i --follow-symlinks -e "s/ExternalHostName.*/ExternalHostName = ${ISTHMUS_HOSTNAME}/" "${REGIONS_DIR}/${SIM}.ini"
+    sed -i --follow-symlinks -e "s/ExternalHostName.*/ExternalHostName = ${HOSTNAME}/" "${REGIONS_DIR}/${SIM}.ini"
 
     # Copy region ini to its own temp RegionDir
     mkdir -p "${REGION_LOAD_DIR}"
     ln -sf "${REGIONS_DIR}/${SIM}.ini" "${REGION_LOAD_DIR}/${SIM}.ini"
 
     export LANG=C
-    ulimit -n 4096 -s 262144
+    ulimit -n 4096 -s 1048576
     cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SIM} -d -m -l \
-        ${MONO} --desktop OpenSim.exe \
+        ${MONO} --server --optimize=all OpenSim.exe \
         -inifile="${OPENSIM_DIR}/share/system/opensim.ini"
 
     echo -n "[${SIM}] Starting"

@@ -22,6 +22,7 @@ export ROBUST_HOSTNAME=`hostname`
 
 # Mono optimizations
 export MONO_GC_PARAMS="nursery-size=32m,minor=split,promotion-age=14"
+export MONO_THREADS_PER_CPU=300
 
 show_help() {
     echo -e "`basename $0` - Control grid services\n"
@@ -87,7 +88,7 @@ do_start() {
     export LANG=C
     ulimit -n 4096
     cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SCREENNAME} -d -m -l \
-        ${MONO} --desktop Robust.exe \
+        ${MONO} --server --optimize=all Robust.exe \
         -inifile="${OPENSIM_DIR}/etc/robust.ini"
 
     echo -n "[${SCREENNAME}] Starting"
