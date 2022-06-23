@@ -7,6 +7,12 @@
 
 # Get the root folder of the isthmus tree
 export OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
+
+if [ ! -r "${OPENSIM_DIR}/etc/robust.ini" ]; then
+    echo "Grid services for this grid are not self-hosted but provided by a 3rd party"
+    exit
+fi
+
 LOGFILE="${OPENSIM_DIR}/var/log/isthmus.log"
 mkdir -p "${OPENSIM_DIR}/var/log"
 mkdir -p "${OPENSIM_DIR}/var/fsassets"
