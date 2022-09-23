@@ -19,6 +19,8 @@ source "${OPENSIM_DIR}/etc/isthmus.conf"
 export MONO_GC_PARAMS="nursery-size=32m,minor=split,promotion-age=14"
 export MONO_THREADS_PER_CPU=300
 
+export HOSTNAME
+
 show_help() {
     echo -e "`basename $0` - Control opensim simulators\n"
     echo "start <simname>     Start a simulator"
