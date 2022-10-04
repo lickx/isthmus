@@ -153,8 +153,7 @@ do_start() {
     export LANG=C
     ulimit -n 4096 -s 1048576
     cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SIM} -d -m -l \
-        ${MONO} --server --optimize=all OpenSim.exe \
-        -inifile="${OPENSIM_DIR}/share/system/opensim.ini"
+        ./OpenSim -inifile="${OPENSIM_DIR}/share/system/opensim.ini"
 
     echo -n "[${SIM}] Starting"
     STARTTIME=0

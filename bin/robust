@@ -94,8 +94,7 @@ do_start() {
     export LANG=C
     ulimit -n 4096
     cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SCREENNAME} -d -m -l \
-        ${MONO} --server --optimize=all Robust.exe \
-        -inifile="${OPENSIM_DIR}/etc/robust.ini"
+        ./Robust -inifile="${OPENSIM_DIR}/etc/robust.ini"
 
     echo -n "[${SCREENNAME}] Starting"
     STARTTIME=0
