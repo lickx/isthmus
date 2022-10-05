@@ -25,6 +25,9 @@ fi
 source "${OPENSIM_DIR}/etc/isthmus.conf"
 
 export ROBUST_HOSTNAME=`hostname`
+export ROBUST_LOGFILE="${OPENSIM_DIR}/var/log/robust.log"
+export ROBUST_STATS_LOGFILE="${OPENSIM_DIR}/var/log/robust_stats.log"
+export ROBUST_PIDFILE="${OPENSIM_DIR}/var/pid/robust/robust.pid"
 
 # Mono optimizations
 export MONO_GC_PARAMS="nursery-size=32m,minor=split,promotion-age=14"
