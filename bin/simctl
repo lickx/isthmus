@@ -106,8 +106,8 @@ setup() {
     mkdir -p "${OPENSIM_DIR}/var/log"
     export ISTHMUS_LOGFILE="${OPENSIM_DIR}/var/log/${SIM}.log"
 
-    mkdir -p "${OPENSIM_DIR}/var/pid"
-    export ISTHMUS_PIDFILE="${OPENSIM_DIR}/var/pid/${SIM}.pid"
+    mkdir -p "${OPENSIM_DIR}/var/pid/sims"
+    export ISTHMUS_PIDFILE="${OPENSIM_DIR}/var/pid/sims/${SIM}.pid"
 
     mkdir -p "${OPENSIM_DIR}/var/ports"
     if [ -f "${OPENSIM_DIR}/var/ports/${SIM}.port" ]; then
