@@ -21,6 +21,8 @@ export MONO_THREADS_PER_CPU=300
 
 export HOSTNAME
 
+export DOTNET_CLI_TELEMETRY_OPTOUT=1
+
 show_help() {
     echo -e "`basename $0` - Control opensim simulators\n"
     echo "start <simname>     Start a simulator"
