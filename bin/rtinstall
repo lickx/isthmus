@@ -17,7 +17,7 @@ fi
 
 do_install() {
     echo "Installing ${ZIP_FILE}"
-    EXCLUDE="bin/config-include/* bin/Regions/* bin/Estates/* bin/OpenSim.ini bin/OpenSim.exe.config bin/OpenSim32.exe.config"
+    EXCLUDE="bin/config-include/* bin/Regions/* bin/Estates/* bin/OpenSim.ini bin/OpenSim.exe.config bin/OpenSim32.exe.config bin/Robust.exe.config"
     cd "${OPENSIM_DIR}"
     unzip -q -o -d "${TARGET_DIR}" "${ZIP_FILE}" -x ${EXCLUDE} &>/dev/null
 }
