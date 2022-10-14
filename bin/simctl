@@ -37,6 +37,7 @@ show_help() {
     echo "enable <simname>    Enable a sim"
     echo "disable <simname>   Disable a sim"
     echo "zap <simname>       Delete everything, and turn the region into a void"
+    echo "maptile <simname>   Generate a new maptile (can take a while)"
     echo "list                List available sims"
 }
 
@@ -460,6 +461,22 @@ do_zap() {
     fi
 }
 
+do_maptile() {
+    if [ ! $1 ]; then
+        show_help
+        exit 1
+    else
+        SIM=$1
+    fi
+
+    setup ${SIM}
+    check_user
+
+    if is_running ${SIM}; then
+        ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "generate map tile"
+    fi
+}
+
 case "$1" in
     start)
         do_start $2
@@ -506,6 +523,9 @@ case "$1" in
     zap)
 	do_zap $2
 	;;
+    maptile)
+        do_maptile $2
+        ;;
     *)
         show_help
         exit 1
