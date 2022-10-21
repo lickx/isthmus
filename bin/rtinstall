@@ -26,7 +26,7 @@ do_install() {
     if [ -r "${OPENSIM_DIR}/runtime/bin/.version" ]; then
         NEW_VERSION=`cat ${OPENSIM_DIR}/runtime/bin/.version`
     fi
-    echo "Installation done (${NEW_VERSION})"
+    echo "Installed ${NEW_VERSION}"
 }
 
 is_running() {
@@ -86,7 +86,7 @@ case "$1" in
             OLD_VERSION=`cat ${OPENSIM_DIR}/runtime/bin/.version`
         fi
         if [ -d "${OPENSIM_DIR}/runtime/bin" ]; then
-            echo "Removing old runtime (${OLD_VERSION})..."
+            echo "Removing old runtime of ${OLD_VERSION}..."
             rm -R "${OPENSIM_DIR}/runtime/bin"
         fi
         do_install
