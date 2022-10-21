@@ -5,8 +5,10 @@ TARGET_DIR="runtime"
 SCREEN="/usr/bin/screen"
 
 if [ $# -eq 0 ]; then
-    echo "Usage: $0 [-p] <opensim_distribution.zip>"
-    echo "-p: Preserve ScriptEngines, install while running (DANGEROUS!)"
+    echo "Usage: $0 [-p|-c] <opensim_distribution.zip>"
+    echo "-p: Preserve ScriptEngines, install while running"
+    echo "-c: Perform clean install, first removing the old runtime"
+    echo "Seperate add-on modules can also be installed (with -p)"
     exit 0
 fi
 
@@ -20,6 +22,11 @@ do_install() {
     EXCLUDE="bin/config-include/* bin/Regions/* bin/Estates/* bin/OpenSim.ini bin/OpenSim.exe.config bin/Robust.exe.config"
     cd "${OPENSIM_DIR}"
     unzip -q -o -d "${TARGET_DIR}" "${ZIP_FILE}" -x ${EXCLUDE} &>/dev/null
+    NEW_VERSION="unknown version"
+    if [ -r "${OPENSIM_DIR}/runtime/bin/.version" ]; then
+        NEW_VERSION=`cat ${OPENSIM_DIR}/runtime/bin/.version`
+    fi
+    echo "Installation done (${NEW_VERSION})"
 }
 
 is_running() {
@@ -60,6 +67,33 @@ case "$1" in
         do_install
         exit 0
         ;;
+    -c)
+        if any_sims_online; then
+            echo "All sims need to be stopped first."
+            exit 0
+        fi
+        if is_running ROBUST; then
+            echo "ROBUST must be stopped first."
+            exit 0
+        fi
+        ZIP_FILE=`readlink -f "$2"`
+        echo "Clearing ScriptEngines, keeping state"
+        if [ -x "simtool" ]; then
+            ./simtool clearscripts
+        fi
+        OLD_VERSION="unknown version"
+        if [ -r "${OPENSIM_DIR}/runtime/bin/.version" ]; then
+            OLD_VERSION=`cat ${OPENSIM_DIR}/runtime/bin/.version`
+        fi
+        if [ -d "${OPENSIM_DIR}/runtime/bin" ]; then
+            echo "Removing old runtime (${OLD_VERSION})..."
+            rm -R "${OPENSIM_DIR}/runtime/bin"
+        fi
+        do_install
+        echo "Configuring runtime for isthmus..."
+        cp -r "${OPENSIM_DIR}/share/common/runtime/bin/." "${OPENSIM_DIR}/runtime/bin"
+        exit 0
+        ;;
     *)
         if any_sims_online; then
             echo "All sims need to be stopped first."
@@ -78,6 +112,4 @@ case "$1" in
         exit 0
         ;;
 esac
-
-echo "Done."
 
