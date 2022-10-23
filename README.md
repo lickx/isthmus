@@ -3,7 +3,8 @@ Easy and modular OpenSimulator management and deployment for Linux. I made this 
 
 It's probably not good enough for commercial-grade grids but makes life a lot easier for hobbyists running multiple sims in an open-to-connect grid (or your own microgrid).
 
-Isthmus works with any modern opensim runtime (OpenSim 0.9.2.* strongly recommended).
+Isthmus currently only works with the OpenSim dotnet6 branch, which will at some point be merged into master
+Alternatively, use my own OpenSim branch, binaries at https://lotix.nl/builds
 
 ## Features
   * Easily upgrade all sims at once
