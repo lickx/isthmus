@@ -26,7 +26,7 @@ if [ ! -f "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
 fi
 source "${OPENSIM_DIR}/etc/isthmus.conf"
 
-export ROBUST_HOSTNAME=`hostname`
+export ISTHMUS_HOSTNAME
 export ROBUST_LOGFILE="${OPENSIM_DIR}/var/log/robust.log"
 export ROBUST_STATS_LOGFILE="${OPENSIM_DIR}/var/log/robust_stats.log"
 export ROBUST_PIDFILE="${OPENSIM_DIR}/var/pid/robust/robust.pid"
