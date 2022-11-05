@@ -113,7 +113,7 @@ setup() {
 	exit
     fi
 
-    REGION_UUID=`grep RegionUUID ${REGION_INIFILE} | cut -d"=" -f2 | xargs`
+    REGION_UUID=`grep RegionUUID "${REGION_INIFILE}" | cut -d"=" -f2 | xargs`
 
     mkdir -p "${OPENSIM_DIR}/var/log"
     export ISTHMUS_LOGFILE="${OPENSIM_DIR}/var/log/${SIM}.log"
