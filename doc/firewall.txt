@@ -2,10 +2,7 @@ The TCP and UDP sim ports by default use the range 9000..9100 (see etc/isthmus.c
 They will be auto assigned (picked from this range)
 
 If also using Robust (microgrid), 8002 TCP needs to be open
-
-Your server's FQDN will automatically be used for Robust and ExternalHostNameForLSL
-It is advised to set up reverse DNS correctly (make the ip adress resolve to your FQDN),
-you usually do that in the web control panel that your server provider offers.
+Your grid home URI (like hg.example.com) needs to have an A record in DNS, not CNAME!
 
 It is strongly recommended to disable ipv6 on OpenSim servers. You do that in /etc/sysctl.conf:
 
