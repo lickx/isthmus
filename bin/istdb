@@ -1,0 +1,34 @@
+#!/bin/bash
+OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
+DB_SETTINGS="${OPENSIM_DIR}/etc/database.ini" 
+
+if [ ! -r "${DB_SETTINGS}" ]; then
+	echo "Could not access ${DB_SETTINGS}"
+	exit
+fi
+
+GetDbConfig () {
+    DB_KEY=$1
+    # Caveats: Only parses the first ConnectionString, uncommented or not!
+    DB_VALUE=`grep "ConnectionString" "${DB_SETTINGS}" | sed -e 's/ConnectionString =//g' -e 's/"//g' -e 's/;/\n/g' | grep -i "$1" | cut -d= -f2`
+    echo "${DB_VALUE}"
+}
+
+do_log() {
+    logline="`date` - $1"
+    echo $logline >> "${OPENSIM_DIR}/var/log/isthmus.log"
+}
+
+DB_NAME=`GetDbConfig "Database"`
+DB_USER=`GetDbConfig "User Id"`
+DB_PASS=`GetDbConfig "password"`
+
+if [ "${DB_NAME}" == "" ] || [ "${DB_USER}" == "" ] || [ "${DB_PASS}" == "" ]; then
+    echo "Can't continue, ${DB_SETTINGS} not configured"
+    exit
+fi
+
+do_log "istdb - Executing sql query: ${@}"
+mysql -u ${DB_USER} -p${DB_PASS} -D ${DB_NAME} -e "$@"
+
+
