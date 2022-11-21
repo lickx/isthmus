@@ -17,6 +17,11 @@ if [ ! -x `which unzip` ]; then
     exit 0
 fi
 
+do_log() {
+    logline="`date` - $1"
+    echo $logline >> "${OPENSIM_DIR}/var/log/isthmus.log"
+}
+
 do_install() {
     echo "Installing ${ZIP_FILE}"
     EXCLUDE="bin/config-include/* bin/Regions/* bin/Estates/* bin/OpenSim.ini bin/OpenSim.exe.config bin/Robust.exe.config"
@@ -27,6 +32,7 @@ do_install() {
         NEW_VERSION=`cat ${OPENSIM_DIR}/runtime/bin/.version`
     fi
     echo "Installed ${NEW_VERSION}"
+    do_log "rtinstall: Installed runtime ${NEW_VERSION}"
 }
 
 is_running() {
