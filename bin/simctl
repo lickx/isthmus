@@ -108,6 +108,10 @@ setup() {
 
     REGION_INIFILE="${OPENSIM_DIR}/etc/sims-available/${SIM}.ini" 
 
+    # No idea why these are written in runtime/bin and not var/maptiles :S
+    # Not good in the case the runtime would be on a read-only mount.
+    REGION_MAPTILE="${OPENSIM_DIR}/runtime/bin/MAP-${REGION_UUID}.png"
+
     if [ ! -r "${REGION_INIFILE}" ]; then
         echo "[ ${SIM} ] Does not exist within this isthmus"
 	exit
@@ -177,6 +181,10 @@ do_start() {
         if is_running ${SIM}; then
             echo "${ISTHMUS_PORT}" > "${OPENSIM_DIR}/var/ports/${SIM}.port"
             echo " started"
+	    if [ ! -r "${REGION_MAPTILE}" ]; then
+                echo "[${SIM}] Generating initial map tile"
+                do_maptile ${SIM}
+	    fi
             exit 0
         elif [ ${STARTTIME} -ge 30 ]; then
             echo " Failed. Disabling sim!"
@@ -486,6 +494,22 @@ do_maptile() {
     fi
 }
 
+do_clear_maptile() {
+    if [ ! $1 ]; then
+        show_help
+        exit 1
+    else
+        SIM=$1
+    fi
+
+    setup ${SIM}
+    check_user
+
+    if [ -r "${REGION_MAPTILE}" ]; then
+        rm "${REGION_MAPTILE}"
+    fi
+}
+
 case "$1" in
     start)
         do_start $2
@@ -535,6 +559,9 @@ case "$1" in
     maptile)
         do_maptile $2
         ;;
+    clear_maptile)
+	do_clear_maptile $2
+	;;
     *)
         show_help
         exit 1
