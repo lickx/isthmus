@@ -21,7 +21,7 @@ mkdir -p "${OPENSIM_DIR}/var/log"
 touch ${LOGFILE}
 
 do_log() {
-    logline="`date` - $1"
+    logline="`date` - simbackup - $1"
     echo $logline >> $LOGFILE
 }
 

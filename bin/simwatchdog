@@ -16,7 +16,7 @@ cd "${OPENSIM_DIR}/bin"
 mkdir -p "${OPENSIM_DIR}/var/log"
 
 do_log() {
-    logline="`date` - $1"
+    logline="`date` - simwatchdog - $1"
     echo $logline >> $LOGFILE
 }
 

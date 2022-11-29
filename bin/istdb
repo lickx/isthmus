@@ -15,7 +15,7 @@ GetDbConfig () {
 }
 
 do_log() {
-    logline="`date` - $1"
+    logline="`date` - istdb - $1"
     echo $logline >> "${OPENSIM_DIR}/var/log/isthmus.log"
 }
 

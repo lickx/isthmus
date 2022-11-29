@@ -45,7 +45,7 @@ show_help() {
 }
 
 do_log() {
-    logline="`date` - $1"
+    logline="`date` - robust - $1"
     echo $logline >> $LOGFILE
 }
 

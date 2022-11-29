@@ -42,7 +42,7 @@ show_help() {
 }
 
 do_log() {
-    logline="`date` - $1"
+    logline="`date` - simctl - $1"
     echo $logline >> "${OPENSIM_DIR}/var/log/isthmus.log"
 }
 
