@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 DB_SETTINGS="${OPENSIM_DIR}/etc/database.ini" 
 

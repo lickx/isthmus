@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 export OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 source "${OPENSIM_DIR}/etc/isthmus.conf"
 cd "${OPENSIM_DIR}/runtime/bin"

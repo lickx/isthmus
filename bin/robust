@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Original code by Dave Coyle (http://coyled.com)
 # Tweaks by Gwyneth Llewelyn (http://gwynethllewelyn.net/)
 # Total overhaul by lickx (https://github.com/lickx)

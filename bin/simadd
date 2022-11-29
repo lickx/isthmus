@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 
 # Install isthmus config file if not already there, and then source it
