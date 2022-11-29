@@ -108,16 +108,16 @@ setup() {
 
     REGION_INIFILE="${OPENSIM_DIR}/etc/sims-available/${SIM}.ini" 
 
-    # No idea why these are written in runtime/bin and not var/maptiles :S
-    # Not good in the case the runtime would be on a read-only mount.
-    REGION_MAPTILE="${OPENSIM_DIR}/runtime/bin/MAP-${REGION_UUID}.png"
-
     if [ ! -r "${REGION_INIFILE}" ]; then
         echo "[ ${SIM} ] Does not exist within this isthmus"
 	exit
     fi
 
     REGION_UUID=`grep RegionUUID "${REGION_INIFILE}" | cut -d"=" -f2 | xargs`
+
+    # No idea why these are written in runtime/bin and not var/maptiles :S
+    # Not good in the case the runtime would be on a read-only mount.
+    REGION_MAPTILE="${OPENSIM_DIR}/runtime/bin/MAP-${REGION_UUID}.png"
 
     mkdir -p "${OPENSIM_DIR}/var/log"
     export ISTHMUS_LOGFILE="${OPENSIM_DIR}/var/log/${SIM}.log"
