@@ -211,19 +211,29 @@ case "$1" in
 	fi
         ;;
     kill)
-	setup $2
-        do_kill
+        if [ $# == 2]; then
+            setup $2
+            do_kill
+	fi
         ;;
     restart)
-	setup $2
-        do_stop
-        # Take time for the pid file to clear
-        sleep 1
-        do_start
+	if [ $# == 1 ]; then
+	    do_stop_all
+	    sleep 1
+            do_start_all
+	else
+	    setup $2
+            do_stop
+            # Take time for the pid file to clear
+            sleep 1
+            do_start
+	fi
         ;;
     status)
-	setup $2
-        get_status
+        if [ $# == 2]; then
+	    setup $2
+            get_status
+	fi
         ;;
     *)
         show_help
