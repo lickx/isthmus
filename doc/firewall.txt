@@ -29,8 +29,9 @@ sudo ufw enable (press y)
 # We use TCP and UDP 9000-9100 for the simulators and their regions:
 sudo ufw allow 9000:9100
 
-# Optional, if you will have a microgrid running Robust:
-sudo ufw allow 8002/tcp
+# This port range should be public for a microgrid:
+sudo ufw allow 8000:8009/tcp
+(port range 8010-8019/tcp are private ports we use)
 
 # Now you should be all set up:
 sudo ufw status verbose

@@ -8,9 +8,17 @@
 # Get the root folder of the isthmus tree
 export OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 
-if [ ! -r "${OPENSIM_DIR}/etc/robust.ini" ]; then
-    echo "Grid services for this grid are not self-hosted but provided by a 3rd party"
-    exit
+if [ ! -d "${OPENSIM_DIR}/etc/robust.d" ]; then
+    if [ -r "${OPENSIM_DIR}/etc/robust.ini" ]; then
+        mkdir -p "${OPENSIM_DIR}/etc/robust.d"
+	mv "${OPENSIM_DIR}/etc/robust.ini" "${OPENSIM_DIR}/etc/robust.d/00main.ini"
+        echo "etc/robust.ini has been migrated to etc/robust.d/00main.ini"
+	echo "For an example of a split-robust setup, see the config files in:"
+        echo "share/grids/microgrid-hg/etc/robust.d"
+    else
+        echo "Grid services for this grid are not self-hosted but provided by a 3rd party"
+        exit
+    fi
 fi
 
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
@@ -27,21 +35,16 @@ fi
 source "${OPENSIM_DIR}/etc/isthmus.conf"
 
 export ISTHMUS_HOSTNAME
-export ROBUST_LOGFILE="${OPENSIM_DIR}/var/log/robust.log"
-export ROBUST_STATS_LOGFILE="${OPENSIM_DIR}/var/log/robust_stats.log"
-export ROBUST_PIDFILE="${OPENSIM_DIR}/var/pid/robust/robust.pid"
-
-# Mono optimizations
-export MONO_GC_PARAMS="nursery-size=32m,minor=split,promotion-age=14"
-export MONO_THREADS_PER_CPU=300
 
 show_help() {
     echo -e "`basename $0` - Control grid services\n"
-    echo "start               Start robust"
-    echo "stop                Stop robust"
-    echo "kill                Stop by sending SIGHUP (unclean)"
-    echo "restart             Issues a stop, then start command"
-    echo "status              Returns status"
+    echo "start                         Start all robust instances"
+    echo "start <instance>              Start robust"
+    echo "stop                          Stop all robust instances"
+    echo "stop <instance>               Stop robust"
+    echo "kill <instance>               Stop by sending SIGHUP (unclean)"
+    echo "restart <instance>            Issues a stop, then start command"
+    echo "status <instance>             Returns status"
 }
 
 do_log() {
@@ -76,21 +79,30 @@ get_status() {
 }
 
 setup() {
+    if [ ! $1 ]; then
+        show_help
+        exit 1
+    else
+        INSTANCE=$1
+    fi
+
+    INSTANCE_INIFILE="${OPENSIM_DIR}/etc/robust.d/${INSTANCE}.ini"
+    SCREENNAME="`basename ${OPENSIM_DIR}`-${INSTANCE}"
+
+    if [ ! -r "${INSTANCE_INIFILE}" ]; then
+        echo "${INSTANCE}.ini does not exist within etc/robust.d"
+	exit
+    fi
+
     mkdir -p "${OPENSIM_DIR}/var/log"
-    export ROBUST_LOGFILE="${OPENSIM_DIR}/var/log/robust.log"
+    export ROBUST_LOGFILE="${OPENSIM_DIR}/var/log/robust-${INSTANCE}.log"
+    export ROBUST_STATS_LOGFILE="${OPENSIM_DIR}/var/log/robust_stats.log"
 
     mkdir -p "${OPENSIM_DIR}/var/pid/robust"
-    export ROBUST_PIDFILE="${OPENSIM_DIR}/var/pid/robust/robust.pid"
-
-    SCREENNAME="`basename ${OPENSIM_DIR}`-ROBUST"
+    export ROBUST_PIDFILE="${OPENSIM_DIR}/var/pid/robust/${INSTANCE}.pid"
 }
 
 do_start() {
-    if [ ! -r "${OPENSIM_DIR}/etc/robust.ini" ]; then
-        echo "etc/robust.ini does not exist"
-        exit 1
-    fi
-
     if is_running; then
         echo "[${SCREENNAME}] Already started"
         exit 1
@@ -99,7 +111,7 @@ do_start() {
     export LANG=C
     ulimit -n 4096
     cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SCREENNAME} -d -m -l \
-        ./Robust -inifile="${OPENSIM_DIR}/etc/robust.ini"
+        ./Robust -inifile="${INSTANCE_INIFILE}"
 
     echo -n "[${SCREENNAME}] Starting"
     STARTTIME=0
@@ -110,18 +122,17 @@ do_start() {
         echo -n "."
         if is_running; then
             echo " started"
-            exit 0
+	    return
         elif [ ${STARTTIME} -ge 30 ]; then
             echo " failed!"
-            do_log "[${SCREENNAME}] Robust has problems with starting"
-            exit 1
+            do_log "Instance ${INSTANCE} has problems with starting"
+	    return
         fi
     done
 }
 
 do_kill() {
     if is_running; then
-        PID="${OPENSIM_DIR}/var/Robust.exe.pid"
         if [ -f ${ROBUST_PIDFILE} ]; then
             kill -9 `cat ${ROBUST_PIDFILE}`
             rm ${ROBUST_PIDFILE}
@@ -146,7 +157,7 @@ do_stop() {
             elif [ ${STOPTIME} -ge 120 ]; then
                 echo " killing"
                 do_kill
-                do_log "[${SCREENNAME}] Robust took a long time to shutdown"
+                do_log "Instance ${INSTANCE} took a long time to shutdown"
                 return 1
             fi
         done
@@ -156,25 +167,62 @@ do_stop() {
     fi
 }
 
+do_start_all()
+{
+    filelist=`ls ${OPENSIM_DIR}/etc/robust.d/*`
+    for r in ${filelist}; do
+        filename=`basename ${r} .ini`
+	setup ${filename}
+	if ! is_running; then
+            do_start
+	fi
+    done;
+}
+
+do_stop_all()
+{
+    # shutdown all instances in reverse order
+    filelist=`ls ${OPENSIM_DIR}/etc/robust.d/* | sort -r`
+    for r in ${filelist}; do
+        filename=`basename ${r} .ini`
+	setup ${filename}
+	if is_running; then
+            do_stop
+	fi
+    done;
+}
+
 check_user
-setup
 case "$1" in
     start)
-        do_start
+	if [ $# == 1 ]; then
+	    do_start_all
+	else
+	    setup $2
+            do_start
+	fi
         ;; 
     stop)
-        do_stop
+	if [ $# == 1 ]; then
+	    do_stop_all
+	else
+	    setup $2
+            do_stop
+	fi
         ;;
     kill)
+	setup $2
         do_kill
         ;;
     restart)
+	setup $2
         do_stop
         # Take time for the pid file to clear
         sleep 1
         do_start
         ;;
     status)
+	setup $2
         get_status
         ;;
     *)
