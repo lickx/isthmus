@@ -51,13 +51,6 @@ check_user() {
 }
 
 is_running() {
-    if [ ! $1 ]; then
-        show_help
-        exit 1
-    else
-        SIM=$1
-    fi
-
     SCREENPID=`${SCREEN} -ls ${SIM} | grep -P "${SIM}\t" | cut -f1 -d'.' | sed 's/W//g'`
     if [ "${SCREENPID}" != "" ]; then
         return 0
@@ -67,14 +60,7 @@ is_running() {
 }
 
 get_status() {
-    if [ ! $1 ]; then
-        show_help
-        exit 1
-    else
-        SIM=$1
-    fi
-
-    if is_running ${SIM}; then
+    if is_running; then
         echo "${SIM} - online"
         exit 1
     else
@@ -138,7 +124,7 @@ do_start() {
         exit 1
     fi
 
-    if is_running ${SIM}; then
+    if is_running; then
         echo "[${SIM}] Already started"
         exit 1
     fi
@@ -165,7 +151,7 @@ do_start() {
         sleep 5
         STARTTIME=$((STARTTIME + 5))
         echo -n "."
-        if is_running ${SIM}; then
+        if is_running; then
             echo "${ISTHMUS_PORT}" > "${OPENSIM_DIR}/var/ports/${SIM}.port"
             echo " started"
 	    if [ ! -r "${REGION_MAPTILE}" ]; then
@@ -187,7 +173,7 @@ do_start() {
 }
 
 do_kill() {
-    if is_running ${SIM}; then
+    if is_running; then
         # Send backup command and wait 1 minute
         ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nbackup"
         sleep 60
@@ -206,7 +192,7 @@ do_kill() {
 }
 
 do_stop() {
-    if is_running ${SIM}; then
+    if is_running; then
         echo -n "[${SIM}] Stopping"
         ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nquit"
         STOPTIME=0
@@ -215,7 +201,7 @@ do_stop() {
             sleep 5
             STOPTIME=$((STOPTIME + 5))
             echo -n "."
-            if ! is_running ${SIM}; then
+            if ! is_running; then
                 if [ -f "${OPENSIM_DIR}/var/ports/${SIM}.port" ]; then
                     rm "${OPENSIM_DIR}/var/ports/${SIM}.port"
                 fi
@@ -242,7 +228,7 @@ do_stop() {
 }
 
 do_alert() {
-    if is_running ${SIM}; then
+    if is_running; then
         ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nalert $1"
     else
         echo "${SIM} not running"
@@ -250,7 +236,7 @@ do_alert() {
 }
 
 do_bluebox() {
-    if is_running ${SIM}; then
+    if is_running; then
         ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nregion restart bluebox \"$1\" $2"
         echo -n "[${SIM}] Scheduled for stopping in $2 seconds"
         sleep $2
@@ -260,7 +246,7 @@ do_bluebox() {
             sleep 5
             STOPTIME=$((STOPTIME + 5))
             echo -n "."
-            if ! is_running ${SIM}; then
+            if ! is_running; then
                 if [ -f "${OPENSIM_DIR}/var/ports/${SIM}.port" ]; then
                     rm "${OPENSIM_DIR}/var/ports/${SIM}.port"
                 fi
@@ -279,7 +265,7 @@ do_bluebox() {
 }
 
 do_backup() {
-    if is_running ${SIM}; then
+    if is_running; then
         ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "backup"
     else
         echo "${SIM} not running"
@@ -313,7 +299,7 @@ do_saveoar() {
 
     mkdir -p "${LOCAL_OAR_PATH}"
 
-    if is_running ${SIM}; then
+    if is_running; then
         # Alert inworld about temporary degraded performance"
         ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nalert \"SYSTEM NOTICE: Region backup in progress. Performance might be a bit slower for a few minutes..\""
         sleep 3
@@ -332,7 +318,8 @@ do_list() {
     fi
     for simulator in ${OPENSIM_DIR}/etc/sims-${WHAT}/*; do
         simname=`basename ${simulator} .ini`
-	if is_running ${simname}; then
+	setup ${simname}
+	if is_running; then
             echo "${simname} - online"
 	else
             echo "${simname} - offline"
@@ -341,13 +328,6 @@ do_list() {
 }
 
 do_enable() {
-    if [ ! $1 ]; then
-        show_help
-        exit 1
-    else
-        SIM=$1
-    fi
-
     if [ ! -r "${OPENSIM_DIR}/etc/sims-available/${SIM}.ini" ]; then
         echo "${SIM}: No such sim"
         exit 1
@@ -363,13 +343,6 @@ do_enable() {
 }
 
 do_disable() {
-    if [ ! $1 ]; then
-        show_help
-        exit 1
-    else
-        SIM=$1
-    fi
-
     if [ ! -r "${OPENSIM_DIR}/etc/sims-available/${SIM}.ini" ]; then
         echo "[${SIM}]: No such sim"
         exit 1
@@ -385,7 +358,7 @@ do_disable() {
 }
 
 do_zap() {
-    if is_running ${SIM}; then
+    if is_running; then
         echo "Deleting all objects..."
         ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "delete object name --regex \"\""
 	sleep 5
@@ -400,7 +373,7 @@ do_zap() {
 }
 
 do_maptile() {
-    if is_running ${SIM}; then
+    if is_running; then
         ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "generate map tile"
     fi
 }
