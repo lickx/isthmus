@@ -287,14 +287,14 @@ do_audit() {
 }
 
 
-# do_saveoar simname (oarpath)
+# do_saveoar (oarpath)
 # Saves oars for region in simulator
 # If no oarpath specified, use default var/backup/yyyy-mm-dd
 do_saveoar() {
-    if [ ! $3 ]; then
+    if [ "$1" == "" ]; then
         LOCAL_OAR_PATH="${OPENSIM_DIR}/var/backup/`date -I'date'`"
     else
-        LOCAL_OAR_PATH=$3 
+        LOCAL_OAR_PATH=$1
     fi
 
     mkdir -p "${LOCAL_OAR_PATH}"
@@ -427,7 +427,7 @@ case "$1" in
         ;;
     saveoar)
         setup $2
-        do_saveoar
+        do_saveoar "$3"
         ;;
     backup)
 	setup $2
