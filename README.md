@@ -16,11 +16,13 @@ Alternatively, use my own OpenSim branch, binaries at https://lotix.nl/builds
   * Dynamic port assignment (user definable range)
   * Easily set up a microgrid using robust
   * Only allow modern, non-shady viewers (optional)
+  * Split robust for more stability and speed
+  * Groups and offline IM enabled
   
 ## Preconfigured
-Works out of the box for:
+Works out of the box:
 
-  * OsGrid (https://www.osgrid.org)
-  * Built-in robust gridserver (either with or without hypergrid)
+  * To attach regions to OsGrid (https://www.osgrid.org)
+  * To attach regions to a built-in microgrid (either with or without hypergrid)
 
 For more info see the contents of the doc folder
