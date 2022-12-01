@@ -30,5 +30,5 @@ fi
 
 do_log "istdb - Executing sql query: ${@}"
 mysql -u ${DB_USER} -p${DB_PASS} -D ${DB_NAME} -e "$@"
-
+exit $?
 

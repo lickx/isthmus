@@ -15,10 +15,6 @@ if [ ! -f "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
 fi
 source "${OPENSIM_DIR}/etc/isthmus.conf"
 
-# Mono optimizations
-export MONO_GC_PARAMS="nursery-size=32m,minor=split,promotion-age=14"
-export MONO_THREADS_PER_CPU=300
-
 export ISTHMUS_HOSTNAME
 
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
@@ -31,14 +27,15 @@ show_help() {
     echo "alert <simname> \"This is an alert\"    Send an inworld alert msg"
     echo "restart <simname>   Issues a stop, then start command"
     echo "bluebox <simname> \"This is a warning\" <seconds>  Stop after an inworld warning"
-    echo "status <simname>    Returns online status"
     echo "backup <simname>    Ensure database is saved"
     echo "saveoar <simname>   Saves region contents to an .oar archive"
     echo "enable <simname>    Enable a sim"
     echo "disable <simname>   Disable a sim"
     echo "zap <simname>       Delete region contents and turn the maptile into water"
     echo "maptile <simname>   Generate a new maptile (can take a while)"
-    echo "list                List available sims"
+    echo "delete-maptile <simname>   Delete the maptile"
+    echo "status (simname)    Returns online status (all if no parameter)"
+    echo "list (enabled|available)  List enabled (default) or available sims"
 }
 
 do_log() {
@@ -78,10 +75,10 @@ get_status() {
     fi
 
     if is_running ${SIM}; then
-        echo "[${SIM}] is online"
+        echo "${SIM} - online"
         exit 1
     else
-        echo "[${SIM}] is offline"
+        echo "${SIM} - offline"
         exit 0 
     fi
 }
@@ -136,13 +133,6 @@ setup() {
 }
 
 do_start() {
-    if [ ! $1 ]; then
-        show_help
-        exit 1
-    else
-        SIM=$1
-    fi
-
     if [ ! -r "${REGIONS_DIR}/${SIM}.ini" ]; then
         echo "[${SIM}] Not enabled or does not exist"
         exit 1
@@ -152,9 +142,6 @@ do_start() {
         echo "[${SIM}] Already started"
         exit 1
     fi
-
-    setup ${SIM}
-    check_user
 
     # Change UDP region port to match TCP sim port
     sed -i --follow-symlinks -e "s/InternalPort.*/InternalPort = ${ISTHMUS_PORT}/" "${REGIONS_DIR}/${SIM}.ini"
@@ -182,8 +169,10 @@ do_start() {
             echo "${ISTHMUS_PORT}" > "${OPENSIM_DIR}/var/ports/${SIM}.port"
             echo " started"
 	    if [ ! -r "${REGION_MAPTILE}" ]; then
-                echo "[${SIM}] Generating initial map tile"
+                echo -n "[${SIM}] Generating initial map tile in 15 seconds.."
+		sleep 15
                 do_maptile ${SIM}
+		echo "done"
 	    fi
             exit 0
         elif [ ${STARTTIME} -ge 30 ]; then
@@ -198,16 +187,6 @@ do_start() {
 }
 
 do_kill() {
-    if [ ! $1 ]; then
-        show_help
-        exit 1
-    else
-        SIM=$1
-    fi
-
-    setup ${SIM}
-    check_user
-
     if is_running ${SIM}; then
         # Send backup command and wait 1 minute
         ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nbackup"
@@ -227,16 +206,6 @@ do_kill() {
 }
 
 do_stop() {
-    if [ ! $1 ]; then
-        show_help
-        exit 1
-    else
-        SIM=$1
-    fi
-
-    setup ${SIM}
-    check_user
-
     if is_running ${SIM}; then
         echo -n "[${SIM}] Stopping"
         ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nquit"
@@ -273,38 +242,18 @@ do_stop() {
 }
 
 do_alert() {
-    if [ ! $1 ]; then
-        show_help
-        exit 1
-    else
-        SIM=$1
-    fi
-
-    setup ${SIM}
-    check_user
-
     if is_running ${SIM}; then
-        ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nalert $2"
+        ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nalert $1"
     else
         echo "${SIM} not running"
     fi
 }
 
 do_bluebox() {
-    if [ ! $1 ]; then
-        show_help
-        exit 1
-    else
-        SIM=$1
-    fi
-
-    setup ${SIM}
-    check_user
-
     if is_running ${SIM}; then
-        ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nregion restart bluebox \"$2\" $3"
-        echo -n "[${SIM}] Scheduled for stopping in $3 seconds"
-        sleep $3
+        ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nregion restart bluebox \"$1\" $2"
+        echo -n "[${SIM}] Scheduled for stopping in $2 seconds"
+        sleep $2
         STOPTIME=0
         while :
         do
@@ -330,16 +279,6 @@ do_bluebox() {
 }
 
 do_backup() {
-    if [ ! $1 ]; then
-        show_help
-        exit 1
-    else
-        SIM=$1
-    fi
-
-    setup ${SIM}
-    check_user
-
     if is_running ${SIM}; then
         ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "backup"
     else
@@ -348,13 +287,6 @@ do_backup() {
 }
 
 do_audit() {
-    if [ ! $1 ]; then
-        show_help
-        exit 1
-    else
-        SIM=$1
-    fi
-
     if [ ! -r ${REGIONS_DIR}/${SIM}.ini ]; then
         echo "${SIM}: No such sim or not enabled"
         exit 1
@@ -373,16 +305,6 @@ do_audit() {
 # Saves oars for region in simulator
 # If no oarpath specified, use default var/backup/yyyy-mm-dd
 do_saveoar() {
-    if [ ! $1 ]; then
-        show_help
-        exit 1
-    else
-        SIM=$1
-    fi
-
-    setup ${SIM}
-    check_user
-
     if [ ! $3 ]; then
         LOCAL_OAR_PATH="${OPENSIM_DIR}/var/backup/`date -I'date'`"
     else
@@ -403,9 +325,18 @@ do_saveoar() {
 }
 
 do_list() {
-    for simulator in ${REGIONS_DIR}/*; do
+    if [ "$1" == "" ]; then
+	WHAT="enabled"
+    else
+        WHAT=$1
+    fi
+    for simulator in ${OPENSIM_DIR}/etc/sims-${WHAT}/*; do
         simname=`basename ${simulator} .ini`
-        echo "${simname}"
+	if is_running ${simname}; then
+            echo "${simname} - online"
+	else
+            echo "${simname} - offline"
+	fi
     done;
 }
 
@@ -440,7 +371,7 @@ do_disable() {
     fi
 
     if [ ! -r "${OPENSIM_DIR}/etc/sims-available/${SIM}.ini" ]; then
-        echo "${SIM}: No such sim"
+        echo "[${SIM}]: No such sim"
         exit 1
     fi
 
@@ -448,22 +379,12 @@ do_disable() {
         rm "${REGIONS_DIR}/${SIM}.ini"
         exit 0
     else
-        echo "${SIM}: Already disabled"
+        echo "[${SIM}] Already disabled"
         exit 1
     fi
 }
 
 do_zap() {
-    if [ ! $1 ]; then
-        show_help
-        exit 1
-    else
-        SIM=$1
-    fi
-
-    setup ${SIM}
-    check_user
-
     if is_running ${SIM}; then
         echo "Deleting all objects..."
         ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "delete object name --regex \"\""
@@ -479,89 +400,89 @@ do_zap() {
 }
 
 do_maptile() {
-    if [ ! $1 ]; then
-        show_help
-        exit 1
-    else
-        SIM=$1
-    fi
-
-    setup ${SIM}
-    check_user
-
     if is_running ${SIM}; then
         ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "generate map tile"
     fi
 }
 
-do_clear_maptile() {
-    if [ ! $1 ]; then
-        show_help
-        exit 1
-    else
-        SIM=$1
-    fi
-
-    setup ${SIM}
-    check_user
-
+do_delete_maptile() {
     if [ -r "${REGION_MAPTILE}" ]; then
         rm "${REGION_MAPTILE}"
     fi
 }
 
+check_user
 case "$1" in
     start)
-        do_start $2
+	setup $2
+        do_start
         ;; 
     stop)
-        do_stop $2
+	setup $2
+        do_stop
         ;;
     kill)
-        do_kill $2
+	setup $2
+        do_kill
         ;;
     alert)
-        do_alert $2 "$3"
+	setup $2
+        do_alert "$3"
         ;;
     bluebox)
-        do_bluebox $2 "$3" $4
+	setup
+        do_bluebox "$3" $4
         ;;
     restart)
-        do_stop $2
+	setup $2
+        do_stop
         # Take time for the pid file to clear
         sleep 3
-        do_start $2
+        do_start
         ;;
     status)
-        get_status $2
+        if [ $# == 1 ]; then
+            do_list enabled
+	else
+	    setup $2
+            get_status
+	fi
         ;;
     audit)
-        do_audit $2
+	setup $2
+        do_audit
         ;;
     saveoar)
-        do_saveoar $2
+        setup $2
+        do_saveoar
         ;;
     backup)
-        do_backup $2
-        ;;
-    list)
-        do_list
+	setup $2
+        do_backup
         ;;
     enable)
-        do_enable $2
+	setup $2
+        do_enable
         ;;
     disable)
-        do_disable $2
+	setup $2
+        do_disable
         ;;
     zap)
-	do_zap $2
+	setup $2
+	do_zap
 	;;
     maptile)
-        do_maptile $2
+	setup $2
+        do_maptile
         ;;
-    clear_maptile)
-	do_clear_maptile $2
+    delete_maptile)
+	setup $2
+	do_delete_maptile
 	;;
+    list)
+        do_list $2
+        ;;
     *)
         show_help
         exit 1

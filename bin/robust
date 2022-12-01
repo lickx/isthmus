@@ -70,10 +70,10 @@ is_running() {
 
 get_status() {
     if is_running; then
-        echo "[${SCREENNAME}] is online"
+        echo "${INSTANCE} - online"
         return 1
     else
-        echo "[${SCREENNAME}] is offline"
+        echo "${INSTANCE} - offline"
         return 0 
     fi
 }
