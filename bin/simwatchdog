@@ -5,8 +5,6 @@ if [ $# -eq 0 ]; then
 fi
 
 OPENSIM_DIR=$1
-REGIONS_DIR="${OPENSIM_DIR}/etc/sims-enabled"
-SIMCTL="${OPENSIM_DIR}/bin/simctl"
 LOGFILE="${OPENSIM_DIR}/var/log/watchdog.log"
 SCREEN="/usr/bin/screen"
 START_DELAY=60
@@ -24,19 +22,37 @@ if [ -f ${SIMAUTO_LOCK} ]; then
     exit 0
 fi
 
-for simulator in ${REGIONS_DIR}/*; do
-    SIM=`basename ${simulator} .ini`
+REGIONS_DIR="${OPENSIM_DIR}/etc/sims-enabled"
+for filename in ${REGIONS_DIR}/*; do
+    SIM=`basename ${filename} .ini`
     SCREENPID=`${SCREEN} -ls ${SIM} | grep -P "${SIM}\t" | cut -f1 -d'.' | sed 's/W//g'`
     if [ "${SCREENPID}" == "" ]; then
-        if [ -r "${simulator}" ]; then
-            # Single region instance
-            do_log "[${SIM}] Not online, restarting"
-            ${SIMCTL} kill ${SIM}
-            sleep 10
-            ${SIMCTL} start ${SIM}
-            sleep ${START_DELAY}
-        fi
-    #else
-    #    do_log "[${SIM}] is running OK"
+        do_log "Simulator '${SIM}' not online, restarting"
+        ./simctl kill ${SIM}
+        sleep 10
+        ./simctl start ${SIM}
+        sleep ${START_DELAY}
+    else
+        do_log "Simulator '${SIM}' is running OK"
     fi
 done;
+
+ROBUST_DIR="${OPENSIM_DIR}/etc/robust.d"
+if [ ! -d "${ROBUST_DIR}" ]; then
+    exit
+fi
+for filename in ${ROBUST_DIR}/*; do
+    ROBUST_INSTANCE=`basename ${filename} .ini`
+    SCREENNAME="`basename ${OPENSIM_DIR}`-${ROBUST_INSTANCE}"
+    SCREENPID=`${SCREEN} -ls ${SCREENNAME} | grep -P "${SCREENNAME}\t" | cut -f1 -d'.' | sed 's/W//g'`
+    if [ "${SCREENPID}" == "" ]; then
+        do_log "Robust instance '${ROBUST_INSTANCE}' not online, restarting"
+        ./robust kill ${ROBUST_INSTANCE}
+        sleep 10
+        ./robust start ${ROBUST_INSTANCE}
+        sleep ${START_DELAY}
+    else
+        do_log "Robust instance '${ROBUST_INSTANCE}' is running OK"
+    fi
+done;
+
