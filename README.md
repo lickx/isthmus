@@ -11,12 +11,13 @@ Alternatively, use my own OpenSim branch, binaries at https://lotix.nl/builds
   * Shared config, database and caches
   * Logical folder hierarchy
   * Flexible OAR backups
-  * Crash detection (and restart if needed)
+  * Crash detection and restart
   * Dynamic port assignment (user definable range)
   * Easily set up a microgrid using robust
   * Only allow modern, non-shady viewers (optional)
   * Split robust for more stability and speed
   * Groups and offline IM enabled
+  * Purge group notices older than 14 days
   
 ## Preconfigured
 Works out of the box:
