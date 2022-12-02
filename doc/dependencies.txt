@@ -16,9 +16,3 @@ In addition, one of the following databases is required:
 
   mariadb-server (recommended)
   mysql-server
-
-
-The following packages are optional:
-
-  php (for a slurl webpage)
-  php7.3-mysql (for a slurl webpage)
