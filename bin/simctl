@@ -400,7 +400,9 @@ case "$1" in
     start)
         if [ $# == 1 ]; then
             do_multi $1
-            rm "${SIMAUTO_LOCK}"
+            if [ -r "${SIMAUTO_LOCK}" ]; then
+	        rm "${SIMAUTO_LOCK}"
+	    fi
 	else
 	    setup $2
             do_start
@@ -443,8 +445,12 @@ case "$1" in
     restart)
         if [ $# == 1 ]; then
             touch "${SIMAUTO_LOCK}"
-            do_multi $1
-	    rm "${SIMAUTO_LOCK}"
+            do_multi stop
+	    sleep 3
+            do_multi start
+            if [ -r "${SIMAUTO_LOCK}" ]; then
+	        rm "${SIMAUTO_LOCK}"
+	    fi
 	else
 	    setup $2
             do_stop

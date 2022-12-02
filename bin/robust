@@ -179,7 +179,11 @@ do_multi() {
             exit
         fi
     fi
-    filelist=`ls ${OPENSIM_DIR}/etc/robust.d/*.ini`
+    if [ "$2" == "reverse" ]; then
+        filelist=`ls ${OPENSIM_DIR}/etc/robust.d/*.ini | tac`
+    else    
+        filelist=`ls ${OPENSIM_DIR}/etc/robust.d/*.ini`
+    fi
     for r in ${filelist}; do
         filename=`basename ${r} .ini`
 	./robust ${cmd} ${filename}
@@ -198,7 +202,7 @@ case "$1" in
         ;; 
     stop)
 	if [ $# == 1 ]; then
-	    do_multi $1
+	    do_multi $1 reverse
 	else
 	    setup $2
             do_stop
@@ -206,7 +210,7 @@ case "$1" in
         ;;
     kill)
 	if [ $# == 1 ]; then
-	    do_multi $1
+	    do_multi $1 reverse
 	else
             setup $2
             do_kill
@@ -214,7 +218,9 @@ case "$1" in
         ;;
     restart)
 	if [ $# == 1 ]; then
-	    do_multi $1
+	    do_multi stop reverse
+	    sleep 1
+	    do_multi start
 	else
 	    setup $2
             do_stop
