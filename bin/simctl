@@ -9,6 +9,9 @@
 export OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 REGIONS_DIR="${OPENSIM_DIR}/etc/sims-enabled"
 
+# We create this lock file when needing to suspend the watchdog
+SIMAUTO_LOCK="${OPENSIM_DIR}/var/simauto.lock"
+
 # Install isthmus config file if not already there, and then source it
 if [ ! -f "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
     cp "${OPENSIM_DIR}/share/common/etc/isthmus.conf" "${OPENSIM_DIR}/etc"
@@ -61,7 +64,12 @@ is_running() {
 
 get_status() {
     if is_running; then
-        echo "${SIM} - online"
+        if [ -f "${OPENSIM_DIR}/var/ports/${SIM}.port" ]; then
+            tcp_port=`cat ${OPENSIM_DIR}/var/ports/${SIM}.port`
+	    echo "${SIM} - online (${tcp_port})"
+        else
+            echo "${SIM} - online"
+        fi
         exit 1
     else
         echo "${SIM} - offline"
@@ -272,21 +280,6 @@ do_backup() {
     fi
 }
 
-do_audit() {
-    if [ ! -r ${REGIONS_DIR}/${SIM}.ini ]; then
-        echo "${SIM}: No such sim or not enabled"
-        exit 1
-    fi
-
-    if [ -f "${OPENSIM_DIR}/var/ports/${SIM}.port" ]; then
-       tcp_port=`cat ${OPENSIM_DIR}/var/ports/${SIM}.port`
-       echo -e "${tcp_port}\t${SIM}"
-    else
-       echo -e " -- \t${SIM}"
-    fi
-}
-
-
 # do_saveoar (oarpath)
 # Saves oars for region in simulator
 # If no oarpath specified, use default var/backup/yyyy-mm-dd
@@ -384,54 +377,101 @@ do_delete_maptile() {
     fi
 }
 
+do_multi() {
+    cmd=$1
+    if [ "$1" == "" ]; then
+        echo "No command given"
+	exit
+    fi
+    if [ ! "$2" == "force" ]; then
+        read -p "${cmd} all sims? (y/n): "
+        if [ ! "$REPLY" == "y" ]; then
+            exit
+        fi
+    fi
+    for simulator in ${REGIONS_DIR}/*; do
+	filename=`basename ${simulator} .ini`
+	./simctl ${cmd} ${filename}
+    done;
+}
+
 check_user
 case "$1" in
     start)
-	setup $2
-        do_start
+        if [ $# == 1 ]; then
+            do_multi $1
+            rm "${SIMAUTO_LOCK}"
+	else
+	    setup $2
+            do_start
+	fi
         ;; 
     stop)
-	setup $2
-        do_stop
+        if [ $# == 1 ]; then
+            touch "${SIMAUTO_LOCK}"
+            do_multi $1
+	else
+	    setup $2
+            do_stop
+	fi
         ;;
     kill)
-	setup $2
-        do_kill
+        if [ $# == 1 ]; then
+            touch "${SIMAUTO_LOCK}"
+            do_multi $1
+	else
+	    setup $2
+            do_kill
+	fi
         ;;
     alert)
-	setup $2
-        do_alert "$3"
+        if [ $# == 1 ]; then
+            do_multi $1
+	else
+	    setup $2
+            do_alert "$3"
+	fi
         ;;
     bluebox)
-	setup
-        do_bluebox "$3" $4
+        if [ $# == 1 ]; then
+            do_multi $1
+	else
+	    setup
+            do_bluebox "$3" $4
+	fi
         ;;
     restart)
-	setup $2
-        do_stop
-        # Take time for the pid file to clear
-        sleep 3
-        do_start
+        if [ $# == 1 ]; then
+            touch "${SIMAUTO_LOCK}"
+            do_multi $1
+	    rm "${SIMAUTO_LOCK}"
+	else
+	    setup $2
+            do_stop
+            # Take time for the pid file to clear
+            sleep 3
+            do_start
+	fi
         ;;
     status)
         if [ $# == 1 ]; then
-            do_list enabled
+            do_multi $1 force
 	else
 	    setup $2
             get_status
 	fi
-        ;;
-    audit)
-	setup $2
-        do_audit
         ;;
     saveoar)
         setup $2
         do_saveoar "$3"
         ;;
     backup)
-	setup $2
-        do_backup
+        if [ $# == 1 ]; then
+            do_multi $1
+	else
+	    setup $2
+            do_backup
+	fi
         ;;
     enable)
 	setup $2
@@ -446,12 +486,20 @@ case "$1" in
 	do_zap
 	;;
     maptile)
-	setup $2
-        do_maptile
+        if [ $# == 1 ]; then
+            do_multi $1
+	else
+	    setup $2
+            do_maptile
+	fi
         ;;
     delete_maptile)
-	setup $2
-	do_delete_maptile
+        if [ $# == 1 ]; then
+            do_multi $1
+	else
+	    setup $2
+	    do_delete_maptile
+	fi
 	;;
     list)
         do_list $2

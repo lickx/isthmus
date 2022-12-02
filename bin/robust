@@ -167,38 +167,22 @@ do_stop() {
     fi
 }
 
-do_start_all()
-{
-    filelist=`ls ${OPENSIM_DIR}/etc/robust.d/*`
-    for r in ${filelist}; do
-        filename=`basename ${r} .ini`
-	setup ${filename}
-	if ! is_running; then
-            do_start
-	fi
-    done;
-}
-
-do_stop_all()
-{
-    # shutdown all instances in reverse order
-    filelist=`ls ${OPENSIM_DIR}/etc/robust.d/* | sort -r`
-    for r in ${filelist}; do
-        filename=`basename ${r} .ini`
-	setup ${filename}
-	if is_running; then
-            do_stop
-	fi
-    done;
-}
-
-get_status_all()
-{
+do_multi() {
+    cmd=$1
+    if [ "$1" == "" ]; then
+        echo "No command given"
+	exit
+    fi
+    if [ ! "$2" == "force" ]; then
+        read -p "${cmd} all robust instances? (y/n): "
+        if [ ! "$REPLY" == "y" ]; then
+            exit
+        fi
+    fi
     filelist=`ls ${OPENSIM_DIR}/etc/robust.d/*.ini`
     for r in ${filelist}; do
         filename=`basename ${r} .ini`
-	setup ${filename}
-        get_status ${filename} 
+	./robust ${cmd} ${filename}
     done;
 }
 
@@ -206,7 +190,7 @@ check_user
 case "$1" in
     start)
 	if [ $# == 1 ]; then
-	    do_start_all
+	    do_multi $1
 	else
 	    setup $2
             do_start
@@ -214,23 +198,23 @@ case "$1" in
         ;; 
     stop)
 	if [ $# == 1 ]; then
-	    do_stop_all
+	    do_multi $1
 	else
 	    setup $2
             do_stop
 	fi
         ;;
     kill)
-        if [ $# == 2]; then
+	if [ $# == 1 ]; then
+	    do_multi $1
+	else
             setup $2
             do_kill
 	fi
         ;;
     restart)
 	if [ $# == 1 ]; then
-	    do_stop_all
-	    sleep 1
-            do_start_all
+	    do_multi $1
 	else
 	    setup $2
             do_stop
@@ -241,7 +225,7 @@ case "$1" in
         ;;
     status)
 	if [ $# == 1 ]; then
-            get_status_all
+	    do_multi $1 force
         else
 	    setup $2
             get_status
