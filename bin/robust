@@ -105,7 +105,7 @@ setup() {
 do_start() {
     if is_running; then
         echo "[${SCREENNAME}] Already started"
-        exit 1
+        return 1
     fi
 
     export LANG=C
@@ -163,7 +163,7 @@ do_stop() {
         done
     else
         echo "[${SCREENNAME}] Not running"
-        exit 1
+        return 1
     fi
 }
 
