@@ -32,8 +32,8 @@ for filename in ${REGIONS_DIR}/*; do
         sleep 10
         ./simctl start ${SIM}
         sleep ${START_DELAY}
-    else
-        do_log "Simulator '${SIM}' is running OK"
+    #else
+    #    do_log "Simulator '${SIM}' is running OK"
     fi
 done;
 
@@ -51,8 +51,8 @@ for filename in ${ROBUST_DIR}/*; do
         sleep 10
         ./robust start ${ROBUST_INSTANCE}
         sleep ${START_DELAY}
-    else
-        do_log "Robust instance '${ROBUST_INSTANCE}' is running OK"
+    #else
+    #    do_log "Robust instance '${ROBUST_INSTANCE}' is running OK"
     fi
 done;
 
