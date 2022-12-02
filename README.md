@@ -10,7 +10,6 @@ Alternatively, use my own OpenSim branch, binaries at https://lotix.nl/builds
   * Easily upgrade all sims at once
   * Shared config, database and caches
   * Logical folder hierarchy
-  * Issue mass commands (simauto) or per-sim (simctl)
   * Flexible OAR backups
   * Crash detection (and restart if needed)
   * Dynamic port assignment (user definable range)
