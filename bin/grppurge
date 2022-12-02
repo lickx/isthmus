@@ -15,7 +15,7 @@ do_log() {
     echo "$logline" >> $LOGFILE
 }
 
-if [ ! -r "${OPENSIM_DIR}/etc/robust.ini" ]; then
+if [ ! -d "${OPENSIM_DIR}/etc/robust.d" ]; then
     do_log "Not running a (micro-)grid"
     exit 1
 fi
