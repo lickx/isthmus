@@ -6,8 +6,8 @@ LOGFILE="${OPENSIM_DIR}/var/log/isthmus.log"
 mkdir -p "${OPENSIM_DIR}/var/log"
 
 if [ ! -r "${DB_SETTINGS}" ]; then
-	echo "Could not access ${DB_SETTINGS}"
-	exit
+    echo "Could not access ${DB_SETTINGS}"
+    exit
 fi
 
 GetDbConfig () {

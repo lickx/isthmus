@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+
+# To be run from a cronjob:
+#   /home/opensim/isthmus/bin/simbackup /home/opensim/isthmus
+
 if [ $# -eq 0 ]; then
     echo No isthmus folder specified
     exit 1

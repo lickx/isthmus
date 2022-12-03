@@ -10,7 +10,7 @@ export OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 REGIONS_DIR="${OPENSIM_DIR}/etc/sims-enabled"
 
 # We create this lock file when needing to suspend the watchdog
-SIMAUTO_LOCK="${OPENSIM_DIR}/var/simauto.lock"
+MONITOR_LOCK="${OPENSIM_DIR}/var/simauto.lock"
 
 # Install isthmus config file if not already there, and then source it
 if [ ! -f "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
@@ -67,7 +67,7 @@ get_status() {
     if is_running; then
         if [ -f "${OPENSIM_DIR}/var/ports/${SIM}.port" ]; then
             tcp_port=`cat ${OPENSIM_DIR}/var/ports/${SIM}.port`
-	    echo "${SIM} - online (${tcp_port})"
+            echo "${SIM} - online (${tcp_port})"
         else
             echo "${SIM} - online"
         fi
@@ -102,7 +102,7 @@ setup() {
 
     if [ ! -r "${REGION_INIFILE}" ]; then
         echo "[ ${SIM} ] Does not exist within this isthmus"
-	exit
+        exit
     fi
 
     REGION_UUID=`grep RegionUUID "${REGION_INIFILE}" | cut -d"=" -f2 | xargs`
@@ -140,9 +140,9 @@ do_start() {
 
     if [ -d "${OPENSIM_DIR}/etc/robust.d" ]; then
         ./robust status 99main > /dev/null
-	if [ $? == 0 ]; then
+        if [ $? == 0 ]; then
             echo "Robust is not running"
-	    exit
+            exit
         fi
     fi
 
@@ -171,12 +171,12 @@ do_start() {
         if is_running; then
             echo "${ISTHMUS_PORT}" > "${OPENSIM_DIR}/var/ports/${SIM}.port"
             echo " started"
-	    if [ ! -r "${REGION_MAPTILE}" ]; then
+            if [ ! -r "${REGION_MAPTILE}" ]; then
                 echo -n "[${SIM}] Generating initial map tile in 15 seconds.."
-		sleep 15
+                sleep 15
                 do_maptile ${SIM}
-		echo "done"
-	    fi
+                echo "done"
+            fi
             exit 0
         elif [ ${STARTTIME} -ge 30 ]; then
             echo " Failed. Disabling sim!"
@@ -314,18 +314,18 @@ do_saveoar() {
 
 do_list() {
     if [ "$1" == "" ]; then
-	WHAT="enabled"
+        WHAT="enabled"
     else
         WHAT=$1
     fi
     for simulator in ${OPENSIM_DIR}/etc/sims-${WHAT}/*; do
         simname=`basename ${simulator} .ini`
-	setup ${simname}
-	if is_running; then
+        setup ${simname}
+        if is_running; then
             echo "${simname} - online"
-	else
+        else
             echo "${simname} - offline"
-	fi
+        fi
     done;
 }
 
@@ -363,12 +363,12 @@ do_zap() {
     if is_running; then
         echo "Deleting all objects..."
         ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "delete object name --regex \"\""
-	sleep 5
-	echo "Deleting terrain and generating 'void' map tile"
+        sleep 5
+        echo "Deleting terrain and generating 'void' map tile"
         ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "terrain fill 0"
-	sleep 3
+        sleep 3
         ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "generate map tile"
-	echo "Done, use 'simdel ${SIM}' to remove the sim and region entirely"
+        echo "Done, use 'simdel ${SIM}' to remove the sim and region entirely"
     else
         echo "${SIM} not running"
     fi
@@ -390,7 +390,7 @@ do_multi() {
     cmd=$1
     if [ "$1" == "" ]; then
         echo "No command given"
-	exit
+        exit
     fi
     if [ ! "$2" == "force" ]; then
         read -p "${cmd} all sims? (y/n): "
@@ -399,8 +399,8 @@ do_multi() {
         fi
     fi
     for simulator in ${REGIONS_DIR}/*; do
-	filename=`basename ${simulator} .ini`
-	./simctl ${cmd} ${filename}
+        filename=`basename ${simulator} .ini`
+        ./simctl ${cmd} ${filename}
     done;
 }
 
@@ -409,72 +409,72 @@ case "$1" in
     start)
         if [ $# == 1 ]; then
             do_multi $1
-            if [ -r "${SIMAUTO_LOCK}" ]; then
-	        rm "${SIMAUTO_LOCK}"
-	    fi
-	else
-	    setup $2
+            if [ -r "${MONITOR_LOCK}" ]; then
+                rm "${MONITOR_LOCK}"
+            fi
+        else
+            setup $2
             do_start
-	fi
-        ;; 
+        fi
+        ;;
     stop)
         if [ $# == 1 ]; then
-            touch "${SIMAUTO_LOCK}"
+            touch "${MONITOR_LOCK}"
             do_multi $1
-	else
-	    setup $2
+        else
+            setup $2
             do_stop
-	fi
+        fi
         ;;
     kill)
         if [ $# == 1 ]; then
-            touch "${SIMAUTO_LOCK}"
+            touch "${MONITOR_LOCK}"
             do_multi $1
-	else
-	    setup $2
+        else
+            setup $2
             do_kill
-	fi
+        fi
         ;;
     alert)
         if [ $# == 1 ]; then
             do_multi $1
-	else
-	    setup $2
+        else
+            setup $2
             do_alert "$3"
-	fi
+        fi
         ;;
     bluebox)
         if [ $# == 1 ]; then
             do_multi $1
-	else
-	    setup
+        else
+            setup
             do_bluebox "$3" $4
-	fi
+        fi
         ;;
     restart)
         if [ $# == 1 ]; then
-            touch "${SIMAUTO_LOCK}"
+            touch "${MONITOR_LOCK}"
             do_multi stop
-	    sleep 3
+            sleep 3
             do_multi start
-            if [ -r "${SIMAUTO_LOCK}" ]; then
-	        rm "${SIMAUTO_LOCK}"
-	    fi
-	else
-	    setup $2
+            if [ -r "${MONITOR_LOCK}" ]; then
+                rm "${MONITOR_LOCK}"
+            fi
+        else
+            setup $2
             do_stop
             # Take time for the pid file to clear
             sleep 3
             do_start
-	fi
+        fi
         ;;
     status)
         if [ $# == 1 ]; then
             do_multi $1 force
-	else
-	    setup $2
+        else
+            setup $2
             get_status
-	fi
+        fi
         ;;
     saveoar)
         setup $2
@@ -483,39 +483,39 @@ case "$1" in
     backup)
         if [ $# == 1 ]; then
             do_multi $1
-	else
-	    setup $2
+        else
+            setup $2
             do_backup
-	fi
+        fi
         ;;
     enable)
-	setup $2
+        setup $2
         do_enable
         ;;
     disable)
-	setup $2
+        setup $2
         do_disable
         ;;
     zap)
-	setup $2
-	do_zap
-	;;
+        setup $2
+        do_zap
+        ;;
     maptile)
         if [ $# == 1 ]; then
             do_multi $1
-	else
-	    setup $2
+        else
+            setup $2
             do_maptile
-	fi
+        fi
         ;;
     delete_maptile)
         if [ $# == 1 ]; then
             do_multi $1
-	else
-	    setup $2
-	    do_delete_maptile
-	fi
-	;;
+        else
+            setup $2
+            do_delete_maptile
+        fi
+        ;;
     list)
         do_list $2
         ;;

@@ -11,9 +11,9 @@ export OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 if [ ! -d "${OPENSIM_DIR}/etc/robust.d" ]; then
     if [ -r "${OPENSIM_DIR}/etc/robust.ini" ]; then
         mkdir -p "${OPENSIM_DIR}/etc/robust.d"
-	mv "${OPENSIM_DIR}/etc/robust.ini" "${OPENSIM_DIR}/etc/robust.d/00main.ini"
+        mv "${OPENSIM_DIR}/etc/robust.ini" "${OPENSIM_DIR}/etc/robust.d/00main.ini"
         echo "etc/robust.ini has been migrated to etc/robust.d/00main.ini"
-	echo "For an example of a split-robust setup, see the config files in:"
+        echo "For an example of a split-robust setup, see the config files in:"
         echo "share/grids/microgrid-hg/etc/robust.d"
     else
         echo "Grid services for this grid are not self-hosted but provided by a 3rd party"
@@ -29,7 +29,7 @@ mkdir -p "${OPENSIM_DIR}/var/fsassets/main"
 mkdir -p "${OPENSIM_DIR}/var/pid/robust"
 
 # We create this lock file when needing to suspend the watchdog
-SIMAUTO_LOCK="${OPENSIM_DIR}/var/simauto.lock"
+MONITOR_LOCK="${OPENSIM_DIR}/var/simauto.lock"
 
 # Install isthmus config file if not already there, and then source it
 if [ ! -f "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
@@ -96,7 +96,7 @@ setup() {
 
     if [ ! -r "${INSTANCE_INIFILE}" ]; then
         echo "${INSTANCE}.ini does not exist within etc/robust.d"
-	exit
+        exit
     fi
 
     mkdir -p "${OPENSIM_DIR}/var/log"
@@ -127,11 +127,11 @@ do_start() {
         echo -n "."
         if is_running; then
             echo " started"
-	    return
+            return
         elif [ ${STARTTIME} -ge 30 ]; then
             echo " failed!"
             do_log "Instance ${INSTANCE} has problems with starting"
-	    return
+            return
         fi
     done
 }
@@ -176,7 +176,7 @@ do_multi() {
     cmd=$1
     if [ "$1" == "" ]; then
         echo "No command given"
-	exit
+        exit
     fi
     if [ ! "$2" == "force" ]; then
         read -p "${cmd} all robust instances? (y/n): "
@@ -186,73 +186,73 @@ do_multi() {
     fi
     if [ "$2" == "reverse" ]; then
         filelist=`ls ${OPENSIM_DIR}/etc/robust.d/*.ini | tac`
-    else    
+    else
         filelist=`ls ${OPENSIM_DIR}/etc/robust.d/*.ini`
     fi
     for r in ${filelist}; do
         filename=`basename ${r} .ini`
-	./robust ${cmd} ${filename}
+        ./robust ${cmd} ${filename}
     done;
 }
 
 check_user
 case "$1" in
     start)
-	if [ $# == 1 ]; then
-	    do_multi $1
-	else
-	    setup $2
+        if [ $# == 1 ]; then
+            do_multi $1
+        else
+            setup $2
             do_start
-	fi
+        fi
         ;; 
     stop)
-	if [ $# == 1 ]; then
-            touch "${SIMAUTO_LOCK}"
-	    do_multi $1 reverse
-            if [ -r "${SIMAUTO_LOCK}" ]; then
-		rm "${SIMAUTO_LOCK}"
+        if [ $# == 1 ]; then
+            touch "${MONITOR_LOCK}"
+            do_multi $1 reverse
+            if [ -r "${MONITOR_LOCK}" ]; then
+            rm "${MONITOR_LOCK}"
             fi
-	else
-	    setup $2
+        else
+            setup $2
             do_stop
-	fi
+        fi
         ;;
     kill)
-	if [ $# == 1 ]; then
-            touch "${SIMAUTO_LOCK}"
-	    do_multi $1 reverse
-            if [ -r "${SIMAUTO_LOCK}" ]; then
-		rm "${SIMAUTO_LOCK}"
+        if [ $# == 1 ]; then
+            touch "${MONITOR_LOCK}"
+            do_multi $1 reverse
+            if [ -r "${MONITOR_LOCK}" ]; then
+                rm "${MONITOR_LOCK}"
             fi
-	else
+        else
             setup $2
             do_kill
-	fi
+        fi
         ;;
     restart)
-	if [ $# == 1 ]; then
-            touch "${SIMAUTO_LOCK}"
-	    do_multi stop reverse
-	    sleep 1
-	    do_multi start
-            if [ -r "${SIMAUTO_LOCK}" ]; then
-		rm "${SIMAUTO_LOCK}"
+        if [ $# == 1 ]; then
+            touch "${MONITOR_LOCK}"
+            do_multi stop reverse
+            sleep 1
+            do_multi start
+            if [ -r "${MONITOR_LOCK}" ]; then
+                rm "${MONITOR_LOCK}"
             fi
-	else
-	    setup $2
+        else
+            setup $2
             do_stop
             # Take time for the pid file to clear
             sleep 1
             do_start
-	fi
+        fi
         ;;
     status)
-	if [ $# == 1 ]; then
-	    do_multi $1 force
+        if [ $# == 1 ]; then
+            do_multi $1 force
         else
-	    setup $2
+            setup $2
             get_status
-	fi
+        fi
         ;;
     *)
         show_help
