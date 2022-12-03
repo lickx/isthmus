@@ -4,6 +4,9 @@ SIMCTL="${OPENSIM_DIR}/bin/simctl"
 SCREEN="/usr/bin/screen"
 GREP="/bin/grep"
 SIMAUTO_LOCK="${OPENSIM_DIR}/var/simauto.lock"
+LOGFILE="${OPENSIM_DIR}/var/log/isthmus.log"
+
+mkdir -p "${OPENSIM_DIR}/var/log"
 
 show_help() {
     echo -e "`basename $0` - Tool for opensim\n"
@@ -11,11 +14,9 @@ show_help() {
 }
 
 do_log() {
-    mkdir -p "${OPENSIM_DIR}/var/log"
-    LOGFILE="${OPENSIM_DIR}/var/log/isthmus.log"
     touch "${LOGFILE}"
     logline="`date --iso-8601=seconds` - simtool - $1"
-    echo $logline >> $LOGFILE
+    echo "${logline}" >> "${LOGFILE}"
 }
 
 is_running() {

@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 DB_SETTINGS="${OPENSIM_DIR}/etc/database.ini" 
+LOGFILE="${OPENSIM_DIR}/var/log/isthmus.log"
+
+mkdir -p "${OPENSIM_DIR}/var/log"
 
 if [ ! -r "${DB_SETTINGS}" ]; then
 	echo "Could not access ${DB_SETTINGS}"
@@ -15,8 +18,9 @@ GetDbConfig () {
 }
 
 do_log() {
+    touch "${LOGFILE}"
     logline="`date --iso-8601=seconds` - istdb - $1"
-    echo $logline >> "${OPENSIM_DIR}/var/log/isthmus.log"
+    echo "${logline}" >> "${LOGFILE}"
 }
 
 DB_NAME=`GetDbConfig "Database"`

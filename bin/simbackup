@@ -21,8 +21,9 @@ mkdir -p "${OPENSIM_DIR}/var/log"
 touch ${LOGFILE}
 
 do_log() {
+    touch "${LOGFILE}"
     logline="`date` - simbackup - $1"
-    echo $logline >> $LOGFILE
+    echo "${logline}" >> "${LOGFILE}"
 }
 
 if [ -f ${SIMAUTO_LOCK} ]; then

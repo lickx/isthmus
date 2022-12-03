@@ -13,8 +13,9 @@ cd "${OPENSIM_DIR}/bin"
 mkdir -p "${OPENSIM_DIR}/var/log"
 
 do_log() {
+    touch "${LOGFILE}"
     logline="`date --iso-8601=seconds` - $1"
-    echo $logline >> $LOGFILE
+    echo "$logline" >> "$LOGFILE"
 }
 
 if [ -r "${SIMAUTO_LOCK}" ]; then

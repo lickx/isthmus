@@ -20,6 +20,8 @@ if [ -r "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
     source "${OPENSIM_DIR}/etc/isthmus.conf"
 fi
 
+mkdir -p "${OPENSIM_DIR}/var/log/isthmus.log"
+
 GetDbConfig () {
     DB_KEY=$1
     # Caveats: Only parses the first ConnectionString, uncommented or not!
@@ -28,8 +30,9 @@ GetDbConfig () {
 }
 
 do_log() {
+    touch "${OPENSIM_DIR}/var/log/isthmus.log"
     logline="`date --iso-8601=seconds` - searchpurge - $1"
-    echo $logline >> "${OPENSIM_DIR}/var/log/isthmus.log"
+    echo "${logline}" >> "${OPENSIM_DIR}/var/log/isthmus.log"
 }
 
 if [ ! -d "${OPENSIM_DIR}/etc/robust.d" ]; then

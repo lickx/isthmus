@@ -42,8 +42,9 @@ show_help() {
 }
 
 do_log() {
+    touch "${OPENSIM_DIR}/var/log/isthmus.log"
     logline="`date --iso-8601=seconds` - simctl - $1"
-    echo $logline >> "${OPENSIM_DIR}/var/log/isthmus.log"
+    echo "${logline}" >> "${OPENSIM_DIR}/var/log/isthmus.log"
 }
 
 check_user() {

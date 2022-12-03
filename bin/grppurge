@@ -11,8 +11,9 @@ cd "${OPENSIM_DIR}/bin"
 mkdir -p "${OPENSIM_DIR}/var/log"
 
 do_log() {
+    touch "${LOGFILE}"
     logline="`date` - grppurge - $1"
-    echo "$logline" >> $LOGFILE
+    echo "${logline}" >> "${LOGFILE}"
 }
 
 if [ ! -d "${OPENSIM_DIR}/etc/robust.d" ]; then
