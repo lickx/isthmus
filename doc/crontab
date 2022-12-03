@@ -33,10 +33,10 @@
 # m h  dom mon dow   command
 
 # Re-scan every 10 minutes for crashed sims:
-*/10 * * * * /home/opensim/isthmus/osgrid/bin/istmonitor /home/opensim/isthmus/osgrid
+*/10 * * * * /home/opensim/isthmus/bin/istmonitor /home/opensim/isthmus
 
 # Make daily OARs 4:00am every day
-0 4 * * * /home/opensim/isthmus/osgrid/bin/simbackup /home/opensim/isthmus/osgrid
+0 4 * * * /home/opensim/isthmus/bin/simbackup /home/opensim/isthmus
 
 # Make weekly OARs 12:00am every monday
 #0 12 * * 1 /home/opensim/isthmus/osgrid/bin/simbackup /home/opensim/isthmus/osgrid
