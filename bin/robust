@@ -23,9 +23,9 @@ fi
 
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 
-LOGFILE="${OPENSIM_DIR}/var/log/isthmus.log"
 mkdir -p "${OPENSIM_DIR}/var/log"
-mkdir -p "${OPENSIM_DIR}/var/fsassets"
+mkdir -p "${OPENSIM_DIR}/var/fsassets/assets"
+mkdir -p "${OPENSIM_DIR}/var/fsassets/main"
 mkdir -p "${OPENSIM_DIR}/var/pid/robust"
 
 # We create this lock file when needing to suspend the watchdog
@@ -51,8 +51,10 @@ show_help() {
 }
 
 do_log() {
+    touch "${OPENSIM_DIR}/var/log/isthmus.log"
     logline="`date --iso-8601=seconds` - robust - $1"
-    echo $logline >> $LOGFILE
+    echo "${logline}" >> "${OPENSIM_DIR}/var/log/isthmus.log"
+
 }
 
 check_user() {
