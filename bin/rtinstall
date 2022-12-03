@@ -18,7 +18,7 @@ if [ ! -x `which unzip` ]; then
 fi
 
 do_log() {
-    logline="`date` - rtinstall - $1"
+    logline="`date --iso-8601=seconds` - rtinstall - $1"
     echo $logline >> "${OPENSIM_DIR}/var/log/isthmus.log"
 }
 

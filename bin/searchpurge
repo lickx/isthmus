@@ -28,7 +28,7 @@ GetDbConfig () {
 }
 
 do_log() {
-    logline="`date` - searchpurge - $1"
+    logline="`date --iso-8601=seconds` - searchpurge - $1"
     echo $logline >> "${OPENSIM_DIR}/var/log/isthmus.log"
 }
 

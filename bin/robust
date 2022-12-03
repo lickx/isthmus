@@ -51,7 +51,7 @@ show_help() {
 }
 
 do_log() {
-    logline="`date` - robust - $1"
+    logline="`date --iso-8601=seconds` - robust - $1"
     echo $logline >> $LOGFILE
 }
 

@@ -14,7 +14,7 @@ do_log() {
     mkdir -p "${OPENSIM_DIR}/var/log"
     LOGFILE="${OPENSIM_DIR}/var/log/isthmus.log"
     touch "${LOGFILE}"
-    logline="`date` - simtool - $1"
+    logline="`date --iso-8601=seconds` - simtool - $1"
     echo $logline >> $LOGFILE
 }
 
