@@ -240,7 +240,7 @@ do_stop() {
         done
     else
         echo "[${SIM}] Not running"
-        exit 1
+        return 1
     fi 
 }
 
@@ -332,12 +332,12 @@ do_list() {
 do_enable() {
     if [ ! -r "${OPENSIM_DIR}/etc/sims-available/${SIM}.ini" ]; then
         echo "${SIM}: No such sim"
-        exit 1
+        return 1
     fi
 
     if [ -r "${REGIONS_DIR}/${SIM}.ini" ]; then
         echo "${SIM}: Already enabled"
-        exit 1
+        return 1
     fi
 
     cd "${OPENSIM_DIR}/etc/sims-enabled"
@@ -347,15 +347,15 @@ do_enable() {
 do_disable() {
     if [ ! -r "${OPENSIM_DIR}/etc/sims-available/${SIM}.ini" ]; then
         echo "[${SIM}]: No such sim"
-        exit 1
+        return 1
     fi
 
     if [ -r "${REGIONS_DIR}/${SIM}.ini" ]; then
         rm "${REGIONS_DIR}/${SIM}.ini"
-        exit 0
+        return 0
     else
         echo "[${SIM}] Already disabled"
-        exit 1
+        return 1
     fi
 }
 
@@ -495,6 +495,9 @@ case "$1" in
     disable)
         setup $2
         do_disable
+        if is_running; then
+            do_stop
+        fi
         ;;
     zap)
         setup $2
