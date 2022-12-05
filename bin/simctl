@@ -511,7 +511,7 @@ case "$1" in
             do_maptile
         fi
         ;;
-    delete_maptile)
+    delete-maptile)
         if [ $# == 1 ]; then
             do_multi $1
         else
