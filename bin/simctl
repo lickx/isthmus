@@ -436,6 +436,7 @@ case "$1" in
             do_multi $1
         else
             setup $2
+            ALERT_DELAY=300
             MSG_REGION_STOP="ATTENTION: REGION MAINTENANCE - This region will be going down for maintenance within ${ALERT_DELAY} seconds. Please teleport elsewhere until we are back..."
             bluebox ${simname} "${MSG_REGION_STOP}" ${ALERT_DELAY}
         fi
