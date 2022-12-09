@@ -10,7 +10,7 @@ export OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 REGIONS_DIR="${OPENSIM_DIR}/etc/sims-enabled"
 
 # We create this lock file when needing to suspend the watchdog
-MONITOR_LOCK="${OPENSIM_DIR}/var/simauto.lock"
+MONITOR_LOCK="${OPENSIM_DIR}/var/suspend-monitor.lock"
 
 # Install isthmus config file if not already there, and then source it
 if [ ! -f "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
@@ -18,6 +18,9 @@ if [ ! -f "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
 fi
 source "${OPENSIM_DIR}/etc/isthmus.conf"
 
+if [ "${ISTHMUS_HOSTNAME}" == "" ]; then
+    ISTHMUS_HOSTNAME=`hostname`
+fi
 export ISTHMUS_HOSTNAME
 
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
@@ -26,6 +29,7 @@ show_help() {
     echo -e "`basename $0` - Control opensim simulators\n"
     echo "start <simname>     Start a simulator"
     echo "stop <simname>      Stop and deregister from the map"
+    echo "mercy <simname>     Stop in 5 minutes with inworld warning"
     echo "kill <simname>      Stop by sending SIGHUP (leaves ghost tile on worldmap)"
     echo "alert <simname> \"This is an alert\"    Send an inworld alert msg"
     echo "restart <simname>   Issues a stop, then start command"
@@ -426,6 +430,16 @@ case "$1" in
             do_stop
         fi
         ;;
+    mercy)
+        if [ $# == 1 ]; then
+            touch "${MONITOR_LOCK}"
+            do_multi $1
+        else
+            setup $2
+            MSG_REGION_STOP="ATTENTION: REGION MAINTENANCE - This region will be going down for maintenance within ${ALERT_DELAY} seconds. Please teleport elsewhere until we are back..."
+            bluebox ${simname} "${MSG_REGION_STOP}" ${ALERT_DELAY}
+        fi
+        ;;
     kill)
         if [ $# == 1 ]; then
             touch "${MONITOR_LOCK}"
@@ -454,9 +468,7 @@ case "$1" in
     restart)
         if [ $# == 1 ]; then
             touch "${MONITOR_LOCK}"
-            do_multi stop
-            sleep 3
-            do_multi start
+            do_multi $1
             if [ -r "${MONITOR_LOCK}" ]; then
                 rm "${MONITOR_LOCK}"
             fi

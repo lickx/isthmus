@@ -29,7 +29,7 @@ mkdir -p "${OPENSIM_DIR}/var/fsassets/main"
 mkdir -p "${OPENSIM_DIR}/var/pid/robust"
 
 # We create this lock file when needing to suspend the watchdog
-MONITOR_LOCK="${OPENSIM_DIR}/var/simauto.lock"
+MONITOR_LOCK="${OPENSIM_DIR}/var/suspend-monitor.lock"
 
 # Install isthmus config file if not already there, and then source it
 if [ ! -f "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
@@ -37,6 +37,9 @@ if [ ! -f "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
 fi
 source "${OPENSIM_DIR}/etc/isthmus.conf"
 
+if [ "${ISTHMUS_HOSTNAME}" == "" ]; then
+    ISTHMUS_HOSTNAME=`hostname`
+fi
 export ISTHMUS_HOSTNAME
 
 show_help() {

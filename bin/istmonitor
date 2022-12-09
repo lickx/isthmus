@@ -11,7 +11,7 @@ fi
 OPENSIM_DIR=$1
 LOGFILE="${OPENSIM_DIR}/var/log/monitor.log"
 START_DELAY=60
-SIMAUTO_LOCK="${OPENSIM_DIR}/var/simauto.lock"
+MONITOR_LOCK="${OPENSIM_DIR}/var/suspend-monitor.lock"
 
 cd "${OPENSIM_DIR}/bin"
 mkdir -p "${OPENSIM_DIR}/var/log"
@@ -22,7 +22,7 @@ do_log() {
     echo "$logline" >> "$LOGFILE"
 }
 
-if [ -r "${SIMAUTO_LOCK}" ]; then
+if [ -r "${MONITOR_LOCK}" ]; then
     exit 0
 fi
 
