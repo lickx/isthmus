@@ -60,20 +60,22 @@ MariaDB [(none)]> grant all on isthmus_gridname.* to isthmus_gridname@localhost 
 
   Verify robust runs ok:
 
-./screen -r ROBUST
+./robust status
 
-  NOTE: At this point you can install Diva Wifi after first stopping Robust
-  To stop robust, detach the ROBUST screen by <CTRL-A D> and then type
+  To stop robust:
 
 ./robust stop
 
-  To create a new user manually, type the following   while still in the ROBUST
-  console:
+  To create a new user manually, attach the main robust:
+
+screen -r istgrid-99main
+
+  ..and type the following in the robust console you're now in:
 
 help create user
 
-  Now type 'create user' and follow instructions. When done, press <CTRL-A D> to
-  detach the ROBUST screen.
+  Now type 'create user' and follow instructions. When done, detach the
+  99main robust console by pressing <CTRL-A D>
 
   Now that we have a user, we can add the first sim. I suggest to call it
   'Welcome' if it is your own grid because robust will use that as the default
@@ -101,27 +103,9 @@ $ cd ~/isthmus/bin
   Restart:  ./simctl restart SimName
   Status:   ./simctl status SimName
 
+  If you don't give a SimName, it will do the action for all enabled sims.
   To see more options, type without parameters:   ./simctl
 
-  For all simulators at once which are symlinked in the sims-enabled folder:
-
-  Start:    ./simauto start
-  Stop:     ./simauto stop
-  Restart:  ./simauto restart
-  Reload:   ./simauto reload
-  Audit:    ./simauto audit
-
-  You'd use restart after big upgrades with drastic changes in OpenSim, such as
-  database migrations or a new script engine API version. It will take all sims
-  in the isthmus installation down, upgrade, then start them again. Reload is
-  typically used for reloading the configuration settings, and the sims will be
-  restarted one by one. Reload can also be used for automated weekly restarts.
-
-  Audit will list all used ports, this can be piped for example:
-  ./simauto audit | sort | less
-
-  To see more options, type without parameters:   ./simauto
- 
 ------------------------------------------------------------------------------
 
   Autobackup
