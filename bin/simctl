@@ -67,6 +67,14 @@ is_running() {
     fi
 }
 
+is_enabled() {
+    if [ -r "${OPENSIM_DIR}/etc/sims-enabled/${SIM}" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 get_status() {
     if is_running; then
         if [ -f "${OPENSIM_DIR}/var/ports/${SIM}.port" ]; then
@@ -132,7 +140,7 @@ setup() {
 }
 
 do_start() {
-    if [ ! -r "${REGIONS_DIR}/${SIM}.ini" ]; then
+    if [ ! is_enabled ]; then
         echo "[${SIM}] Not enabled or does not exist"
         exit 1
     fi
