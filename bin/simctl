@@ -68,10 +68,10 @@ is_running() {
 }
 
 is_enabled() {
-    if [ -r "${OPENSIM_DIR}/etc/sims-enabled/${SIM}" ]; then
-        return 0
-    else
+    if [ -r "${REGIONS_DIR}/${SIM}.ini" ]; then
         return 1
+    else
+        return 0
     fi
 }
 
@@ -110,10 +110,10 @@ setup() {
         SIM=$1
     fi
 
-    REGION_INIFILE="${OPENSIM_DIR}/etc/sims-available/${SIM}.ini" 
+    REGION_INIFILE="${OPENSIM_DIR}/etc/sims-available/${SIM}.ini"
 
     if [ ! -r "${REGION_INIFILE}" ]; then
-        echo "[ ${SIM} ] Does not exist within this isthmus"
+        echo "[ ${SIM} ] Region not available"
         exit
     fi
 
@@ -140,9 +140,9 @@ setup() {
 }
 
 do_start() {
-    if [ ! is_enabled ]; then
-        echo "[${SIM}] Not enabled or does not exist"
-        exit 1
+    if is_enabled -eq 0; then
+        echo "[ ${SIM} ] Is not enabled"
+        exit
     fi
 
     if is_running; then
