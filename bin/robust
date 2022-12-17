@@ -8,11 +8,12 @@
 # Get the root folder of the isthmus tree
 export OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 
-if [ ! -d "${OPENSIM_DIR}/etc/robust.d" ]; then
+ROBUST_DIR="${OPENSIM_DIR}/etc/robust.d"
+if [ ! -d "${ROBUST_DIR}" ]; then
     if [ -r "${OPENSIM_DIR}/etc/robust.ini" ]; then
-        mkdir -p "${OPENSIM_DIR}/etc/robust.d"
-        mv "${OPENSIM_DIR}/etc/robust.ini" "${OPENSIM_DIR}/etc/robust.d/00main.ini"
-        echo "etc/robust.ini has been migrated to etc/robust.d/00main.ini"
+        mkdir -p "${ROBUST_DIR}"
+        mv "${OPENSIM_DIR}/etc/robust.ini" "${ROBUST_DIR}/99main.ini"
+        echo "etc/robust.ini has been migrated to etc/robust.d/99main.ini"
         echo "For an example of a split-robust setup, see the config files in:"
         echo "share/grids/microgrid-hg/etc/robust.d"
     else
@@ -76,9 +77,21 @@ is_running() {
     fi
 }
 
+get_port() {
+    NETWORK_PORT=`grep -Ew "\s+?[pP]ort\s+?=" "${INSTANCE_INIFILE}" | cut -f2 -d'=' | sed 's/\s//g'`
+    if ! [[ "${NETWORK_PORT}" =~ '^[0-9]+$' ]] ; then
+        # not a number but a CONST. lookup the name of the variable:
+        NETWORK_PORT_VAR=`echo "${NETWORK_PORT}" | cut -f2 -d'|' | sed 's/}//g'`
+        # lookup the value of the variable:
+        PORT=`grep -Ew "\s+?${NETWORK_PORT_VAR}\s+?=" "${INSTANCE_INIFILE}" | cut -f2 -d'=' | sed 's/\s//g' | sed 's/\"//g'`
+    else
+        PORT=${NETWORK_PORT}
+    fi
+}
+
 get_status() {
     if is_running; then
-        echo "${INSTANCE} - online"
+        echo "${INSTANCE} - online (${PORT})"
         return 1
     else
         echo "${INSTANCE} - offline"
@@ -94,13 +107,14 @@ setup() {
         INSTANCE=$1
     fi
 
-    INSTANCE_INIFILE="${OPENSIM_DIR}/etc/robust.d/${INSTANCE}.ini"
+    INSTANCE_INIFILE="${ROBUST_DIR}/${INSTANCE}.ini"
     SCREENNAME="`basename ${OPENSIM_DIR}`-${INSTANCE}"
 
     if [ ! -r "${INSTANCE_INIFILE}" ]; then
         echo "${INSTANCE}.ini does not exist within etc/robust.d"
         exit
     fi
+    get_port
 
     mkdir -p "${OPENSIM_DIR}/var/log"
     export ROBUST_LOGFILE="${OPENSIM_DIR}/var/log/robust-${INSTANCE}.log"
