@@ -20,34 +20,65 @@ $ ./rtinstall ~/Downloads/opensim-0.9.2.0.zip
 
   Database setup
 
+  Only do the following if you never set up MariaDB or MySQL on this
+  server. Notice the -i used with sudo, which is needed in this case!:
+
+$ sudo -i mysql_secure_installation
+(Follow the instructions on screen. Press enter when asked for the old
+password (it's blank). Next you will make a new password of your own
+choice. For all other questions asked, accept the defaults.)
+
+  !! IMPORTANT
+  The default 16M packet size is no longer enough for running OpenSim with
+  sql. Edit your mariadb/mysql config to set it higher. In Ubuntu this is
+  /etc/mysql/mariadb.conf.d/50-server.cnf:
+
+  max_allowed_packet      = 32M
+
+  In that same 50-server.cnf file, also set the default charset to 'utf8'.
+  Do NOT set it to utfmb4, it will cause problems with OpenSim:
+
+  character-set-server  = utf8
+  collation-server      = utf8_general_ci
+
+
   For now it is assumed you will be making a new database for each
   installation of Isthmus. The database will be shared among all regions.
   Each region will run in its own simulator instance, which is managed by
   GNU Screen.
 
-  $ sudo mysql --user root --password
+$ sudo mysql --user root --password
 MariaDB [(none)]> create database isthmus_gridname;
-MariaDB [(none)]> grant all on isthmus_gridname.* to isthmus_gridname@localhost identified by 'PASSWORD';
+MariaDB [(none)]> grant all on isthmus_gridname.* to opensim@localhost identified by 'PASSWORD';
+MariaDB [(none)]> quit
 
-    Note: If you have multiple installations of isthmus and use Gloebit, you'll
-  probably also want a seperate database for Gloebit usage to be shared by all
-  isthmus installations. See the end of Gloebit.ini
+  If you will be using Gloebit currency, make a seperate database for it:
 
-  !! IMPORTANT
-  The default 16M packet size is no longer enough for running OpenSim with sql.
-  Edit your mariadb/mysql config to set it higher. In Ubuntu this is
-  /etc/mysql/mariadb.conf.d/50-server.cnf:
+$ sudo mysql --user root --password
+MariaDB [(none)]> create database gloebit_gridname;
+MariaDB [(none)]> grant all on gloebit_gridname.* to opensim@localhost identified by 'PASSWORD';
+MariaDB [(none)]> quit
 
-  max_allowed_packet      = 32M
+  If setting up a microgrid with isthmus, you'll want Search and Mutelist
+  databases:
 
-  !! IMPORTANT
-  Sometimes the default charset causes problems if it is not set to utf8.
-  Edit your mariadb/mysql config to set to 'utf8'. Do NOT set it to utfmb4
-  because this will cause problems in creating tables. In Ubuntu the file
-  to edit is /etc/mysql/mariadb.conf.d/50-server.cnf:
+$ sudo mysql --user root --password
+MariaDB [(none)]> create database search_gridname;
+MariaDB [(none)]> grant all on search_gridname.* to opensim@localhost identified by 'PASSWORD';
+MariaDB [(none)]> create database mutelist_gridname;
+MariaDB [(none)]> grant all on mutelist_gridname.* to opensim@localhost identified by 'PASSWORD';
+MariaDB [(none)]> quit
 
-  character-set-server  = utf8
-  collation-server      = utf8_general_ci
+------------------------------------------------------------------------------
+
+  Setting up Isthmus
+
+$ cd isthmus/bin
+$ ./setup
+
+  Afterwards, edit ../etc/database.ini and fill in the database for
+  isthmus ('isthmus_grid'), and mysql username and password that you
+  granted to that database above.
 
 ------------------------------------------------------------------------------
 
@@ -56,23 +87,32 @@ MariaDB [(none)]> grant all on isthmus_gridname.* to isthmus_gridname@localhost 
   If you chose 'microgrid' or 'microgrid-nohg' when using setup before,
   then now it is time to start robust. Else skip to the simadd bit.
 
-./robust start
+$ ./robust start
+start all robust instances? (y/n): y
 
   Verify robust runs ok:
 
-./robust status
+$ ./robust status
+00assets - online (8000)
+02griduser - online (8013)
+03inventory - online (8004)
+04map - online (8015)
+99main - online (8012)
 
   To stop robust:
 
-./robust stop
+$ ./robust stop
+start all robust instances? (y/n): n
 
   To create a new user manually, attach the main robust:
 
-screen -r istgrid-99main
+$ screen -r isthmus-99main
+(note 'isthmus' is the name of this isthmus folder. If you renamed the
+isthmus folder to 'mygrid' the main robust will be mygrid-99main)
 
   ..and type the following in the robust console you're now in:
 
-help create user
+R.O.B.U.S.T.# help create user
 
   Now type 'create user' and follow instructions. When done, detach the
   99main robust console by pressing <CTRL-A D>
@@ -81,12 +121,18 @@ help create user
   'Welcome' if it is your own grid because robust will use that as the default
   region:
 
-./simadd
+$ ./simadd
 (Follow instructions on screen)
 
   To start the newly made sim:
 
-./simctl start Welcome
+$ ./simctl start Welcome
+[ Welcome ] Starting.. ok
+
+  Verify all sims are running, and on which port:
+
+$ ./simctl status
+Welcome - online (9000)
 
   Finally, login to the grid and see if everything runs ok.
 
