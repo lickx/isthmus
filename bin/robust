@@ -78,12 +78,12 @@ is_running() {
 }
 
 get_port() {
-    NETWORK_PORT=`grep -Ew "\s+?[pP]ort\s+?=" "${INSTANCE_INIFILE}" | cut -f2 -d'=' | sed 's/\s//g'`
+    NETWORK_PORT=`grep -Ew "\s+?[pP]ort\s+?=" "${INSTANCE_INIFILE}" | cut -f2 -d'=' | sed 's/\"//g' | xargs`
     if ! [[ "${NETWORK_PORT}" =~ '^[0-9]+$' ]] ; then
         # not a number but a CONST. lookup the name of the variable:
         NETWORK_PORT_VAR=`echo "${NETWORK_PORT}" | cut -f2 -d'|' | sed 's/}//g'`
         # lookup the value of the variable:
-        PORT=`grep -Ew "\s+?${NETWORK_PORT_VAR}\s+?=" "${INSTANCE_INIFILE}" | cut -f2 -d'=' | sed 's/\s//g' | sed 's/\"//g'`
+        PORT=`grep -Ew "\s+?${NETWORK_PORT_VAR}\s+?=" "${INSTANCE_INIFILE}" | cut -f2 -d'=' | sed 's/\"//g' | xargs`
     else
         PORT=${NETWORK_PORT}
     fi

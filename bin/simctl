@@ -117,7 +117,7 @@ setup() {
         exit
     fi
 
-    REGION_UUID=`grep RegionUUID "${REGION_INIFILE}" | cut -d"=" -f2 | xargs`
+    REGION_UUID=`grep -Ew "\s+?RegionUUID" "${REGION_INIFILE}" | cut -d"=" -f2 | sed 's/\"//g' | xargs`
 
     # No idea why these are written in runtime/bin and not var/maptiles :S
     # Not good in the case the runtime would be on a read-only mount.
