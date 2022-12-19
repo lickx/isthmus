@@ -119,6 +119,9 @@ setup() {
 
     REGION_UUID=`grep -Ew "\s+?RegionUUID" "${REGION_INIFILE}" | cut -d"=" -f2 | sed 's/\"//g' | xargs`
 
+    REGION_X=`grep -Ew "\s+?Location" "${REGION_INIFILE}" | cut -d"=" -f2 | sed 's/\"//g' | cut -d',' -f1 | xargs`
+    REGION_Y=`grep -Ew "\s+?Location" "${REGION_INIFILE}" | cut -d"=" -f2 | sed 's/\"//g' | cut -d',' -f2 | xargs`
+
     # No idea why these are written in runtime/bin and not var/maptiles :S
     # Not good in the case the runtime would be on a read-only mount.
     REGION_MAPTILE="${OPENSIM_DIR}/runtime/bin/MAP-${REGION_UUID}.png"
@@ -168,7 +171,7 @@ do_start() {
     mkdir -p "${REGION_LOAD_DIR}"
     ln -sf "${REGIONS_DIR}/${SIM}.ini" "${REGION_LOAD_DIR}/${SIM}.ini"
 
-    export LANG=C
+    export LC_ALL=C
     ulimit -n 4096 -s 1048576
     cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SIM} -d -m -l \
         ./OpenSim -inifile="${OPENSIM_DIR}/share/system/opensim.ini"
@@ -395,6 +398,10 @@ do_maptile() {
 do_delete_maptile() {
     if [ -r "${REGION_MAPTILE}" ]; then
         rm "${REGION_MAPTILE}"
+    fi
+    MAPTILE_ZERO_DIR="${OPENSIM_DIR}/var/maptiles/00000000-0000-0000-0000-000000000000"
+    if [ -d "${MAPTILE_ZERO_DIR}" ]; then
+        rm -f "${MAPTILE_ZERO_DIR}/map-*-${REGION_X}-${REGION_Y}-objects.jpg"
     fi
 }
 
