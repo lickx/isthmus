@@ -121,6 +121,18 @@ setup() {
 
     REGION_X=`grep -Ew "\s+?Location" "${REGION_INIFILE}" | cut -d"=" -f2 | sed 's/\"//g' | cut -d',' -f1 | xargs`
     REGION_Y=`grep -Ew "\s+?Location" "${REGION_INIFILE}" | cut -d"=" -f2 | sed 's/\"//g' | cut -d',' -f2 | xargs`
+    REGION_SPAN_X=`grep -Ew "\s+?SizeX" "${REGION_INIFILE}" | cut -d"=" -f2 | sed 's/\"//g' | xargs`
+    if [ "${REGION_SPAN_X}" == "" ]; then
+        REGION_SPAN_X=1
+    else
+        REGION_SPAN_X=$((REGION_SPAN_X / 256))
+    fi
+    REGION_SPAN_Y=`grep -Ew "\s+?SizeY" "${REGION_INIFILE}" | cut -d"=" -f2 | sed 's/\"//g' | xargs`
+    if [ "${REGION_SPAN_Y}" == "" ]; then
+        REGION_SPAN_Y=1
+    else
+        REGION_SPAN_Y=$((REGION_SPAN_Y / 256))
+    fi
 
     # No idea why these are written in runtime/bin and not var/maptiles :S
     # Not good in the case the runtime would be on a read-only mount.
@@ -400,9 +412,16 @@ do_delete_maptile() {
         rm "${REGION_MAPTILE}"
     fi
     MAPTILE_ZERO_DIR="${OPENSIM_DIR}/var/maptiles/00000000-0000-0000-0000-000000000000"
-    if [ -d "${MAPTILE_ZERO_DIR}" ]; then
-        rm -f "${MAPTILE_ZERO_DIR}/map-*-${REGION_X}-${REGION_Y}-objects.jpg"
+    if [ ! -d "${MAPTILE_ZERO_DIR}" ]; then
+        return
     fi
+    for (( y=${REGION_Y}; y<$((REGION_Y + REGION_SPAN_Y)); y++ ))
+    do
+        for (( x=${REGION_X}; x<$((REGION_X + REGION_SPAN_X)); x++ ))
+        do
+            rm ${MAPTILE_ZERO_DIR}/map-*-${x}-${y}-objects.jpg
+        done
+    done
 }
 
 do_multi() {
