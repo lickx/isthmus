@@ -419,7 +419,7 @@ do_delete_maptile() {
     do
         for (( x=${REGION_X}; x<$((REGION_X + REGION_SPAN_X)); x++ ))
         do
-            rm ${MAPTILE_ZERO_DIR}/map-*-${x}-${y}-objects.jpg
+            rm -f ${MAPTILE_ZERO_DIR}/map-*-${x}-${y}-objects.jpg
         done
     done
 }
