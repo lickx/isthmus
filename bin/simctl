@@ -18,7 +18,7 @@ if [ ! -f "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
 fi
 source "${OPENSIM_DIR}/etc/isthmus.conf"
 
-if [ "${ISTHMUS_HOSTNAME}" == "" ]; then
+if [ -z "${ISTHMUS_HOSTNAME}" ]; then
     ISTHMUS_HOSTNAME=`hostname`
 fi
 export ISTHMUS_HOSTNAME
@@ -122,13 +122,13 @@ setup() {
     REGION_X=`grep -Ew "\s+?Location" "${REGION_INIFILE}" | cut -d"=" -f2 | sed 's/\"//g' | cut -d',' -f1 | xargs`
     REGION_Y=`grep -Ew "\s+?Location" "${REGION_INIFILE}" | cut -d"=" -f2 | sed 's/\"//g' | cut -d',' -f2 | xargs`
     REGION_SPAN_X=`grep -Ew "\s+?SizeX" "${REGION_INIFILE}" | cut -d"=" -f2 | sed 's/\"//g' | xargs`
-    if [ "${REGION_SPAN_X}" == "" ]; then
+    if [ -z "${REGION_SPAN_X}" ]; then
         REGION_SPAN_X=1
     else
         REGION_SPAN_X=$((REGION_SPAN_X / 256))
     fi
     REGION_SPAN_Y=`grep -Ew "\s+?SizeY" "${REGION_INIFILE}" | cut -d"=" -f2 | sed 's/\"//g' | xargs`
-    if [ "${REGION_SPAN_Y}" == "" ]; then
+    if [ -z "${REGION_SPAN_Y}" ]; then
         REGION_SPAN_Y=1
     else
         REGION_SPAN_Y=$((REGION_SPAN_Y / 256))
@@ -161,7 +161,7 @@ do_start() {
     fi
 
     if is_running; then
-        echo "[${SIM}] Already started"
+        echo "[ ${SIM} ] Already started"
         exit 1
     fi
 
@@ -340,7 +340,7 @@ do_saveoar() {
 }
 
 do_list() {
-    if [ "$1" == "" ]; then
+    if [ -z "$1" ]; then
         WHAT="enabled"
     else
         WHAT=$1
@@ -426,7 +426,7 @@ do_delete_maptile() {
 
 do_multi() {
     cmd=$1
-    if [ "$1" == "" ]; then
+    if [ -z "${cmd}" ]; then
         echo "No command given"
         exit
     fi

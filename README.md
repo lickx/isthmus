@@ -18,7 +18,8 @@ Alternatively, use my own OpenSim branch, binaries at https://lotix.nl/builds
   * Split robust for more stability and speed
   * Groups and offline IM enabled
   * Purge group notices older than 14 days
-  
+  * 1 region per sim principle
+
 ## Preconfigured
 Works out of the box:
 

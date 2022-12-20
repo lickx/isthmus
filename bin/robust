@@ -70,7 +70,7 @@ check_user() {
 
 is_running() {
     SCREENPID=`${SCREEN} -ls ${SCREENNAME} | grep -P "${SCREENNAME}\t" | cut -f1 -d'.' | sed 's/W//g'`
-    if [ "${SCREENPID}" != "" ]; then
+    if [ ! -z "${SCREENPID}" ]; then
         return 0
     else
         return 1
@@ -191,7 +191,7 @@ do_stop() {
 
 do_multi() {
     cmd=$1
-    if [ "$1" == "" ]; then
+    if [ -z "${cmd}" ]; then
         echo "No command given"
         exit
     fi
