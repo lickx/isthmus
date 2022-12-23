@@ -9,6 +9,7 @@ The following packages are required:
   zip
   which
   dotnet6
+  libgdiplus
   uuid-runtime
 
 
