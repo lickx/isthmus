@@ -6,7 +6,6 @@ The following packages are required:
   screen
   sed
   unzip
-  zip
   which
   dotnet6
   libgdiplus
