@@ -32,7 +32,7 @@
 # 
 # m h  dom mon dow   command
 
-# Re-scan every 10 minutes for crashed sims:
+# Re-scan every 10 minutes for crashed sims (and robusts if in microgrid mode):
 */10 * * * * /home/opensim/isthmus/bin/istmonitor /home/opensim/isthmus
 
 # Make daily OARs 4:00am every day

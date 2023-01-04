@@ -9,8 +9,9 @@ Alternatively, use my own OpenSim branch, binaries at https://lotix.nl/builds
 ## Features
   * Easily upgrade all sims at once
   * Shared config, database and caches
-  * Logical folder hierarchy
-  * Flexible OAR backups
+  * Self-contained, logical folder hierarchy
+  * No hardcoded paths, the entire tree can be moved
+  * Flexible OAR backups + autobackups
   * Crash detection and restart
   * Dynamic port assignment (user definable range)
   * Easily set up a microgrid using robust

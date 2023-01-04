@@ -43,6 +43,9 @@ if [ "${ISTHMUS_HOSTNAME}" == "" ]; then
 fi
 export ISTHMUS_HOSTNAME
 
+ISTHMUS_IP=`hostname -I | cut -d' ' -f1`
+export ISTHMUS_IP
+
 show_help() {
     echo -e "`basename $0` - Control grid services\n"
     echo "start                         Start all robust instances"

@@ -1,3 +1,5 @@
+-- Sorry Wifi is not supported currently --
+
 Long tutorial: http://www.metaverseink.com/blog/diva-addons/wifi-and-other-diva-addons/
 
 When we refer to 'mautil' we refer to the isthmus script bin/mautil which is a handy wrapper for mautil.exe
