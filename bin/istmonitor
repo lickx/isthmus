@@ -27,32 +27,38 @@ if [ -r "${MONITOR_LOCK}" ]; then
 fi
 
 REGIONS_DIR="${OPENSIM_DIR}/etc/sims-enabled"
-for filename in ${REGIONS_DIR}/*; do
-    SIM=`basename ${filename} .ini`
-    SCREENPID=`screen -ls ${SIM} | grep -P "${SIM}\t" | cut -f1 -d'.' | sed 's/W//g'`
-    if [ "${SCREENPID}" == "" ]; then
-        do_log "Simulator '${SIM}' not online, restarting"
-        ./simctl kill ${SIM}
-        sleep 10
-        ./simctl start ${SIM}
-        sleep ${START_DELAY}
-    fi
-done;
+CNT=`ls ${REGIONS_DIR} | wc -l`
+if [ ${CNT} -ne 0 ]; then
+    for filename in ${REGIONS_DIR}/*; do
+        SIM=`basename ${filename} .ini`
+        SCREENPID=`screen -ls ${SIM} | grep -P "${SIM}\t" | cut -f1 -d'.' | sed 's/W//g'`
+        if [ "${SCREENPID}" == "" ]; then
+            do_log "Simulator '${SIM}' not online, restarting"
+            ./simctl kill ${SIM}
+            sleep 10
+            ./simctl start ${SIM}
+            sleep ${START_DELAY}
+        fi
+    done;
+fi
 
 ROBUST_DIR="${OPENSIM_DIR}/etc/robust.d"
 if [ ! -d "${ROBUST_DIR}" ]; then
     exit
 fi
-for filename in ${ROBUST_DIR}/*; do
-    ROBUST_INSTANCE=`basename ${filename} .ini`
-    SCREENNAME="`basename ${OPENSIM_DIR}`-${ROBUST_INSTANCE}"
-    SCREENPID=`screen -ls ${SCREENNAME} | grep -P "${SCREENNAME}\t" | cut -f1 -d'.' | sed 's/W//g'`
-    if [ "${SCREENPID}" == "" ]; then
-        do_log "Robust instance '${ROBUST_INSTANCE}' not online, restarting"
-        ./robust kill ${ROBUST_INSTANCE}
-        sleep 10
-        ./robust start ${ROBUST_INSTANCE}
-        sleep ${START_DELAY}
-    fi
-done;
+CNT=`ls ${ROBUST_DIR} | wc -l`
+if [ ${CNT} -ne 0 ]; then
+    for filename in ${ROBUST_DIR}/*; do
+        ROBUST_INSTANCE=`basename ${filename} .ini`
+        SCREENNAME="`basename ${OPENSIM_DIR}`-${ROBUST_INSTANCE}"
+        SCREENPID=`screen -ls ${SCREENNAME} | grep -P "${SCREENNAME}\t" | cut -f1 -d'.' | sed 's/W//g'`
+        if [ "${SCREENPID}" == "" ]; then
+            do_log "Robust instance '${ROBUST_INSTANCE}' not online, restarting"
+            ./robust kill ${ROBUST_INSTANCE}
+            sleep 10
+            ./robust start ${ROBUST_INSTANCE}
+            sleep ${START_DELAY}
+        fi
+    done;
+fi
 
