@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 
+mkdir -p "${OPENSIM_DIR}/etc"
 # Install isthmus config file if not already there, and then source it
 if [ ! -f "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
     cp "${OPENSIM_DIR}/share/common/etc/isthmus.conf" "${OPENSIM_DIR}/etc"
