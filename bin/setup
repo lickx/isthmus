@@ -53,13 +53,13 @@ if [ -r "${OPENSIM_DIR}/etc/estate.ini" ]; then
 else
     DefaultEstateName="My Estate"
     read -r -p "Default estate name (${DefaultEstateName}): "
-    if [ "${REPLY}" != "" ]; then
+    if [ -n "${REPLY}" ]; then
         DefaultEstateName=${REPLY}
     fi
 
     DefaultEstateOwnerName="Firstname Lastname"
     read -r -p "Default estate owner (${DefaultEstateOwnerName}): "
-    if [ "${REPLY}" != "" ]; then
+    if [ -n "${REPLY}" ]; then
         DefaultEstateOwnerName=${REPLY}
     fi
     echo -e "[Estates]\nDefaultEstateName = \"${DefaultEstateName}\"\nDefaultEstateOwnerName = \"${DefaultEstateOwnerName}\"\n" > "${OPENSIM_DIR}/etc/estate.ini"

@@ -41,7 +41,7 @@ ERRORS=0
 for simulator in ${REGIONS_DIR}/*; do
     SIM=`basename ${simulator} .ini`
     SCREENPID=`${SCREEN} -ls ${SIM} | grep -P "${SIM}\t" | cut -f1 -d'.' | sed 's/W//g'`
-    if [ "${SCREENPID}" == "" ]; then
+    if [ -z "${SCREENPID}" ]; then
         do_log "${SIM} not online; backup skipped for simulator"
     else
         ${SIMCTL} saveoar "${SIM}" "${OAR_PATH}" >> "${LOGFILE}"

@@ -10,13 +10,13 @@ source "${OPENSIM_DIR}/etc/isthmus.conf"
 
 region_name="My Region"
 read -r -p "New region name (${region_name}): "
-if [ "${REPLY}" != "" ]; then
+if [ -n "${REPLY}" ]; then
     region_name=${REPLY}
 fi
 
 region_coords="10000,10000"
 read -r -p "New region coordinates (${region_coords}): "
-if [ "${REPLY}" != "" ]; then
+if [ -n "${REPLY}" ]; then
     region_coords=${REPLY}
 fi
 
@@ -25,7 +25,7 @@ region_port="${PORT_RANGE_START}"
 
 region_uuid=`uuidgen`
 read -r -p "New region UUID (${region_uuid}): "
-if [ "${REPLY}" != "" ]; then
+if [ -n "${REPLY}" ]; then
     region_uuid=${REPLY}
 fi
 

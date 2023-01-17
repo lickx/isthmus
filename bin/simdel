@@ -17,7 +17,7 @@ is_running() {
     fi
 
     SCREENPID=`${SCREEN} -ls ${SIM} | grep -P "${SIM}\t" | cut -f1 -d'.' | sed 's/W//g'`
-    if [ "${SCREENPID}" != "" ]; then
+    if [ -n "${SCREENPID}" ]; then
         return 0;
     else
         return 1;
@@ -47,6 +47,9 @@ if ! is_running ${SIM} ; then
 fi
 
 UUID=`grep RegionUUID ${INIFILE} | cut -d"=" -f2 | xargs`
+
+# Clean entries in search referring to (parcels on) this region
+./searchpurge "${UUID}"
 
 echo -n "Removing region..."
 ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "change region root"

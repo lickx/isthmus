@@ -32,7 +32,7 @@ if [ ${CNT} -ne 0 ]; then
     for filename in ${REGIONS_DIR}/*; do
         SIM=`basename ${filename} .ini`
         SCREENPID=`screen -ls ${SIM} | grep -P "${SIM}\t" | cut -f1 -d'.' | sed 's/W//g'`
-        if [ "${SCREENPID}" == "" ]; then
+        if [ -z "${SCREENPID}" ]; then
             do_log "Simulator '${SIM}' not online, restarting"
             ./simctl kill ${SIM}
             sleep 10
@@ -52,7 +52,7 @@ if [ ${CNT} -ne 0 ]; then
         ROBUST_INSTANCE=`basename ${filename} .ini`
         SCREENNAME="`basename ${OPENSIM_DIR}`-${ROBUST_INSTANCE}"
         SCREENPID=`screen -ls ${SCREENNAME} | grep -P "${SCREENNAME}\t" | cut -f1 -d'.' | sed 's/W//g'`
-        if [ "${SCREENPID}" == "" ]; then
+        if [ -z "${SCREENPID}" ]; then
             do_log "Robust instance '${ROBUST_INSTANCE}' not online, restarting"
             ./robust kill ${ROBUST_INSTANCE}
             sleep 10

@@ -38,7 +38,7 @@ if [ ! -f "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
 fi
 source "${OPENSIM_DIR}/etc/isthmus.conf"
 
-if [ "${ISTHMUS_HOSTNAME}" == "" ]; then
+if [ -z "${ISTHMUS_HOSTNAME}" ]; then
     ISTHMUS_HOSTNAME=`hostname`
 fi
 export ISTHMUS_HOSTNAME

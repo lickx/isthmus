@@ -60,7 +60,7 @@ check_user() {
 
 is_running() {
     SCREENPID=`${SCREEN} -ls ${SIM} | grep -P "${SIM}\t" | cut -f1 -d'.' | sed 's/W//g'`
-    if [ "${SCREENPID}" != "" ]; then
+    if [ -n "${SCREENPID}" ]; then
         return 0
     else
         return 1
@@ -320,7 +320,7 @@ do_backup() {
 # Saves oars for region in simulator
 # If no oarpath specified, use default var/backup/yyyy-mm-dd
 do_saveoar() {
-    if [ "$1" == "" ]; then
+    if [ -z "$1" ]; then
         LOCAL_OAR_PATH="${OPENSIM_DIR}/var/backup/`date -I'date'`"
     else
         LOCAL_OAR_PATH=$1
@@ -437,8 +437,10 @@ do_multi() {
         fi
     fi
     for simulator in ${REGIONS_DIR}/*; do
-        filename=`basename ${simulator} .ini`
-        ./simctl ${cmd} ${filename}
+        if [ -n "${simulator}" ]; then
+            filename=`basename ${simulator} .ini`
+            ./simctl ${cmd} ${filename}
+        fi
     done;
 }
 

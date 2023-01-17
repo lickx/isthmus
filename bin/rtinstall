@@ -42,7 +42,7 @@ is_running() {
     SIM=$1
 
     SCREENPID=`${SCREEN} -ls ${SIM} | grep -P "${SIM}\t" | cut -f1 -d'.' | sed 's/W//g'`
-    if [ "${SCREENPID}" != "" ]; then
+    if [ -n "${SCREENPID}" ]; then
         return 0
     else
         return 1
@@ -53,7 +53,7 @@ is_robust_running()
 {
     SCREENNAME="`basename ${OPENSIM_DIR}`-ROBUST"
     SCREENPID=`${SCREEN} -ls ${SCREENNAME} | grep -P "${SCREENNAME}\t" | cut -f1 -d'.' | sed 's/W//g'`
-    if [ "${SCREENPID}" != "" ]; then
+    if [ -n "${SCREENPID}" ]; then
         return 0
     else
         return 1
