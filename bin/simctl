@@ -166,7 +166,7 @@ do_start() {
     fi
 
     if [ -d "${OPENSIM_DIR}/etc/robust.d" ]; then
-        ./robust status 99main > /dev/null
+        ${OPENSIM_DIR}/bin/robust status 99main > /dev/null
         if [ $? == 0 ]; then
             echo "Robust is not running"
             exit
@@ -540,13 +540,14 @@ case "$1" in
     enable)
         setup $2
         do_enable
+        do_start
         ;;
     disable)
         setup $2
-        do_disable
         if is_running; then
             do_stop
         fi
+        do_disable
         ;;
     zap)
         setup $2
