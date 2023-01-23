@@ -540,13 +540,9 @@ case "$1" in
     enable)
         setup $2
         do_enable
-        do_start
         ;;
     disable)
         setup $2
-        if is_running; then
-            do_stop
-        fi
         do_disable
         ;;
     zap)
