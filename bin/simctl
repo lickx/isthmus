@@ -25,6 +25,10 @@ export ISTHMUS_HOSTNAME
 
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 
+isuint() {
+    [[ $1 =~ ^[0-9]+$ ]] ;
+}
+
 show_help() {
     echo -e "`basename $0` - Control opensim simulators\n"
     echo "start <simname>     Start a simulator"
@@ -41,6 +45,7 @@ show_help() {
     echo "zap <simname>       Delete region contents and turn the maptile into water"
     echo "maptile <simname>   Generate a new maptile (can take a while)"
     echo "delete-maptile <simname>   Delete the maptile"
+    echo "move <simname> <x,y> Moves region to new absolute or relative coords"
     echo "status (simname)    Returns online status (all if no parameter)"
     echo "list (enabled|available)  List enabled (default) or available sims"
 }
@@ -444,6 +449,68 @@ do_multi() {
     done;
 }
 
+do_move() {
+    coords=$1
+    if [ $# == 0 ]; then
+        show_help
+        exit
+    fi
+    echo "${coords}" | grep -E -q '^[0-9]+,[0-9]+$'
+    if [ $? != 0 ]; then
+        # Possibly relational coords given
+        # Validate x:
+        echo "${coords}" | grep -E -q '^[+-][0-9]+,.+$'
+        if [ $? == 0 ]; then
+            echo "Found modifier for X"
+            # Relational X coordinate:
+            mod_x=`echo "${coords}" | cut -d, -f1`
+            new_region_x=$((REGION_X + mod_x))
+        else
+            # Absolute X coordinate
+            new_region_x=`echo "${coords}" | cut -d, -f1`
+            if ! isuint ${new_region_x} ; then
+                echo "Error: x coordinate must be a number"
+                exit
+            fi
+        fi
+        # Validate y:
+        echo "${coords}" | grep -E -q '^.+,[+-][0-9]+$'
+        if [ $? == 0 ]; then
+            echo "Found modifier for Y"
+            # Relational Y coordinate:
+            mod_y=`echo "${coords}" | cut -d, -f2`
+            new_region_y=$((REGION_Y + mod_y))
+        else
+            # Absolute Y coordinate
+            new_region_y=`echo "${coords}" | cut -d, -f2`
+            if ! isuint ${new_region_y} ; then
+                echo "Error: y coordinate must be a number"
+                exit
+            fi
+        fi
+    else
+        # Both absolute coords given
+        new_region_x=`echo "${coords}" | cut -d, -f1`
+        new_region_y=`echo "${coords}" | cut -d, -f2`
+    fi
+    echo "Clearing old maptile"
+    do_delete_maptile
+    if is_running; then
+        was_running=1
+        echo "Stopping simulator"
+        do_stop
+    fi
+    echo "Relocating region to ${new_region_x},${new_region_y}"
+    sed -i --follow-symlinks -e "s/Location.*/Location = ${new_region_x},${new_region_y}/" "${REGIONS_DIR}/${SIM}.ini"
+    if [ -n "${was_running}" ]; then
+        echo "Restarting previously running sim"
+        # setup needed before start, since we changed it:
+        setup ${SIM}
+        do_start
+    fi
+    echo "Done"
+}
+
 check_user
 case "$1" in
     start)
@@ -564,6 +631,10 @@ case "$1" in
             setup $2
             do_delete_maptile
         fi
+        ;;
+    move)
+        setup $2
+        do_move $3
         ;;
     list)
         do_list $2
