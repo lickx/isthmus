@@ -8,6 +8,9 @@
 # Get the root folder of the isthmus tree
 export OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 REGIONS_DIR="${OPENSIM_DIR}/etc/sims-enabled"
+if [ ! -d "${REGIONS_DIR}" ]; then
+    mkdir -p "${REGIONS_DIR}"
+fi
 
 # We create this lock file when needing to suspend the watchdog
 MONITOR_LOCK="${OPENSIM_DIR}/var/suspend-monitor.lock"
