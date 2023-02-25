@@ -33,6 +33,6 @@ if [ "${DB_NAME}" == "" ] || [ "${DB_USER}" == "" ] || [ "${DB_PASS}" == "" ]; t
 fi
 
 do_log "istdb - Executing sql query: ${@}"
-mysql -u ${DB_USER} -p${DB_PASS} -D ${DB_NAME} -e "$@"
+mysql -u ${DB_USER} -p${DB_PASS} -D ${DB_NAME} -e "$@;"
 exit $?
 
