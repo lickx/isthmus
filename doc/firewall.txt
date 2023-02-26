@@ -41,5 +41,8 @@ sudo ufw allow 9000:9100
 sudo ufw allow 8000:8009/tcp
 (port range 8010-8019/tcp are private ports we use)
 
+# Allow a second server hosting more sims access to private robust:
+sudo ufw allow 8010:8019/tcp from 12.34.56.78
+
 # Now you should be all set up:
 sudo ufw status verbose
