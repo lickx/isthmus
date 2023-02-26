@@ -1,8 +1,16 @@
 The TCP and UDP sim ports by default use the range 9000..9100 (see etc/isthmus.conf)
 They will be auto assigned (picked from this range)
 
-If also using Robust (microgrid), 8002 TCP needs to be open
+If also using Robust (microgrid), 8000-8009 TCP needs to be open/public.
+8010-8019 are for private robust ports, not to be public. When utilizing multiple
+servers (say, to host sims), the private ports need to be accessible by those
+servers only.
+
 Your grid home URI (like hg.example.com) needs to have an A record in DNS, not CNAME!
+For single small servers, it is usually sufficient to make the A record for the grid
+home URI (hg.example.com) the same IP as your main domain (example.com). Any additional
+subdomains used by other robust instances (or other stuff like www) can be CNAMEs if on
+the same server.
 
 It is strongly recommended to disable ipv6 on OpenSim servers. You do that in /etc/sysctl.conf:
 
