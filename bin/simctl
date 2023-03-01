@@ -21,12 +21,14 @@ if [ ! -f "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
 fi
 source "${OPENSIM_DIR}/etc/isthmus.conf"
 
+# Mono optimizations
+export MONO_GC_PARAMS="nursery-size=32m,minor=split,promotion-age=14"
+export MONO_THREADS_PER_CPU=300
+
 if [ -z "${ISTHMUS_HOSTNAME}" ]; then
     ISTHMUS_HOSTNAME=`hostname`
 fi
 export ISTHMUS_HOSTNAME
-
-export DOTNET_CLI_TELEMETRY_OPTOUT=1
 
 isuint() {
     [[ $1 =~ ^[0-9]+$ ]] ;
@@ -194,7 +196,7 @@ do_start() {
     export LC_ALL=C
     ulimit -n 4096 -s 1048576
     cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SIM} -d -m -l \
-        ./OpenSim -inifile="${OPENSIM_DIR}/share/system/opensim.ini"
+        mono --server --optimize=all OpenSim.exe -inifile="${OPENSIM_DIR}/share/system/opensim.ini"
 
     echo -n "[${SIM}] Starting"
     STARTTIME=0

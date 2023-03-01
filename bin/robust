@@ -22,8 +22,6 @@ if [ ! -d "${ROBUST_DIR}" ]; then
     fi
 fi
 
-export DOTNET_CLI_TELEMETRY_OPTOUT=1
-
 mkdir -p "${OPENSIM_DIR}/var/log"
 mkdir -p "${OPENSIM_DIR}/var/fsassets/assets"
 mkdir -p "${OPENSIM_DIR}/var/fsassets/main"
@@ -37,6 +35,10 @@ if [ ! -f "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
     cp "${OPENSIM_DIR}/share/common/etc/isthmus.conf" "${OPENSIM_DIR}/etc"
 fi
 source "${OPENSIM_DIR}/etc/isthmus.conf"
+
+# Mono optimizations
+export MONO_GC_PARAMS="nursery-size=32m,minor=split,promotion-age=14"
+export MONO_THREADS_PER_CPU=300
 
 if [ -z "${ISTHMUS_HOSTNAME}" ]; then
     ISTHMUS_HOSTNAME=`hostname`
@@ -136,7 +138,7 @@ do_start() {
     export LC_ALL=C
     ulimit -n 4096
     cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SCREENNAME} -d -m -l \
-        ./Robust -inifile="${INSTANCE_INIFILE}"
+        mono --server --optimize=all Robust.exe -inifile="${INSTANCE_INIFILE}"
 
     echo -n "[${SCREENNAME}] Starting"
     STARTTIME=0
