@@ -117,6 +117,7 @@ setup() {
     else
         SIM=$1
     fi
+    export SIM
 
     REGION_INIFILE="${OPENSIM_DIR}/etc/sims-available/${SIM}.ini"
 
@@ -179,6 +180,11 @@ do_start() {
             echo "Robust is not running"
             exit
         fi
+    fi
+
+    # Make local configuration folder for sims if not existing
+    if [ ! -d "${OPENSIM_DIR}/etc/sims-local.d" ]; then
+        mkdir "${OPENSIM_DIR}/etc/sims-local.d"
     fi
 
     # Change UDP region port to match TCP sim port
