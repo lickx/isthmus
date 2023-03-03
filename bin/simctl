@@ -189,6 +189,12 @@ do_start() {
         mkdir "${OPENSIM_DIR}/etc/sims-local.d"
     fi
 
+    mono --version >/dev/null
+    if [ $? -ne 0 ]; then
+        echo "Can't continue: no mono installed"
+        exit
+    fi
+
     # Change UDP region port to match TCP sim port
     sed -i --follow-symlinks -e "s/InternalPort.*/InternalPort = ${ISTHMUS_PORT}/" "${REGIONS_DIR}/${SIM}.ini"
 
