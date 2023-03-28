@@ -4,7 +4,7 @@ Easy and modular OpenSimulator management and deployment for Linux. I made this 
 It's probably not good enough for commercial-grade grids but makes life a lot easier for hobbyists running multiple sims in an open-to-connect grid (or your own microgrid).
 
 This is the mono branch (not dotnet6), it works with the OpenSim master runtime.
-Alternatively, use my own 'lickx' branch at https://github.com/lickx/opensim-lickx/tree/lickx
+Alternatively, use a zip of binaries built from my own opensim fork at https://github.com/lickx/opensim-lickx (lickx branch)
 
 ## Features
   * Easily upgrade all sims at once
