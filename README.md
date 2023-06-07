@@ -19,6 +19,7 @@ Alternatively, use a zip of binaries built from my own OpenSim fork, sourcecode 
   * Split robust for more stability and speed
   * Groups and offline IM enabled
   * Purge group notices older than 14 days
+  * Purge parcels in a region from search
   * 1 region per sim principle
 
 ## Preconfigured
