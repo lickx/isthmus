@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+
+# Please use our particular fork of OpenSimSearch:
+# https://github.com/lickx/OpenSimSearch
+
 OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 if [ $# -eq 0 ]; then
     echo "Error: No region UUID specified"
@@ -45,11 +49,8 @@ if [ ! -r "${OPENSIM_DIR}/runtime/bin/OpenSimSearch.Modules.dll" ]; then
     exit
 fi
 
-if [ "${SEARCH_DB}" == "" ]; then
-    echo "Error: SEARCH_DB not defined in etc/isthmus.conf"
-    exit
-fi
-
+# Uses the same DB as robust now
+SEARCH_DB=`GetDbConfig "Database"`
 DB_USER=`GetDbConfig "User Id"`
 DB_PASS=`GetDbConfig "password"`
 
@@ -59,37 +60,37 @@ if [ "${DB_USER}" == "" ] || [ "${DB_PASS}" == "" ]; then
 fi
 
 echo "Cleaning search entries for region ${REGION_UUID}..."
-# classifieds
+# classifieds (note, classifieds is the only table that isn't prefixed with search_ because Robust expects and queries it under this name)
 echo "* Purging classifieds..."
-mysql -u ${DB_USER} -p${DB_PASS} -D ${SEARCH_DB} -e "DELETE classifieds FROM classifieds INNER JOIN parcels ON classifieds.parceluuid = parcels.parcelUUID WHERE parcels.regionUUID='${REGION_UUID}';"
+mysql -u ${DB_USER} -p${DB_PASS} -D ${SEARCH_DB} -e "DELETE classifieds FROM classifieds INNER JOIN search_parcels ON classifieds.parceluuid = search_parcels.parcelUUID WHERE search_parcels.regionUUID='${REGION_UUID}';"
 
 # events
 echo "* Purging events..."
-mysql -u ${DB_USER} -p${DB_PASS} -D ${SEARCH_DB} -e "DELETE events FROM events INNER JOIN parcels ON events.parcelUUID COLLATE utf8_unicode_ci = parcels.parcelUUID WHERE parcels.regionUUID='${REGION_UUID}';"
+mysql -u ${DB_USER} -p${DB_PASS} -D ${SEARCH_DB} -e "DELETE search_events FROM search_events INNER JOIN search_parcels ON search_events.parcelUUID COLLATE utf8_unicode_ci = search_parcels.parcelUUID WHERE search_parcels.regionUUID='${REGION_UUID}';"
 
 # objects
 echo "* Purging objects..."
-mysql -u ${DB_USER} -p${DB_PASS} -D ${SEARCH_DB} -e "DELETE FROM objects WHERE regionuuid='${REGION_UUID}';"
+mysql -u ${DB_USER} -p${DB_PASS} -D ${SEARCH_DB} -e "DELETE FROM search_objects WHERE regionuuid='${REGION_UUID}';"
 
 # regionsales
 echo "* Purging regionsales..."
-mysql -u ${DB_USER} -p${DB_PASS} -D ${SEARCH_DB} -e "DELETE FROM parcelsales WHERE regionUUID='${REGION_UUID}';"
+mysql -u ${DB_USER} -p${DB_PASS} -D ${SEARCH_DB} -e "DELETE FROM search_parcelsales WHERE regionUUID='${REGION_UUID}';"
 
 # popularplaces
 echo "* Purging popularplaces..."
-mysql -u ${DB_USER} -p${DB_PASS} -D ${SEARCH_DB} -e "DELETE popularplaces FROM popularplaces INNER JOIN parcels ON popularplaces.parcelUUID = parcels.parcelUUID WHERE parcels.regionUUID='${REGION_UUID}';"
+mysql -u ${DB_USER} -p${DB_PASS} -D ${SEARCH_DB} -e "DELETE search_popularplaces FROM search_popularplaces INNER JOIN search_parcels ON search_popularplaces.parcelUUID = search_parcels.parcelUUID WHERE search_parcels.regionUUID='${REGION_UUID}';"
 
 # allparcels
 echo "* Purging allparcels..."
-mysql -u ${DB_USER} -p${DB_PASS} -D ${SEARCH_DB} -e "DELETE FROM allparcels WHERE regionUUID='${REGION_UUID}';"
+mysql -u ${DB_USER} -p${DB_PASS} -D ${SEARCH_DB} -e "DELETE FROM search_allparcels WHERE regionUUID='${REGION_UUID}';"
 
 # parcels
 echo "* Purging parcels..."
-mysql -u ${DB_USER} -p${DB_PASS} -D ${SEARCH_DB} -e "DELETE FROM parcels WHERE regionUUID='${REGION_UUID}';"
+mysql -u ${DB_USER} -p${DB_PASS} -D ${SEARCH_DB} -e "DELETE FROM search_parcels WHERE regionUUID='${REGION_UUID}';"
 
 # regions
 echo "* Purging regions..."
-mysql -u ${DB_USER} -p${DB_PASS} -D ${SEARCH_DB} -e "DELETE FROM regions WHERE regionUUID='${REGION_UUID}';"
+mysql -u ${DB_USER} -p${DB_PASS} -D ${SEARCH_DB} -e "DELETE FROM search_regions WHERE regionUUID='${REGION_UUID}';"
 
 echo "Done"
 do_log "Search entries purged for ${REGION_UUID}"
