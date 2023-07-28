@@ -39,7 +39,7 @@ fi
 source "${OPENSIM_DIR}/etc/isthmus.conf"
 
 if [ -z "${ISTHMUS_HOSTNAME}" ]; then
-    ISTHMUS_HOSTNAME=`hostname`
+    ISTHMUS_HOSTNAME=`hostname -f`
 fi
 export ISTHMUS_HOSTNAME
 
