@@ -62,7 +62,18 @@ else
     if [ -n "${REPLY}" ]; then
         DefaultEstateOwnerName=${REPLY}
     fi
-    echo -e "[Estates]\nDefaultEstateName = \"${DefaultEstateName}\"\nDefaultEstateOwnerName = \"${DefaultEstateOwnerName}\"\n" > "${OPENSIM_DIR}/etc/estate.ini"
+    ESTATES_INI="${OPENSIM_DIR}/etc/estate.ini"
+    echo -e "[Estates]\nDefaultEstateName = \"${DefaultEstateName}\"\nDefaultEstateOwnerName = \"${DefaultEstateOwnerName}\"\n\n" > "${ESTATES_INI}"
+    echo "[DatabaseService]" >> "${ESTATES_INI}"
+    echo "; To keep estate data across instances/servers centralised (optional):" >> "${ESTATES_INI}"
+    echo "; In mariadb/mysql (note we don't limit this user to localhost):" >> "${ESTATES_INI}"
+    echo ";   create database estates;" >> "${ESTATES_INI}"
+    echo ";   grant all on estates.* to estates identified by 'ESTATES_PASSWORD';" >> "${ESTATES_INI}"
+    echo "; Then uncomment and edit EstateConnectionString:" >> "${ESTATES_INI}"
+    echo -e ";EstateConnectionString = \"Data Source=SERVER_IP;Database=estates;User ID=estates;Password=ESTATES_PASSWORD;Old Guids=true;SslMode=None;\"\n" >> "${ESTATES_INI}"
 fi
 
+echo "Please review etc/estate.ini if you want estate data to be stored centralised to be shared across multiple instances/servers."
+
 echo "Done"
+
