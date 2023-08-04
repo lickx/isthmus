@@ -29,7 +29,7 @@ mkdir -p "${OPENSIM_DIR}/var/log/isthmus.log"
 GetDbConfig () {
     DB_KEY=$1
     # Caveats: Only parses the first ConnectionString, uncommented or not!
-    DB_VALUE=`grep "ConnectionString" "${DB_SETTINGS}" | sed -e 's/ConnectionString =//g' -e 's/"//g' -e 's/;/\n/g' | grep -i "$1" | cut -d= -f2`
+    DB_VALUE=`grep "^ConnectionString" "${DB_SETTINGS}" | sed -e 's/ConnectionString =//g' -e 's/"//g' -e 's/;/\n/g' | grep -i "$1" | cut -d= -f2`
     echo "${DB_VALUE}"
 }
 
