@@ -16,3 +16,15 @@ In addition, one of the following databases is required:
 
   mariadb-server (recommended)
   mysql-server
+
+
+For your own grid and bin/searchpurge, our own OpenSimSearch is needed,
+because it prefixes search tables with 'search_' so they can coexist
+in the main robust database.
+https://github.com/lickx/OpenSimSearch
+Do a git checkout lickx-dotnet6, then source webroot/sql/ossearch.sql
+into your robust database. In the future I will make all this easier.
+
+For just attaching to OsGrid, OpenSimSearch doesn't use local tables
+but speaks to OsGrid's groups server instead. In fact in that case
+you won't be using or needing bin/searchpurge.
