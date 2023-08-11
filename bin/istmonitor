@@ -29,7 +29,7 @@ fi
 REGIONS_DIR="${OPENSIM_DIR}/etc/sims-enabled"
 CNT=`ls ${REGIONS_DIR} | wc -l`
 if [ ${CNT} -ne 0 ]; then
-    for filename in ${REGIONS_DIR}/*; do
+    for filename in ${REGIONS_DIR}/*.ini; do
         SIM=`basename ${filename} .ini`
         SCREENPID=`screen -ls ${SIM} | grep -P "${SIM}\t" | cut -f1 -d'.' | sed 's/W//g'`
         if [ -z "${SCREENPID}" ]; then
@@ -48,7 +48,7 @@ if [ ! -d "${ROBUST_DIR}" ]; then
 fi
 CNT=`ls ${ROBUST_DIR} | wc -l`
 if [ ${CNT} -ne 0 ]; then
-    for filename in ${ROBUST_DIR}/*; do
+    for filename in ${ROBUST_DIR}/*.ini; do
         ROBUST_INSTANCE=`basename ${filename} .ini`
         SCREENNAME="`basename ${OPENSIM_DIR}`-${ROBUST_INSTANCE}"
         SCREENPID=`screen -ls ${SCREENNAME} | grep -P "${SCREENNAME}\t" | cut -f1 -d'.' | sed 's/W//g'`

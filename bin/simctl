@@ -359,7 +359,16 @@ do_list() {
     else
         WHAT=$1
     fi
-    for simulator in ${OPENSIM_DIR}/etc/sims-${WHAT}/*; do
+    if [ ! -d "${OPENSIM_DIR}/etc/sims-${WHAT}" ]; then
+        echo "No sims configured"
+        exit 0
+    fi
+    NUM_FILES=`ls 2>/dev/null -Ubad1 -- ${OPENSIM_DIR}/etc/sims-${WHAT}/*.ini | wc -l`
+    if [ "${NUM_FILES}" == "0" ]; then
+        echo "No sims configured"
+        exit 0
+    fi
+    for simulator in ${OPENSIM_DIR}/etc/sims-${WHAT}/*.ini; do
         simname=`basename ${simulator} .ini`
         setup ${simname}
         if is_running; then
@@ -450,7 +459,16 @@ do_multi() {
             exit
         fi
     fi
-    for simulator in ${REGIONS_DIR}/*; do
+    if [ ! -d "${REGIONS_DIR}" ]; then
+        echo "No sims configured"
+        exit 0
+    fi
+    NUM_FILES=`ls 2>/dev/null -Ubad1 -- ${REGIONS_DIR}/*.ini | wc -l`
+    if [ "${NUM_FILES}" == "0" ]; then
+        echo "No sims configured"
+        exit 0
+    fi
+    for simulator in ${REGIONS_DIR}/*.ini; do
         if [ -n "${simulator}" ]; then
             filename=`basename ${simulator} .ini`
             ./simctl ${cmd} ${filename}
