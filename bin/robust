@@ -136,7 +136,9 @@ do_start() {
     export LC_ALL=C
     ulimit -n 4096
     cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SCREENNAME} -d -m -l \
-        ./Robust -inifile="${INSTANCE_INIFILE}"
+        dotnet ./Robust.dll \
+            -inifile="${INSTANCE_INIFILE}" \
+            -logfile="${ROBUST_LOGFILE}"
 
     echo -n "[${SCREENNAME}] Starting"
     STARTTIME=0

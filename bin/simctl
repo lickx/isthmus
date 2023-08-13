@@ -200,7 +200,9 @@ do_start() {
     export LC_ALL=C
     ulimit -n 4096 -s 1048576
     cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SIM} -d -m -l \
-        ./OpenSim -inifile="${OPENSIM_DIR}/share/system/opensim.ini"
+        dotnet ./OpenSim.dll \
+            -inifile="${OPENSIM_DIR}/share/system/opensim.ini" \
+            -logfile="${ISTHMUS_LOGFILE}"
 
     echo -n "[${SIM}] Starting"
     STARTTIME=0
