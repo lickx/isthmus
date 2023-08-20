@@ -29,6 +29,7 @@ do_install() {
     echo "Installing ${ZIP_FILE}"
     EXCLUDE="bin/config-include/* bin/Regions/* bin/Estates/* bin/OpenSim.ini bin/OpenSim.exe.config bin/Robust.exe.config"
     cd "${OPENSIM_DIR}"
+    rm -f "bin/.version"
     unzip -q -o -d "${TARGET_DIR}" "${ZIP_FILE}" -x ${EXCLUDE} &>/dev/null
     NEW_VERSION=`basename ${ZIP_FILE}`
     if [ -r "${OPENSIM_DIR}/runtime/bin/.version" ]; then
