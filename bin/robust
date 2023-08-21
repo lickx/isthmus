@@ -120,7 +120,9 @@ setup() {
     get_port
 
     mkdir -p "${OPENSIM_DIR}/var/log"
-    export ROBUST_LOGFILE="${OPENSIM_DIR}/var/log/robust-${INSTANCE}.log"
+    # Combine logfile for duplicate robusts (like inventory0..n):
+    INSTANCE_NO_NUM=${INSTANCE//[0-9]/}
+    export ROBUST_LOGFILE="${OPENSIM_DIR}/var/log/robust-${INSTANCE_NO_NUM}.log"
     export ROBUST_STATS_LOGFILE="${OPENSIM_DIR}/var/log/robust_stats.log"
 
     mkdir -p "${OPENSIM_DIR}/var/pid/robust"
