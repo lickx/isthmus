@@ -16,7 +16,8 @@ Alternatively, use a zip of binaries built from my own OpenSim fork, sourcecode 
   * Dynamic port assignment (user definable range)
   * Easily set up a microgrid using robust
   * Only allow modern, non-shady viewers (optional)
-  * Split robust for more stability and speed
+  * Single robust microgrid
+  * Split robust maxigrid (TBI)
   * Groups and offline IM enabled
   * Purge group notices older than 14 days
   * Purge parcels in a region from search
