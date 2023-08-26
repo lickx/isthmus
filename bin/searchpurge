@@ -24,7 +24,7 @@ if [ -r "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
     source "${OPENSIM_DIR}/etc/isthmus.conf"
 fi
 
-mkdir -p "${OPENSIM_DIR}/var/log/isthmus.log"
+mkdir -p "${OPENSIM_DIR}/var/log"
 
 GetDbConfig () {
     DB_KEY=$1
