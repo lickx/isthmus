@@ -115,9 +115,8 @@ setup() {
         show_help
         exit 1
     else
-        SIM=$1
+        export SIM=$1
     fi
-    export SIM
 
     REGION_INIFILE="${OPENSIM_DIR}/etc/sims-available/${SIM}.ini"
 
