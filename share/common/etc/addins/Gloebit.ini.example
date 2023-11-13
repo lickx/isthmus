@@ -4,17 +4,20 @@
 ; 1) Create a Gloebit account
 ; 2) Request for merchant status on your Gloebit control panel
 ; 3) Using 'Merchant Tools', create a new Gloebit application:
-;  Name: My Bunch of Sims (Gridname)
-;  Description: Anything that describes your bunch of sims
-;  Logo: An optional picture/logo for your bunch of sims (400x128 pixels)
-; 4) Note down the generated OAuth Key and OAuth Secret, these need to be filled
-; in into this ini file
+;  Name: My Grid or My Estate On OSGrid
+;  Description: Anything that describes your grid/estate
+;  Logo: An optional picture/logo (400x128 pixels)
+; 4) Note down the generated OAuth Key and OAuth Secret, these need to be
+;    filled down below in this ini file
 ; 5) After having configured this ini file, rename it to Gloebit.ini 
 ; 6) Put Gloebit.dll into runtime/bin
 ;    The dll can be found here: http://dev.gloebit.com/opensim/downloads/
 
 [Economy]
 economymodule = Gloebit
+SellEnabled = true
+PriceUpload = 0
+PriceGroupCreate = 0
 
 [Gloebit]
     ;;;;;; ENABLE GLOBALLY OR FOR INDIVIDUAL REGIONS ;;;;;
@@ -79,6 +82,7 @@ economymodule = Gloebit
     ; GLBShowNewSessionAuthIM = true
     ;# {GLBShowWelcomeMessage} {Show welcome message when entering a region}
     ; GLBShowWelcomeMessage = true
+    GLBShowWelcomeMessage = false
 
     ;;;;; CONFIGURE SINGLE GLOEBIT DB FOR APP OR GRID ;;;;;;
     ;; Optional - If not configured here, Gloebit will use the DataService 
