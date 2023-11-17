@@ -70,7 +70,7 @@ else
     echo ";   create database estates;" >> "${ESTATES_INI}"
     echo ";   grant all on estates.* to estates identified by 'ESTATES_PASSWORD';" >> "${ESTATES_INI}"
     echo "; Then uncomment and edit EstateConnectionString:" >> "${ESTATES_INI}"
-    echo -e ";EstateConnectionString = \"Data Source=SERVER_IP;Database=estates;User ID=estates;Password=ESTATES_PASSWORD;Old Guids=true;SslMode=None;\"\n" >> "${ESTATES_INI}"
+    echo -e ";EstateConnectionString = \"Data Source=SERVER_IP;Database=estates;User ID=opensim_estates;Password=ESTATES_PASSWORD;Old Guids=true;SslMode=None;\"\n" >> "${ESTATES_INI}"
 fi
 
 echo "Please review etc/estate.ini if you want estate data to be stored centralised to be shared across multiple instances/servers."
