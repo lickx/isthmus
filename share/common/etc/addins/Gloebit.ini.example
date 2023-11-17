@@ -100,8 +100,16 @@ PriceGroupCreate = 0
     ;;
     ;; Both of these settings must be configured together.  See StandaloneCommon.ini.example
     ;; for ConnectionString examples and availiable StorageProviders
+
+    ; Microgrid setup (single server):
     ;GLBSpecificStorageProvider = OpenSim.Data.MySQL.dll
     ;GLBSpecificConnectionString = "Data Source=localhost;Database=gloebit;User ID=opensim_gloebit;Password=***;Old Guids=true;"
+
+    ; Maxigrid setup with multiple servers, use a central database:
+    ;GLBSpecificStorageProvider = OpenSim.Data.MySQL.dll
+    ;GLBSpecificConnectionString = "Data Source=192.168.0.2;Database=gloebit;User ID=opensim_gloebit;Password=***;Old Guids=true;"
+
+    ; Currently PostgreSQL is unsupported in OpenSim:
     ;GLBSpecificStorageProvider = "OpenSim.Data.PGSQL.dll"
     ;GLBSpecificConnectionString = "Server=localhost;Database=gloebit;User Id=opensim_gloebit; password=***;"
 
