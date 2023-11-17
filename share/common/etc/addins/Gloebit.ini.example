@@ -101,9 +101,9 @@ PriceGroupCreate = 0
     ;; Both of these settings must be configured together.  See StandaloneCommon.ini.example
     ;; for ConnectionString examples and availiable StorageProviders
     ;GLBSpecificStorageProvider = OpenSim.Data.MySQL.dll
-    ;GLBSpecificConnectionString = "Data Source=localhost;Database=opensim;User ID=opensim;Password=***;Old Guids=true;"
+    ;GLBSpecificConnectionString = "Data Source=localhost;Database=gloebit;User ID=opensim_gloebit;Password=***;Old Guids=true;"
     ;GLBSpecificStorageProvider = "OpenSim.Data.PGSQL.dll"
-    ;GLBSpecificConnectionString = "Server=localhost;Database=opensim;User Id=opensim; password=***;"
+    ;GLBSpecificConnectionString = "Server=localhost;Database=gloebit;User Id=opensim_gloebit; password=***;"
 
 ; These two lines added for land sales to work; see mantis 8779
 GLBNewHTTPFlow = true
