@@ -17,7 +17,7 @@ Alternatively, use a zip of binaries built from my own OpenSim fork, sourcecode 
   * Easily set up a microgrid using robust
   * Only allow modern, non-shady viewers (optional)
   * Single robust microgrid
-  * Split robust maxigrid (TBI)
+  * Split robust maxigrid
   * Groups and offline IM enabled
   * Purge group notices older than 14 days
   * Purge parcels in a region from search
@@ -27,6 +27,7 @@ Alternatively, use a zip of binaries built from my own OpenSim fork, sourcecode 
 Works out of the box:
 
   * To attach regions to OsGrid (https://www.osgrid.org)
+  * To attach regions to a built-in maxigrid (with hypergrid)
   * To attach regions to a built-in microgrid (either with or without hypergrid)
 
 For more info see the contents of the doc folder
