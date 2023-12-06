@@ -12,16 +12,15 @@ fi
 . $HOME/.bashrc
 
 OPENSIM_DIR=$1
-LOGFILE="${OPENSIM_DIR}/var/log/monitor.log"
 MONITOR_LOCK="${OPENSIM_DIR}/var/suspend-monitor.lock"
 
 cd "${OPENSIM_DIR}/bin"
 mkdir -p "${OPENSIM_DIR}/var/log"
 
 do_log() {
-    touch "${LOGFILE}"
-    logline="`date --iso-8601=seconds` - $1"
-    echo "$logline" >> "$LOGFILE"
+    touch "${OPENSIM_DIR}/var/log/isthmus.log"
+    logline="`date --iso-8601=seconds` - istmonitor - $1"
+    echo "${logline}" >> "${OPENSIM_DIR}/var/log/isthmus.log"
 }
 
 if [ -r "${MONITOR_LOCK}" ]; then
