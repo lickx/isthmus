@@ -8,9 +8,11 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
+# Needed when run from cron, for dotnet in the path:
+. $HOME/.bashrc
+
 OPENSIM_DIR=$1
 LOGFILE="${OPENSIM_DIR}/var/log/monitor.log"
-START_DELAY=60
 MONITOR_LOCK="${OPENSIM_DIR}/var/suspend-monitor.lock"
 
 cd "${OPENSIM_DIR}/bin"
@@ -37,7 +39,6 @@ if [ ${CNT} -ne 0 ]; then
             ./simctl kill ${SIM}
             sleep 10
             ./simctl start ${SIM}
-            sleep ${START_DELAY}
         fi
     done;
 fi
@@ -57,7 +58,6 @@ if [ ${CNT} -ne 0 ]; then
             ./robust kill ${ROBUST_INSTANCE}
             sleep 10
             ./robust start ${ROBUST_INSTANCE}
-            sleep ${START_DELAY}
         fi
     done;
 fi
