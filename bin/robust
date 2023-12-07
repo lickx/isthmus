@@ -135,6 +135,13 @@ do_start() {
         return 1
     fi
 
+    TEST_DOTNET=`which dotnet > /dev/null`
+    if [ $? != 0 ]; then
+        echo ".NET 6 is not installed or 'dotnet' is not in the path"
+        do_log ".NET 6 is not installed or 'dotnet' is not in the path"
+        exit
+    fi
+
     export LC_ALL=C
     ulimit -n 4096
     cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SCREENNAME} -d -m -l \
