@@ -75,6 +75,16 @@ is_running() {
     fi
 }
 
+visitor_count() {
+    local URL="http://localhost:${ISTHMUS_PORT}/jsonSimStats"
+    local JSON=`wget -q $URL -O /dev/stdout`
+    local JSON_KEY="RootAg"
+    local NUM_AGENTS=`echo ${JSON} | grep -oP "(?<=\"${JSON_KEY}\":\")[^\"]*"`
+    local JSON_KEY="NPCAg"
+    local NUM_NPC=`echo ${JSON} | grep -oP "(?<=\"${JSON_KEY}\":\")[^\"]*"`
+    echo $(($NUM_AGENTS-$NUM_NPC))
+}
+
 is_enabled() {
     if [ -r "${REGIONS_DIR}/${SIM}.ini" ]; then
         return 1
@@ -259,6 +269,13 @@ do_kill() {
 
 do_stop() {
     if is_running; then
+        local NUM_AGENTS=$(visitor_count)
+        if [ "${NUM_AGENTS}" -ne 0 ]; then
+            ALERT_DELAY=300
+            MSG_REGION_STOP="ATTENTION: REGION IS GOING DOWN - Please relocate elsewhere within ${ALERT_DELAY} seconds..."
+            do_bluebox "${MSG_REGION_STOP}" ${ALERT_DELAY}
+            exit
+        fi
         echo -n "[${SIM}] Stopping"
         ${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nquit"
         STOPTIME=0
@@ -380,7 +397,12 @@ do_list() {
         simname=`basename ${simulator} .ini`
         setup ${simname}
         if is_running; then
-            echo "${simname} - online"
+            local NUM_AGENTS=$(visitor_count)
+            if [ "${NUM_AGENTS}" -ne 0 ]; then
+                echo "${simname} - online (${NUM_AGENTS} visitors)"
+            else
+                echo "${simname} - online"
+            fi
         else
             echo "${simname} - offline"
         fi
@@ -576,7 +598,7 @@ case "$1" in
             setup $2
             ALERT_DELAY=300
             MSG_REGION_STOP="ATTENTION: REGION MAINTENANCE - This region will be going down for maintenance within ${ALERT_DELAY} seconds. Please teleport elsewhere until we are back..."
-            bluebox ${simname} "${MSG_REGION_STOP}" ${ALERT_DELAY}
+            do_bluebox ${SIM} "${MSG_REGION_STOP}" ${ALERT_DELAY}
         fi
         ;;
     kill)
@@ -600,7 +622,7 @@ case "$1" in
         if [ $# == 1 ]; then
             do_multi $1
         else
-            setup
+            setup $2
             do_bluebox "$3" $4
         fi
         ;;
