@@ -198,11 +198,6 @@ do_start() {
         fi
     fi
 
-    # Make local configuration folder for sims if not existing
-    if [ ! -d "${OPENSIM_DIR}/etc/sims-local.d" ]; then
-        mkdir "${OPENSIM_DIR}/etc/sims-local.d"
-    fi
-
     # Change UDP region port to match TCP sim port
     sed -i --follow-symlinks -e "s/InternalPort.*/InternalPort = ${ISTHMUS_PORT}/" "${REGIONS_DIR}/${SIM}.ini"
 
