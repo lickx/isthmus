@@ -329,12 +329,10 @@ do_bluebox() {
                     rm "${OPENSIM_DIR}/var/ports/${SIM}.port"
                 fi
                 echo " stopped"
-                return 0
             elif [ ${STOPTIME} -ge 120 ]; then
                 echo " killing"
                 do_kill ${SIM}
                 do_log "[${SIM}] Took a long time to shutdown"
-                return 1
             fi
         done
     else
