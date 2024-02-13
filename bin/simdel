@@ -59,7 +59,7 @@ echo "done"
 
 echo "Removing simulator"
 ./simctl stop ${SIM}
-./simctl delete_maptile ${SIM}
+./simctl delete-maptile ${SIM}
 rm "${INIFILE}"
 
 if [ -w "${OPENSIM_DIR}/var/maptiles/${UUID}.jpg" ]; then
