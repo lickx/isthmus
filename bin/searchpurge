@@ -40,7 +40,9 @@ do_log() {
 }
 
 if [ ! -d "${OPENSIM_DIR}/etc/robust.d" ]; then
-    echo "Error: This isthmus is not a (micro)grid"
+    echo "Skipping deleting search entries, this isthmus is not the gridserver"
+    echo "To purge this region's entries in search, use this on your gridserver:"
+    echo "./searchpurge ${REGION_UUID}"
     exit
 fi
 
