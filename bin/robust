@@ -231,6 +231,9 @@ case "$1" in
     start)
         if [ $# == 1 ]; then
             do_multi $1
+            if [ -r "${MONITOR_LOCK}" ]; then
+                rm "${MONITOR_LOCK}"
+            fi
         else
             setup $2
             do_start
@@ -240,9 +243,6 @@ case "$1" in
         if [ $# == 1 ]; then
             touch "${MONITOR_LOCK}"
             do_multi $1 reverse
-            if [ -r "${MONITOR_LOCK}" ]; then
-            rm "${MONITOR_LOCK}"
-            fi
         else
             setup $2
             do_stop
@@ -252,9 +252,6 @@ case "$1" in
         if [ $# == 1 ]; then
             touch "${MONITOR_LOCK}"
             do_multi $1 reverse
-            if [ -r "${MONITOR_LOCK}" ]; then
-                rm "${MONITOR_LOCK}"
-            fi
         else
             setup $2
             do_kill
@@ -271,7 +268,7 @@ case "$1" in
             setup $2
             do_stop
             # Take time for the pid file to clear
-            sleep 1
+            sleep 3
             do_start
         fi
         ;;
