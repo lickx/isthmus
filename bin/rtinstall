@@ -2,7 +2,6 @@
 OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 REGIONS_DIR="${OPENSIM_DIR}/etc/sims-enabled"
 TARGET_DIR="runtime"
-SCREEN="/usr/bin/screen"
 
 if [ $# -eq 0 ]; then
     echo "Usage: $0 [-p|-c] <opensim_distribution.zip>"
@@ -42,7 +41,7 @@ do_install() {
 is_running() {
     SIM=$1
 
-    SCREENPID=`${SCREEN} -ls ${SIM} | grep -P "${SIM}\t" | cut -f1 -d'.' | sed 's/W//g'`
+    SCREENPID=`screen -ls ${SIM} | grep -P "${SIM}\t" | cut -f1 -d'.' | sed 's/W//g'`
     if [ -n "${SCREENPID}" ]; then
         return 0
     else
@@ -53,7 +52,7 @@ is_running() {
 is_robust_running()
 {
     SCREENNAME="`basename ${OPENSIM_DIR}`-ROBUST"
-    SCREENPID=`${SCREEN} -ls ${SCREENNAME} | grep -P "${SCREENNAME}\t" | cut -f1 -d'.' | sed 's/W//g'`
+    SCREENPID=`screen -ls ${SCREENNAME} | grep -P "${SCREENNAME}\t" | cut -f1 -d'.' | sed 's/W//g'`
     if [ -n "${SCREENPID}" ]; then
         return 0
     else

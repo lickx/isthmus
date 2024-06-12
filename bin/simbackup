@@ -12,8 +12,6 @@ OPENSIM_DIR=$1
 REGIONS_DIR="${OPENSIM_DIR}/etc/sims-enabled"
 SIMCTL="${OPENSIM_DIR}/bin/simctl"
 LOGFILE="${OPENSIM_DIR}/var/log/isthmus.log"
-SCREEN="/usr/bin/screen"
-GREP="/bin/grep"
 START_DELAY=60
 SIMAUTO_LOCK="${OPENSIM_DIR}/var/simauto.lock"
 
@@ -40,7 +38,7 @@ ERRORS=0
 
 for simulator in ${REGIONS_DIR}/*; do
     SIM=`basename ${simulator} .ini`
-    SCREENPID=`${SCREEN} -ls ${SIM} | grep -P "${SIM}\t" | cut -f1 -d'.' | sed 's/W//g'`
+    SCREENPID=`screen -ls ${SIM} | grep -P "${SIM}\t" | cut -f1 -d'.' | sed 's/W//g'`
     if [ -z "${SCREENPID}" ]; then
         do_log "${SIM} not online; backup skipped for simulator"
     else

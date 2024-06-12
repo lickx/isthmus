@@ -16,7 +16,7 @@ is_running() {
         SIM=$1
     fi
 
-    SCREENPID=`${SCREEN} -ls ${SIM} | grep -P "${SIM}\t" | cut -f1 -d'.' | sed 's/W//g'`
+    SCREENPID=`screen -ls ${SIM} | grep -P "${SIM}\t" | cut -f1 -d'.' | sed 's/W//g'`
     if [ -n "${SCREENPID}" ]; then
         return 0;
     else
@@ -52,8 +52,8 @@ UUID=`grep RegionUUID ${INIFILE} | cut -d"=" -f2 | xargs`
 ./searchpurge "${UUID}"
 
 echo -n "Removing region..."
-${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "change region root"
-${SCREEN} -r ${SCREENPID}.${SIM} -X exec .\!\! echo "delete-region \"${REGION}\""
+screen -r ${SCREENPID}.${SIM} -X exec .\!\! echo "change region root"
+screen -r ${SCREENPID}.${SIM} -X exec .\!\! echo "delete-region \"${REGION}\""
 sleep 30
 echo "done"
 

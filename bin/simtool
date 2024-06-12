@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 export OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 SIMCTL="${OPENSIM_DIR}/bin/simctl"
-SCREEN="/usr/bin/screen"
-GREP="/bin/grep"
 SIMAUTO_LOCK="${OPENSIM_DIR}/var/simauto.lock"
 LOGFILE="${OPENSIM_DIR}/var/log/isthmus.log"
 
@@ -22,7 +20,7 @@ do_log() {
 is_running() {
     SIM=$1
 
-    SCREENPID=`${SCREEN} -ls ${SIM} | grep -P "${SIM}\t" | cut -f1 -d'.' | sed 's/W//g'`
+    SCREENPID=`screen -ls ${SIM} | grep -P "${SIM}\t" | cut -f1 -d'.' | sed 's/W//g'`
     if [ -n "${SCREENPID}" ]; then
         return 0
     else

@@ -22,8 +22,6 @@ if [ ! -d "${ROBUST_DIR}" ]; then
     fi
 fi
 
-export DOTNET_CLI_TELEMETRY_OPTOUT=1
-
 mkdir -p "${OPENSIM_DIR}/var/log"
 mkdir -p "${OPENSIM_DIR}/var/fsassets/assets"
 mkdir -p "${OPENSIM_DIR}/var/fsassets/main"
@@ -43,8 +41,7 @@ if [ -z "${ISTHMUS_HOSTNAME}" ]; then
 fi
 export ISTHMUS_HOSTNAME
 
-ISTHMUS_IP=`hostname -I | cut -d' ' -f1`
-export ISTHMUS_IP
+export ISTHMUS_IP=`hostname -I | cut -d' ' -f1`
 
 show_help() {
     echo -e "`basename $0` - Control grid services\n"
@@ -61,7 +58,6 @@ do_log() {
     touch "${OPENSIM_DIR}/var/log/isthmus.log"
     logline="`date --iso-8601=seconds` - robust - $1"
     echo "${logline}" >> "${OPENSIM_DIR}/var/log/isthmus.log"
-
 }
 
 check_user() {
@@ -72,7 +68,7 @@ check_user() {
 }
 
 is_running() {
-    SCREENPID=`${SCREEN} -ls ${SCREENNAME} | grep -P "${SCREENNAME}\t" | cut -f1 -d'.' | sed 's/W//g'`
+    SCREENPID=`screen -ls ${SCREENNAME} | grep -P "${SCREENNAME}\t" | cut -f1 -d'.' | sed 's/W//g'`
     if [ ! -z "${SCREENPID}" ]; then
         return 0
     else
@@ -142,9 +138,10 @@ do_start() {
         exit
     fi
 
+    export DOTNET_CLI_TELEMETRY_OPTOUT=1
     export LC_ALL=C
     ulimit -n 4096
-    cd "${OPENSIM_DIR}/runtime/bin" && ${SCREEN} -S ${SCREENNAME} -d -m -l \
+    cd "${OPENSIM_DIR}/runtime/bin" && screen -S ${SCREENNAME} -d -m -l \
         dotnet ./Robust.dll \
             -inifile="${INSTANCE_INIFILE}" \
             -logfile="${ROBUST_LOGFILE}"
@@ -180,7 +177,7 @@ do_kill() {
 do_stop() {
     if is_running; then
         echo -n "[${SCREENNAME}] Stopping"
-        ${SCREEN} -r ${SCREENPID}.${SCREENNAME} -X exec .\!\! echo "\nquit"
+        screen -r ${SCREENPID}.${SCREENNAME} -X exec .\!\! echo "\nquit"
         STOPTIME=0
         while :
         do
