@@ -32,16 +32,20 @@
 # 
 # m h  dom mon dow   command
 
-# Re-scan every 10 minutes for crashed sims (and robusts if in microgrid mode):
-*/10 * * * * /home/opensim/isthmus/bin/istmonitor /home/opensim/isthmus
+SHELL=/bin/bash
 
-# Make daily OARs 4:00am every day
-0 4 * * * /home/opensim/isthmus/bin/simbackup /home/opensim/isthmus
+# Grid+Sims: Re-scan every 10 minutes for crashed sims (and robusts if in grid mode):
+*/10 * * * * . $HOME/.bashrc; /home/opensim/isthmus/bin/istmonitor /home/opensim/isthmus
 
-# Make weekly OARs 12:00am every monday
-#0 12 * * 1 /home/opensim/isthmus/osgrid/bin/simbackup /home/opensim/isthmus/osgrid
+# Sims: Make daily OARs 4:00am every day
+#0 4 * * * . $HOME/.bashrc; /home/opensim/isthmus/bin/simbackup /home/opensim/isthmus
 
-# Purge old group notices (> 14 days) every midnight, for self-hosted grids
-0 0 * * * /home/opensim/isthmus/bin/grppurge /home/opensim/isthmus
+# Sims: Make weekly OARs 12:00am every monday
+#0 12 * * 1 . $HOME/.bashrc; /home/opensim/isthmus/bin/simbackup /home/opensim/isthmus
 
+# Grid: Purge old group notices (> 14 days) every midnight, for self-hosted grids
+#0 0 * * * . $HOME/.bashrc; /home/opensim/isthmus/bin/grppurge /home/opensim/isthmus
+
+# Grid: For keeping the search service index current (OpenSimSearch)
+#*/15 * * * * wget -O /dev/null http://example.com/search/parser.php
 
