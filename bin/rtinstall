@@ -4,10 +4,9 @@ REGIONS_DIR="${OPENSIM_DIR}/etc/sims-enabled"
 TARGET_DIR="runtime"
 
 if [ $# -eq 0 ]; then
-    echo "Usage: $0 [-p|-c] <opensim_distribution.zip>"
-    echo "-p: Preserve ScriptEngines, install while running"
-    echo "-c: Perform clean install, first removing the old runtime"
-    echo "Seperate add-on modules can also be installed (with -p)"
+    echo "Usage: $0 [-c] <opensim_distribution.zip>"
+    echo "-c: Perform clean install and clear scriptengines (except state)"
+    echo "Seperate add-on modules can also be installed (without -c)"
     exit 0
 fi
 
@@ -71,11 +70,6 @@ any_sims_online() {
 }
 
 case "$1" in
-    -p)
-        ZIP_FILE=`readlink -f "$2"`
-        do_install
-        exit 0
-        ;;
     -c)
         if any_sims_online; then
             echo "All sims need to be stopped first."
@@ -86,6 +80,10 @@ case "$1" in
             exit 0
         fi
         ZIP_FILE=`readlink -f "$2"`
+        if [ ! -r "${ZIP_FILE}" ]; then
+            echo "Zipfile '${ZIP_FILE}' does not exist"
+            exit 0
+        fi
         echo "Clearing ScriptEngines, keeping state"
         if [ -x "simtool" ]; then
             ./simtool clearscripts
@@ -104,18 +102,10 @@ case "$1" in
         exit 0
         ;;
     *)
-        if any_sims_online; then
-            echo "All sims need to be stopped first."
-            exit 0
-        fi
-        if is_running ROBUST; then
-            echo "ROBUST must be stopped first."
-            exit 0
-        fi
         ZIP_FILE=`readlink -f "$1"`
-        echo "Clearing ScriptEngines, keeping state"
-        if [ -x "simtool" ]; then
-            ./simtool clearscripts
+        if [ ! -r "${ZIP_FILE}" ]; then
+            echo "Zipfile '${ZIP_FILE}' does not exist"
+            exit 0
         fi
         do_install
         exit 0
