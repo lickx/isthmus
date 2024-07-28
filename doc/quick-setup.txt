@@ -1,6 +1,6 @@
 
   i s t h m u s
-  Quick Setup guide                                               2021.12.16
+  Quick Setup guide                                               2024.07.28
 
 ------------------------------------------------------------------------------
 
@@ -93,22 +93,24 @@ start all robust instances? (y/n): y
   Verify robust runs ok:
 
 $ ./robust status
-00assets - online (8000)
-02griduser - online (8013)
-03inventory - online (8004)
-04map - online (8015)
-99main - online (8012)
+assets - online (8010)
+inventory - online (8011)
+login - online (8012)
+map - online (8013)
+presence - online (8014)
+robust - online (8015)
+xbakes - online (8016)
 
   To stop robust:
 
 $ ./robust stop
 start all robust instances? (y/n): n
 
-  To create a new user manually, attach the main robust:
+  To create a new user manually, attach the login robust:
 
-$ screen -r isthmus-99main
+$ screen -r isthmus-login
 (note 'isthmus' is the name of this isthmus folder. If you renamed the
-isthmus folder to 'mygrid' the main robust will be mygrid-99main)
+isthmus folder to 'mygrid' the main robust will be mygrid-login)
 
   ..and type the following in the robust console you're now in:
 
@@ -116,6 +118,9 @@ R.O.B.U.S.T.# help create user
 
   Now type 'create user' and follow instructions. When done, detach the
   99main robust console by pressing <CTRL-A D>
+
+  Edit etc/estate.ini, and change DefaultEstateName (to anything) and
+  DefaultEstateOwnerName (to the user you just created)
 
   Now that we have a user, we can add the first sim. I suggest to call it
   'Welcome' if it is your own grid because robust will use that as the default
