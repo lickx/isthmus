@@ -200,7 +200,7 @@ do_start() {
     sed -i --follow-symlinks -e "s/InternalPort.*/InternalPort = ${ISTHMUS_PORT}/" "${REGIONS_DIR}/${SIM}.ini"
 
     # Change external hostname
-    sed -i --follow-symlinks -e "s/ExternalHostName.*/ExternalHostName = SYSTEMIP/" "${REGIONS_DIR}/${SIM}.ini"
+    sed -i --follow-symlinks -e "s/ExternalHostName.*/ExternalHostName = ${ISTHMUS_HOSTNAME}/" "${REGIONS_DIR}/${SIM}.ini"
 
     # Copy region ini to its own temp RegionDir
     mkdir -p "${REGION_LOAD_DIR}"
