@@ -131,10 +131,10 @@ do_start() {
         return 1
     fi
 
-    TEST_DOTNET=`which dotnet > /dev/null`
-    if [ $? != 0 ]; then
-        echo ".NET 6 is not installed or 'dotnet' is not in the path"
-        do_log ".NET 6 is not installed or 'dotnet' is not in the path"
+    which dotnet > /dev/null
+    if [ $? -ne 0 ]; then
+        echo ".NET is not installed or 'dotnet' is not in the path"
+        do_log ".NET is not installed or 'dotnet' is not in the path"
         exit
     fi
 

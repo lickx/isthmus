@@ -181,16 +181,17 @@ do_start() {
         exit 1
     fi
 
-    TEST_DOTNET=`which dotnet > /dev/null`
-    if [ $? != 0 ]; then
-        echo ".NET 6 is not installed or 'dotnet' is not in the path"
-        do_log ".NET 6 is not installed or 'dotnet' is not in the path"
+    which dotnet > /dev/null
+    if [ $? -ne 0 ]; then
+        echo ".NET is not installed or 'dotnet' is not in the path"
+        do_log ".NET is not installed or 'dotnet' is not in the path"
         exit
     fi
 
     if [ -d "${OPENSIM_DIR}/etc/robust.d" ]; then
-        ${OPENSIM_DIR}/bin/robust status 99main > /dev/null
-        if [ $? == 0 ]; then
+        # This isthmus also has robusts configured, check if (any) running
+        ${OPENSIM_DIR}/bin/robust status | grep online > /dev/null
+        if [ $? -ne 0 ]; then
             echo "Robust is not running"
             exit
         fi

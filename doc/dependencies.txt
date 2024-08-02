@@ -1,4 +1,7 @@
-The following packages are required:
+You'll need the .NET 8.0 SDK
+The package name is dotnet-sdk-8.0 in Debian/Ubuntu
+
+The following additional packages are required:
 
   git
   bash
@@ -7,7 +10,6 @@ The following packages are required:
   sed
   unzip
   which
-  dotnet6
   libgdiplus
   uuid-runtime
 
