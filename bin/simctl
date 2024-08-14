@@ -188,6 +188,18 @@ do_start() {
         exit
     fi
 
+    if [ -n "${WSL_DISTRO_NAME}" ]; then
+        # Warn issue #7 on WSL - https://github.com/lickx/isthmus/issues/7
+        VAR_SCREEN="/var/run/screen"
+        if [ ! -w ${VAR_SCREEN} ]; then
+            echo "${VAR_SCREEN} should exist and have rwx perms. Try:"
+            echo "  sudo mkdir ${VAR_SCREEN}"
+            echo "  sudo chmod 777 ${VAR_SCREEN}"
+            echo "Exiting."
+            exit
+        fi
+    fi
+
     if [ -d "${OPENSIM_DIR}/etc/robust.d" ]; then
         # This isthmus also has robusts configured, check if (any) running
         ${OPENSIM_DIR}/bin/robust status | grep online > /dev/null
@@ -209,7 +221,10 @@ do_start() {
 
     export DOTNET_CLI_TELEMETRY_OPTOUT=1
     export LC_ALL=C
-    ulimit -n 4096 -s 1048576
+    if [ -z "${WSL_DISTRO_NAME}" ]; then
+        # Only do this in a real linux environment
+        ulimit -n 4096 -s 1048576
+    fi
     cd "${OPENSIM_DIR}/runtime/bin" && screen -S ${SIM} -d -m -l \
         dotnet ./OpenSim.dll \
             -inifile="${OPENSIM_DIR}/share/system/opensim.ini" \

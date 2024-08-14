@@ -138,6 +138,18 @@ do_start() {
         exit
     fi
 
+    if [ -n "${WSL_DISTRO_NAME}" ]; then
+        # Warn issue #7 on WSL - https://github.com/lickx/isthmus/issues/7
+        VAR_SCREEN="/var/run/screen"
+        if [ ! -w ${VAR_SCREEN} ]; then
+            echo "${VAR_SCREEN} should exist and have rwx perms. Try:"
+            echo "  sudo mkdir ${VAR_SCREEN}"
+            echo "  sudo chmod 777 ${VAR_SCREEN}"
+            echo "Exiting."
+            exit
+        fi
+    fi
+
     export DOTNET_CLI_TELEMETRY_OPTOUT=1
     export LC_ALL=C
     ulimit -n 4096
