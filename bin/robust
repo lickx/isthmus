@@ -140,13 +140,10 @@ do_start() {
 
     if [ -n "${WSL_DISTRO_NAME}" ]; then
         # Warn issue #7 on WSL - https://github.com/lickx/isthmus/issues/7
-        VAR_SCREEN="/var/run/screen"
-        if [ ! -w ${VAR_SCREEN} ]; then
-            echo "${VAR_SCREEN} should exist and have rwx perms. Try:"
-            echo "  sudo mkdir ${VAR_SCREEN}"
-            echo "  sudo chmod 777 ${VAR_SCREEN}"
-            echo "Exiting."
-            exit
+        if [ ! -w /var/run/screen ]; then
+            mkdir -p ~/.screen
+            chmod 700 ~/.screen
+            export SCREENDIR="$HOME/.screen"
         fi
     fi
 
