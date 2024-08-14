@@ -26,6 +26,15 @@ if [ -z "${ISTHMUS_HOSTNAME}" ]; then
 fi
 export ISTHMUS_HOSTNAME
 
+if [ -n "${WSL_DISTRO_NAME}" ]; then
+    # Warn issue #7 on WSL - https://github.com/lickx/isthmus/issues/7
+    if [ ! -w /var/run/screen ]; then
+        mkdir -p ~/.screen
+        chmod 700 ~/.screen
+        export SCREENDIR="$HOME/.screen"
+    fi
+fi
+
 isuint() {
     [[ $1 =~ ^[0-9]+$ ]] ;
 }
@@ -186,15 +195,6 @@ do_start() {
         echo ".NET is not installed or 'dotnet' is not in the path"
         do_log ".NET is not installed or 'dotnet' is not in the path"
         exit
-    fi
-
-    if [ -n "${WSL_DISTRO_NAME}" ]; then
-        # Warn issue #7 on WSL - https://github.com/lickx/isthmus/issues/7
-        if [ ! -w /var/run/screen ]; then
-            mkdir -p ~/.screen
-            chmod 700 ~/.screen
-            export SCREENDIR="$HOME/.screen"
-        fi
     fi
 
     if [ -d "${OPENSIM_DIR}/etc/robust.d" ]; then

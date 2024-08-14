@@ -43,6 +43,15 @@ export ISTHMUS_HOSTNAME
 
 export ISTHMUS_IP=`hostname -I | cut -d' ' -f1`
 
+if [ -n "${WSL_DISTRO_NAME}" ]; then
+    # Warn issue #7 on WSL - https://github.com/lickx/isthmus/issues/7
+    if [ ! -w /var/run/screen ]; then
+        mkdir -p ~/.screen
+        chmod 700 ~/.screen
+        export SCREENDIR="$HOME/.screen"
+    fi
+fi
+
 show_help() {
     echo -e "`basename $0` - Control grid services\n"
     echo "start                         Start all robust instances"
@@ -136,15 +145,6 @@ do_start() {
         echo ".NET is not installed or 'dotnet' is not in the path"
         do_log ".NET is not installed or 'dotnet' is not in the path"
         exit
-    fi
-
-    if [ -n "${WSL_DISTRO_NAME}" ]; then
-        # Warn issue #7 on WSL - https://github.com/lickx/isthmus/issues/7
-        if [ ! -w /var/run/screen ]; then
-            mkdir -p ~/.screen
-            chmod 700 ~/.screen
-            export SCREENDIR="$HOME/.screen"
-        fi
     fi
 
     export DOTNET_CLI_TELEMETRY_OPTOUT=1
