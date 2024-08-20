@@ -1,0 +1,30 @@
+Addendum to quick-setup
+
+Recent mysql versions are slightly more complex to setup than MariaDB.
+Isthmus recommends MariaDB, however if you want to proceed with MySQL,
+follow these instructions:
+
+$ cd /etc/mysql/mysql.conf.d
+$ sudo nano mysqld.conf
+(add the following:)
+ssl=0
+skip_ssl
+default-authentication-plugin=mysql_native_password
+
+Followed by:
+$ sudo service mysql restart
+
+Then proceed to make your opensim user:
+GRANT ALL ON isthmus_gridname.* TO 'opensim'@'localhost' IDENTIFIED WITH
+mysql_native_password BY 'password';
+
+Or modify the one you already have:
+ALTER USER 'opensim'@'localhost' IDENTIFIED WITH mysql_native_password BY
+'password';
+
+Make sure your isthmus database connection string in etc/database.ini
+looks similar like this:
+
+ConnectionString = "Data Source=localhost;Database=opensim;User
+ID=opensim;Password=***;Old Guids=true;SslMode=None;
+
