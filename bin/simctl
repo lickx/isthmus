@@ -159,9 +159,7 @@ setup() {
         REGION_SPAN_Y=$((REGION_SPAN_Y / 256))
     fi
 
-    # No idea why these are written in runtime/bin and not var/maptiles :S
-    # Not good in the case the runtime would be on a read-only mount.
-    REGION_MAPTILE="${OPENSIM_DIR}/runtime/bin/MAP-${REGION_UUID}.png"
+    REGION_MAPTILE="${OPENSIM_DIR}/var/maptiles/regions/MAP-${REGION_UUID}.png"
 
     mkdir -p "${OPENSIM_DIR}/var/log"
     export ISTHMUS_LOGFILE="${OPENSIM_DIR}/var/log/${SIM}.log"
