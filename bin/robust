@@ -77,9 +77,15 @@ check_user() {
 }
 
 is_running() {
-    SCREENPID=`screen -ls ${SCREENNAME} | grep -P "${SCREENNAME}\t" | cut -f1 -d'.' | sed 's/W//g'`
-    if [ ! -z "${SCREENPID}" ]; then
-        return 0
+    if [ -r "${ROBUST_PIDFILE}" ]; then
+        ROBUST_PID=`cat "${ROBUST_PIDFILE}"`
+        if ps -p "${ROBUST_PID}" > /dev/null
+        then
+            return 0
+        fi
+        # Process not running, clean up pid file
+        rm -f "${ROBUST_PIDFILE}"
+        return 1
     else
         return 1
     fi
@@ -159,13 +165,13 @@ do_start() {
     STARTTIME=0
     while :
     do
-        sleep 5
-        STARTTIME=$((STARTTIME + 5))
+        sleep 1
+        STARTTIME=$((STARTTIME + 1))
         echo -n "."
         if is_running; then
             echo " started"
             return
-        elif [ ${STARTTIME} -ge 30 ]; then
+        elif [ ${STARTTIME} -ge 6 ]; then
             echo " failed!"
             do_log "Instance ${INSTANCE} has problems with starting"
             return
@@ -175,28 +181,26 @@ do_start() {
 
 do_kill() {
     if is_running; then
-        if [ -f ${ROBUST_PIDFILE} ]; then
-            kill -9 `cat ${ROBUST_PIDFILE}`
-            rm ${ROBUST_PIDFILE}
-            echo "[${SCREENNAME}] Killed"
-        fi
+        kill -9 ${ROBUST_PID}
+        rm -f "${ROBUST_PIDFILE}"
+        echo "[${SCREENNAME}] Killed"
     fi
 }
 
 do_stop() {
     if is_running; then
         echo -n "[${SCREENNAME}] Stopping"
-        screen -r ${SCREENPID}.${SCREENNAME} -X exec .\!\! echo "\nquit"
+        kill -SIGTERM ${ROBUST_PID}
         STOPTIME=0
         while :
         do
-            sleep 5
-            STOPTIME=$((STOPTIME + 5))
+            sleep 1
+            STOPTIME=$((STOPTIME + 1))
             echo -n "."
             if ! is_running; then
                 echo " stopped"
                 return 0
-            elif [ ${STOPTIME} -ge 120 ]; then
+            elif [ ${STOPTIME} -ge 20 ]; then
                 echo " killing"
                 do_kill
                 do_log "Instance ${INSTANCE} took a long time to shutdown"
@@ -237,9 +241,7 @@ case "$1" in
     start)
         if [ $# == 1 ]; then
             do_multi $1
-            if [ -r "${MONITOR_LOCK}" ]; then
-                rm "${MONITOR_LOCK}"
-            fi
+            rm -f "${MONITOR_LOCK}"
         else
             setup $2
             do_start
@@ -267,9 +269,7 @@ case "$1" in
         if [ $# == 1 ]; then
             touch "${MONITOR_LOCK}"
             do_multi restart
-            if [ -r "${MONITOR_LOCK}" ]; then
-                rm "${MONITOR_LOCK}"
-            fi
+            rm -f "${MONITOR_LOCK}"
         else
             setup $2
             do_stop
