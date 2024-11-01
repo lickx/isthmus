@@ -142,7 +142,7 @@ setup() {
 
 do_start() {
     if is_running; then
-        echo "[${SCREENNAME}] Already started"
+        echo "[${INSTANCE}] Already started"
         return 1
     fi
 
@@ -161,7 +161,7 @@ do_start() {
             -inifile="${INSTANCE_INIFILE}" \
             -logfile="${ROBUST_LOGFILE}"
 
-    echo -n "[${SCREENNAME}] Starting"
+    echo -n "[${INSTANCE}] Starting"
     STARTTIME=0
     while :
     do
@@ -183,13 +183,13 @@ do_kill() {
     if is_running; then
         kill -9 ${ROBUST_PID}
         rm -f "${ROBUST_PIDFILE}"
-        echo "[${SCREENNAME}] Killed"
+        echo "[${INSTANCE}] Killed"
     fi
 }
 
 do_stop() {
     if is_running; then
-        echo -n "[${SCREENNAME}] Stopping"
+        echo -n "[${INSTANCE}] Stopping"
         kill -SIGTERM ${ROBUST_PID}
         STOPTIME=0
         while :
@@ -208,7 +208,7 @@ do_stop() {
             fi
         done
     else
-        echo "[${SCREENNAME}] Not running"
+        echo "[${INSTANCE}] Not running"
         return 1
     fi
 }
@@ -234,6 +234,10 @@ do_multi() {
         filename=`basename ${r} .ini`
         ./robust ${cmd} ${filename}
     done;
+}
+
+do_console() {
+    screen -r ${SCREENNAME}
 }
 
 check_user
@@ -285,6 +289,10 @@ case "$1" in
             setup $2
             get_status
         fi
+        ;;
+    console)
+        setup $2
+        do_console
         ;;
     *)
         show_help
