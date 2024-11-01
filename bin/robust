@@ -171,7 +171,7 @@ do_start() {
         if is_running; then
             echo " started"
             return
-        elif [ ${STARTTIME} -ge 6 ]; then
+        elif [ ${STARTTIME} -ge 20 ]; then
             echo " failed!"
             do_log "Instance ${INSTANCE} has problems with starting"
             return
@@ -237,7 +237,9 @@ do_multi() {
 }
 
 do_console() {
-    screen -r ${SCREENNAME}
+    if is_running; then
+        screen -r ${SCREENNAME}
+    fi
 }
 
 check_user
