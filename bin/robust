@@ -286,6 +286,12 @@ case "$1" in
             get_status
         fi
         ;;
+    console)
+        setup $2
+        if is_running; then
+            screen -r ${SCREENPID}.${SCREENNAME}
+        fi
+        ;;
     *)
         show_help
         exit 1
