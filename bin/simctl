@@ -699,6 +699,12 @@ case "$1" in
     list)
         do_list $2
         ;;
+    console)
+        setup $2
+        if is_running; then
+            screen -r ${SCREENPID}.${SIM}
+        fi
+        ;;
     *)
         show_help
         exit 1
