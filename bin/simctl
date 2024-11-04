@@ -229,8 +229,8 @@ do_start() {
     STARTTIME=0
     while :
     do
-        sleep 5
-        STARTTIME=$((STARTTIME + 5))
+        sleep 1
+        STARTTIME=$((STARTTIME + 1))
         echo -n "."
         if is_running; then
             echo "${ISTHMUS_PORT}" > "${OPENSIM_DIR}/var/ports/${SIM}.port"
@@ -242,7 +242,7 @@ do_start() {
                 echo "done"
             fi
             exit 0
-        elif [ ${STARTTIME} -ge 30 ]; then
+        elif [ ${STARTTIME} -ge 20 ]; then
             echo " Failed. Disabling sim!"
             do_log "[${SIM}] Has problems with starting. Disabling sim!"
             cd "${OPENSIM_DIR}/bin"
@@ -286,8 +286,8 @@ do_stop() {
         STOPTIME=0
         while :
         do
-            sleep 5
-            STOPTIME=$((STOPTIME + 5))
+            sleep 1
+            STOPTIME=$((STOPTIME + 1))
             echo -n "."
             if ! is_running; then
                 if [ -f "${OPENSIM_DIR}/var/ports/${SIM}.port" ]; then
@@ -302,7 +302,7 @@ do_stop() {
                     rm -r "${REGION_LOAD_DIR}"
                 fi
                 return 0
-            elif [ ${STOPTIME} -ge 120 ]; then
+            elif [ ${STOPTIME} -ge 20 ]; then
                 echo " killing"
                 do_kill ${SIM}
                 do_log "[${SIM}] Took a long time to shutdown"
@@ -331,15 +331,15 @@ do_bluebox() {
         STOPTIME=0
         while :
         do
-            sleep 5
-            STOPTIME=$((STOPTIME + 5))
+            sleep 1
+            STOPTIME=$((STOPTIME + 1))
             echo -n "."
             if ! is_running; then
                 if [ -f "${OPENSIM_DIR}/var/ports/${SIM}.port" ]; then
                     rm "${OPENSIM_DIR}/var/ports/${SIM}.port"
                 fi
                 echo " stopped"
-            elif [ ${STOPTIME} -ge 120 ]; then
+            elif [ ${STOPTIME} -ge 20 ]; then
                 echo " killing"
                 do_kill ${SIM}
                 do_log "[${SIM}] Took a long time to shutdown"

@@ -159,13 +159,13 @@ do_start() {
     STARTTIME=0
     while :
     do
-        sleep 5
-        STARTTIME=$((STARTTIME + 5))
+        sleep 1
+        STARTTIME=$((STARTTIME + 1))
         echo -n "."
         if is_running; then
             echo " started"
             return
-        elif [ ${STARTTIME} -ge 30 ]; then
+        elif [ ${STARTTIME} -ge 20 ]; then
             echo " failed!"
             do_log "Instance ${INSTANCE} has problems with starting"
             return
@@ -190,13 +190,13 @@ do_stop() {
         STOPTIME=0
         while :
         do
-            sleep 5
-            STOPTIME=$((STOPTIME + 5))
+            sleep 1
+            STOPTIME=$((STOPTIME + 1))
             echo -n "."
             if ! is_running; then
                 echo " stopped"
                 return 0
-            elif [ ${STOPTIME} -ge 120 ]; then
+            elif [ ${STOPTIME} -ge 20 ]; then
                 echo " killing"
                 do_kill
                 do_log "Instance ${INSTANCE} took a long time to shutdown"
