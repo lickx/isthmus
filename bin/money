@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+export OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
+SIMCTL="${OPENSIM_DIR}/bin/simctl"
+SIMAUTO_LOCK="${OPENSIM_DIR}/var/simauto.lock"
+LOGFILE="${OPENSIM_DIR}/var/log/isthmus.log"
+export MONEYSERVER_LOGFILE="${OPENSIM_DIR}/var/log/MoneyServer.log"
+# the exported pidfile location is somehow not parsed in MoneyServer.ini
+# so you'll have to edit that to manually specify the location
+#export MONEYSERVER_PIDFILE="${OPENSIM_DIR}/var/pid/MoneyServer.pid"
+
+SCREENNAME="`basename ${OPENSIM_DIR}`-money"
+
+mkdir -p "${OPENSIM_DIR}/var/log"
+
+show_help() {
+    echo -e "`basename $0` - Tool for opensim\n"
+    echo "start        Starts the moneyserver"
+    echo "stop         Stops the moneyserver"
+    echo "restart      Restarts the moneyserver"
+}
+
+do_log() {
+    touch "${LOGFILE}"
+    logline="`date --iso-8601=seconds` - simtool - $1"
+    echo "${logline}" >> "${LOGFILE}"
+}
+
+is_running() {
+    SCREENPID=`screen -ls ${SCREENNAME} | grep -P "${SCREENNAME}\t" | cut -f1 -d'.' | sed 's/W//g'`
+    if [ -n "${SCREENPID}" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+do_start() {
+    cd "${OPENSIM_DIR}/runtime/bin" && screen -S ${SCREENNAME} -d -m -l \
+        dotnet ./MoneyServer.dll
+    echo -n "[money] Starting"
+    STARTTIME=0
+    while :
+    do
+        sleep 1
+        STARTTIME=$((STARTTIME + 1))
+        echo -n "."
+        if is_running; then
+            echo " started"
+            exit 0
+        elif [ ${STARTTIME} -ge 20 ]; then
+            echo " Failed."
+            do_log "The MoneyServer has problems with starting."
+            exit 1
+        fi
+    done
+}
+
+do_stop() {
+    if is_running; then
+        echo "[money] Stopping"
+        screen -r ${SCREENPID}.MoneyServer -X exec .\!\! echo "\nquit"
+    else
+        echo "[money] Not running"
+    fi
+}
+
+if [ ! -f "${OPENSIM_DIR}/runtime/bin/MoneyServer.ini" ]; then
+    echo "MoneyServer.ini not found"
+    exit 0
+fi
+if [ ! -f "${OPENSIM_DIR}/runtime/bin/MoneyServer.dll" ]; then
+    echo "MoneyServer.dll not found"
+    exit 0
+fi
+which dotnet > /dev/null
+if [ $? -ne 0 ]; then
+    echo ".NET is not installed or 'dotnet' is not in the path"
+    exit 0
+fi
+export DOTNET_CLI_TELEMETRY_OPTOUT=1
+export LC_ALL=C
+
+case "$1" in
+    help)
+        show_help
+        exit 0
+        ;;
+    start)
+        do_start
+        exit 0
+        ;;
+    stop)
+        do_stop
+        exit 0
+        ;;
+    restart)
+        do_stop
+        do_start
+        exit 0
+        ;;
+    *)
+        show_help
+        exit 0
+        ;;
+esac

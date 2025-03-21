@@ -25,7 +25,7 @@ do_log() {
 
 do_install() {
     echo "Installing ${ZIP_FILE}"
-    EXCLUDE="bin/config-include/* bin/Regions/* bin/Estates/* bin/OpenSim.ini bin/OpenSim.exe.config bin/Robust.exe.config"
+    EXCLUDE="bin/config-include/* bin/Regions/* bin/Estates/* bin/OpenSim.ini bin/OpenSim.exe.config bin/Robust.exe.config bin/MoneyServer.exe.config bin/MoneyServer.dll.config"
     cd "${OPENSIM_DIR}"
     rm -f "bin/.version"
     unzip -q -o -d "${TARGET_DIR}" "${ZIP_FILE}" -x ${EXCLUDE} &>/dev/null
