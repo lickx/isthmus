@@ -4,7 +4,7 @@
 /home/opensim/isthmus/var/log/*.log {
     su opensim opensim
     daily
-    rotate 7
+    rotate 3
     compress
     missingok
     notifempty

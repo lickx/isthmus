@@ -23,15 +23,6 @@
 
 -----------------------------------------------------------------------------
 
-  Next, set up support for running GNU Screen properly:
-
-# mkdir -p /var/run/screen
-# chmod 777 /var/run/screen
-
-  IMPORTANT: Read issue 7: https://github.com/lickx/isthmus/issues/7
-
------------------------------------------------------------------------------
-
   Ports need to be opened on Windows Firewall:
 
   TCP  9000-9100  For 100 simulators, you'll never run that many at once :D

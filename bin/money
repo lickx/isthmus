@@ -35,6 +35,10 @@ is_running() {
 }
 
 do_start() {
+    if is_running; then
+        echo "[money] Already running"
+        exit 0
+    fi
     cd "${OPENSIM_DIR}/runtime/bin" && screen -S ${SCREENNAME} -d -m -l \
         dotnet ./MoneyServer.dll
     echo -n "[money] Starting"
