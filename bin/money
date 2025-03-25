@@ -62,7 +62,7 @@ do_start() {
 do_stop() {
     if is_running; then
         echo "[money] Stopping"
-        screen -r ${SCREENPID}.MoneyServer -X exec .\!\! echo "\nquit"
+        screen -r ${SCREENPID}.${SCREENNAME} -X exec .\!\! echo "\nquit"
     else
         echo "[money] Not running"
     fi

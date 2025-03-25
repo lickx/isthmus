@@ -33,8 +33,8 @@ do_install() {
     if [ -r "${OPENSIM_DIR}/runtime/bin/.version" ]; then
         NEW_VERSION=`cat ${OPENSIM_DIR}/runtime/bin/.version`
     fi
-    echo "Installed ${NEW_VERSION}"
-    do_log "rtinstall: Installed runtime ${NEW_VERSION}"
+    echo "Installed ${ZIP_FILE} - ${NEW_VERSION}"
+    do_log "rtinstall: Installed ${ZIP_FILE} - ${NEW_VERSION}"
 }
 
 is_running() {
