@@ -76,8 +76,8 @@ if [ ! -f "${OPENSIM_DIR}/runtime/bin/MoneyServer.dll" ]; then
     echo "MoneyServer.dll not found"
     exit 0
 fi
-which dotnet > /dev/null
-if [ $? -ne 0 ]; then
+dotnetcheck=`which dotnet`
+if [ ! -f "${dotnetcheck}" ]; then
     echo ".NET is not installed or 'dotnet' is not in the path"
     exit 0
 fi
