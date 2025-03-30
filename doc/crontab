@@ -34,6 +34,10 @@
 
 SHELL=/bin/bash
 
+# Don't forget to include the path to where you have installed dotnet SDK:
+DOTNET_ROOT=/opt/dotnet
+PATH=/usr/local/bin:/bin:/usr/bin:/opt/dotnet
+
 # Grid+Sims: Re-scan every 10 minutes for crashed sims (and robusts if in grid mode):
 */10 * * * * . $HOME/.bashrc; /home/opensim/isthmus/bin/istmonitor /home/opensim/isthmus
 
