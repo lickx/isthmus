@@ -14,6 +14,12 @@ fi
 OPENSIM_DIR=$1
 MONITOR_LOCK="${OPENSIM_DIR}/var/suspend-monitor.lock"
 
+# Install isthmus config file if not already there, and then source it
+if [ ! -f "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
+    cp "${OPENSIM_DIR}/share/common/etc/isthmus.conf" "${OPENSIM_DIR}/etc"
+fi
+source "${OPENSIM_DIR}/etc/isthmus.conf"
+
 cd "${OPENSIM_DIR}/bin"
 mkdir -p "${OPENSIM_DIR}/var/log"
 
@@ -59,5 +65,16 @@ if [ ${CNT} -ne 0 ]; then
             ./robust start ${ROBUST_INSTANCE}
         fi
     done;
+fi
+
+if [ $MONITOR_MONEY -eq 1 ]; then
+    SCREENNAME="`basename ${OPENSIM_DIR}`-money"
+    SCREENPID=`screen -ls ${SCREENNAME} | grep -P "${SCREENNAME}\t" | cut -f1 -d'.' | sed 's/W//g'`
+    if [ -z "${SCREENPID}" ]; then
+        do_log "Moneyserver '${SCREENNAME}' not online, restarting"
+        ./money stop
+        sleep 10
+        ./money start
+    fi
 fi
 

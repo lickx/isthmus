@@ -51,5 +51,5 @@ PATH=/usr/local/bin:/bin:/usr/bin:/opt/dotnet
 #0 0 * * * . $HOME/.bashrc; /home/opensim/isthmus/bin/grppurge /home/opensim/isthmus
 
 # Grid: For keeping the search service index current (OpenSimSearch)
-#*/15 * * * * wget -q --spider http://example.com/search/parser.php
+#0 * * * * wget -q --spider http://example.com/search/parser.php
 
