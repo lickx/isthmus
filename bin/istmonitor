@@ -67,7 +67,7 @@ if [ ${CNT} -ne 0 ]; then
     done;
 fi
 
-if [ $MONITOR_MONEY -eq 1 ]; then
+if [ "${MONITOR_MONEY}" == "true" ]; then
     SCREENNAME="`basename ${OPENSIM_DIR}`-money"
     SCREENPID=`screen -ls ${SCREENNAME} | grep -P "${SCREENNAME}\t" | cut -f1 -d'.' | sed 's/W//g'`
     if [ -z "${SCREENPID}" ]; then
