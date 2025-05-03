@@ -2,7 +2,7 @@
 
 -- To be sourced into your robust database
 
-CREATE EVENT IF NOT EXISTS `purge_group_notices`
+CREATE OR REPLACE EVENT `purge_group_notices`
 ON SCHEDULE
   EVERY 1 DAY
   COMMENT 'Purges group notices older than 14 days'
