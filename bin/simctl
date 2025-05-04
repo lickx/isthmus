@@ -158,7 +158,10 @@ setup() {
         REGION_SPAN_Y=$((REGION_SPAN_Y / 256))
     fi
 
+    # OpenSim-lickx:
     REGION_MAPTILE="${OPENSIM_DIR}/var/maptiles/regions/MAP-${REGION_UUID}.png"
+    # Stock OpenSim in which the location of maptiles can't be customized:
+    REGION_MAPTILE_LEGACY="${OPENSIM_DIR}/runtime/bin/MAP-${REGION_UUID}.png"
 
     mkdir -p "${OPENSIM_DIR}/var/log"
     export ISTHMUS_LOGFILE="${OPENSIM_DIR}/var/log/${SIM}.log"
@@ -251,7 +254,7 @@ do_start() {
         if is_running; then
             echo "${ISTHMUS_PORT}" > "${OPENSIM_DIR}/var/ports/${SIM}.port"
             echo " started"
-            if [ ! -r "${REGION_MAPTILE}" ]; then
+            if [ ! -r "${REGION_MAPTILE}" ] && [ ! -r "${REGION_MAPTILE_LEGACY}" ]; then
                 echo -n "[${SIM}] Generating initial map tile in 15 seconds.."
                 sleep 15
                 do_maptile ${SIM}
@@ -459,6 +462,9 @@ do_maptile() {
 do_delete_maptile() {
     if [ -r "${REGION_MAPTILE}" ]; then
         rm "${REGION_MAPTILE}"
+    fi
+    if [ -r "${REGION_MAPTILE_LEGACY}" ]; then
+        rm "${REGION_MAPTILE_LEGACY}"
     fi
     MAPTILE_ZERO_DIR="${OPENSIM_DIR}/var/maptiles/00000000-0000-0000-0000-000000000000"
     if [ ! -d "${MAPTILE_ZERO_DIR}" ]; then
