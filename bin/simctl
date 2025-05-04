@@ -213,6 +213,23 @@ do_start() {
     mkdir -p "${REGION_LOAD_DIR}"
     ln -sf "${REGIONS_DIR}/${SIM}.ini" "${REGION_LOAD_DIR}/${SIM}.ini"
 
+    # Create sim-specific override dir if not exists
+    if [ ! -d "${OPENSIM_DIR}/etc/sims-local.d" ]; then
+        mkdir -p "${OPENSIM_DIR}/etc/sims-local.d"
+    fi
+
+    MAIN_CONFIG="${OPENSIM_DIR}/share/system/OpenSim.ini"
+    if [ -e "${OPENSIM_DIR}/etc/sims-local.d/${SIM}.ini" ]; then
+        # Sim-specific override exists, so use it
+        MAIN_CONFIG="${OPENSIM_DIR}/etc/sims-local.d/${SIM}.ini"
+        # Ensure base config is included:
+        grep -E '^ *[iI]nclude-\w+ *= *"?\.\.\/\.\.\/share\/system\/OpenSim\.ini"?' "$MAIN_CONFIG" > /dev/null
+        if [ $? -gt 0 ]; then
+            # Nope, so prepend an include line to it:
+            sed -i -e "1i [Includes]\nInclude-base = \"../../share/system/OpenSim.ini\"\n" "$MAIN_CONFIG"
+        fi
+    fi
+
     export DOTNET_CLI_TELEMETRY_OPTOUT=1
     export LC_ALL=C
     if [ -z "${WSL_DISTRO_NAME}" ]; then
@@ -221,7 +238,7 @@ do_start() {
     fi
     cd "${OPENSIM_DIR}/runtime/bin" && screen -S ${SIM} -d -m -l \
         dotnet ./OpenSim.dll \
-            -inifile="${OPENSIM_DIR}/share/system/opensim.ini" \
+            -inifile="${MAIN_CONFIG}" \
             -logfile="${ISTHMUS_LOGFILE}"
 
     echo -n "[${SIM}] Starting"
