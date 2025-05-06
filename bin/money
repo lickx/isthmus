@@ -61,8 +61,22 @@ do_start() {
 
 do_stop() {
     if is_running; then
-        echo "[money] Stopping"
+        echo -n "[money] Stopping"
         screen -r ${SCREENPID}.${SCREENNAME} -X exec .\!\! echo "\nquit"
+        STOPTIME=0
+        while :
+        do
+            sleep 1
+            STOPTIME=$((STOPTIME + 1))
+            echo -n "."
+            if ! is_running; then
+                if [ -f "${OPENSIM_DIR}/var/pid/MoneyServer.pid" ]; then
+                    rm "${OPENSIM_DIR}/var/pid/MoneyServer.pid"
+                fi
+                echo " stopped"
+                return 0
+            fi
+        done
     else
         echo "[money] Not running"
     fi
