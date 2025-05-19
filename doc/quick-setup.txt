@@ -1,6 +1,8 @@
 
+  (This could be much improved, maybe written in pandoc or something)
+
   i s t h m u s
-  Quick Setup guide                                               2024.07.28
+  Quick Setup guide                                               2025.05.19
 
 ------------------------------------------------------------------------------
 
@@ -13,6 +15,8 @@ $ ./setup
   (Follow instructions on screen)
 
   To install the simulator software, this can be done now:
+  * Note the lickx version of opensim is strongly recommended for
+    compatibility! (opensim-lickx)
 
 $ ./rtinstall ~/Downloads/opensim-0.9.2.0.zip
 
@@ -59,15 +63,52 @@ MariaDB [(none)]> create database gloebit_gridname;
 MariaDB [(none)]> grant all on gloebit_gridname.* to opensim@localhost identified by 'PASSWORD';
 MariaDB [(none)]> quit
 
-  If setting up a microgrid with isthmus, you'll want Search and Mutelist
-  databases:
+$ ./rtinstall ~/Downloads/gloebit-lickx.zip
+(edit config in etc/addins/Gloebit.ini.example)
 
+  If you want server-stored mutes:
+  Both 'mutelist.sql' and the php helper is included in opensimmutelist-lickx.
+  * Note you'll also have to setup the php helper!
+
+$ ./rtinstall ~/Downloads/opensimmutelist-lickx.zip
 $ sudo mysql --user root --password
-MariaDB [(none)]> create database search_gridname;
-MariaDB [(none)]> grant all on search_gridname.* to opensim@localhost identified by 'PASSWORD';
 MariaDB [(none)]> create database mutelist_gridname;
 MariaDB [(none)]> grant all on mutelist_gridname.* to opensim@localhost identified by 'PASSWORD';
 MariaDB [(none)]> quit
+
+$ cd ../runtime/extra/OpenSimMutelist
+$ mysql --user opensim --password
+MariaDB [(none)]> use mutelist_gridname;
+MariaDB [(none)]> source mutelist.sql;
+MariaDB [(none)]> quit
+
+  For a working search engine we need to create the search tables.
+  Both 'search.sql' and the php helper is included in opensimsearch-lickx.
+  * Note this module is modified from the original and prefixes tables
+  with 'search_'!
+  * Note you'll also need to setup the php helper!
+
+$ ./rtinstall ~/Downloads/opensimsearch-lickx.zip
+$ cd ../runtime/extra/OpenSimSearch
+$ mysql --user opensim --password
+MariaDB [(none)]> use isthmus_gridname;
+MariaDB [(none)]> source search.sql;
+MariaDB [(none)]> quit
+
+Todo: Improve this section, setup mutelist and search helpers.
+- Copy the 'helper' folder to your webserver, and fill in the database logins
+  for each module within (databaseinfo.ini)
+- Edit etc/grid.ini as follows:
+- Comment out the [MuteListService] section, that's for the default/basic
+  module and not needed with the improved OpenSimMutelist module
+- [Messaging] needs:
+MuteListModule = OpenSimMutelist
+MuteListURL = "https://example.com/helper/mute/mutelist.php"
+- [DataSnapshot] needs:
+data_services="https://example.com/helper/search/register.php"
+- [Search] needs:
+Module = "OpenSimSearch"
+SearchURL = https://example.com/helper/search/query.php
 
 ------------------------------------------------------------------------------
 
@@ -117,7 +158,7 @@ isthmus folder to 'mygrid' the main robust will be mygrid-login)
 R.O.B.U.S.T.# help create user
 
   Now type 'create user' and follow instructions. When done, detach the
-  99main robust console by pressing <CTRL-A D>
+  robust console by pressing <CTRL-A D>
 
   Edit etc/estate.ini, and change DefaultEstateName (to anything) and
   DefaultEstateOwnerName (to the user you just created)
