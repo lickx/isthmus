@@ -67,18 +67,18 @@ any_sims_online() {
     return 1
 }
 
-if any_sims_online; then
-    echo "All sims need to be stopped first."
-    exit 1
-fi
-if is_running ROBUST; then
-    echo "ROBUST must be stopped first."
-    exit 1
-fi
-
 if [ "$1" == "-c" ]; then
     if [ $# -eq 1 ]; then
         echo "No zipfile(s) specified"
+        exit 1
+    fi
+    # A clean install is not possible with live sims/robusts:
+    if any_sims_online; then
+        echo "All sims need to be stopped first."
+        exit 1
+    fi
+    if is_running ROBUST; then
+        echo "ROBUST must be stopped first."
         exit 1
     fi
     CLEAN_INSTALL="true"
