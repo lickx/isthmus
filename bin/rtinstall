@@ -5,8 +5,8 @@ TARGET_DIR="runtime"
 
 if [ $# -eq 0 ]; then
     echo "Usage: $0 [-c] <opensim_distribution.zip>"
-    echo "-c: Perform clean install and clear scriptengines (except state)"
-    echo "Seperate add-on modules can also be installed (without -c)"
+    echo "-c: Perform clean install and clear scriptcache"
+    echo "Multiple zips at once can be specified, for instance any addons"
     exit 0
 fi
 
