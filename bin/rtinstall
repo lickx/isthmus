@@ -24,17 +24,15 @@ do_log() {
 }
 
 do_install() {
-    echo "Installing ${ZIP_FILE}"
+    # Preserve custom *.config for log4net, also exclude unneeded stuff:
     EXCLUDE="bin/config-include/* bin/Regions/* bin/Estates/* bin/OpenSim.ini bin/OpenSim.exe.config bin/Robust.exe.config bin/MoneyServer.exe.config bin/MoneyServer.dll.config"
     cd "${OPENSIM_DIR}"
+    # If we upgrade to a runtime that doesn't have a .version,
+    # we don't want the wrong/old version to be displayed inworld:
     rm -f "bin/.version"
     unzip -q -o -d "${TARGET_DIR}" "${ZIP_FILE}" -x ${EXCLUDE} &>/dev/null
-    NEW_VERSION=`basename ${ZIP_FILE}`
-    if [ -r "${OPENSIM_DIR}/runtime/bin/.version" ]; then
-        NEW_VERSION=`cat ${OPENSIM_DIR}/runtime/bin/.version`
-    fi
-    echo "Installed ${ZIP_FILE} - ${NEW_VERSION}"
-    do_log "rtinstall: Installed ${ZIP_FILE} - ${NEW_VERSION}"
+    echo "Installed ${ZIP_FILE}"
+    do_log "rtinstall: Installed ${ZIP_FILE}"
 }
 
 is_running() {
@@ -69,46 +67,51 @@ any_sims_online() {
     return 1
 }
 
-case "$1" in
-    -c)
-        if any_sims_online; then
-            echo "All sims need to be stopped first."
-            exit 0
-        fi
-        if is_running ROBUST; then
-            echo "ROBUST must be stopped first."
-            exit 0
-        fi
-        ZIP_FILE=`readlink -f "$2"`
-        if [ ! -r "${ZIP_FILE}" ]; then
-            echo "Zipfile '${ZIP_FILE}' does not exist"
-            exit 0
-        fi
-        echo "Clearing ScriptEngines, keeping state"
-        if [ -x "simtool" ]; then
-            ./simtool clearscripts
-        fi
-        OLD_VERSION="unknown version"
-        if [ -r "${OPENSIM_DIR}/runtime/bin/.version" ]; then
-            OLD_VERSION=`cat ${OPENSIM_DIR}/runtime/bin/.version`
-        fi
-        if [ -d "${OPENSIM_DIR}/runtime/bin" ]; then
-            echo "Removing old runtime of ${OLD_VERSION}..."
-            rm -R "${OPENSIM_DIR}/runtime/bin"
-        fi
+if any_sims_online; then
+    echo "All sims need to be stopped first."
+    exit 1
+fi
+if is_running ROBUST; then
+    echo "ROBUST must be stopped first."
+    exit 1
+fi
+
+if [ "$1" == "-c" ]; then
+    if [ $# -eq 1 ]; then
+        echo "No zipfile(s) specified"
+        exit 1
+    fi
+    CLEAN_INSTALL="true"
+    if [ -x "simtool" ]; then
+        echo "Clearing scriptcache, while preserving state"
+        ./simtool clearscripts
+    fi
+    OLD_VERSION="unknown version"
+    if [ -r "${OPENSIM_DIR}/runtime/bin/.version" ]; then
+        OLD_VERSION=`cat ${OPENSIM_DIR}/runtime/bin/.version`
+    fi
+    if [ -d "${OPENSIM_DIR}/runtime/bin" ]; then
+        echo "Removing old runtime (${OLD_VERSION})..."
+        rm -R "${OPENSIM_DIR}/runtime/bin"
+    fi
+    # Strip first parameter -c from parameter list:
+    shift
+fi
+
+# Iterate over the parameter list, they are all assumed to be zips:
+for arg in $@
+do
+    ZIP_FILE=`readlink -f "$arg"`
+    if [ ! -r "${ZIP_FILE}" ]; then
+        echo "Zipfile '${ZIP_FILE}' does not exist, skipping"
+    else
         do_install
-        echo "Configuring runtime for isthmus..."
-        cp -r "${OPENSIM_DIR}/share/common/runtime/bin/." "${OPENSIM_DIR}/runtime/bin"
-        exit 0
-        ;;
-    *)
-        ZIP_FILE=`readlink -f "$1"`
-        if [ ! -r "${ZIP_FILE}" ]; then
-            echo "Zipfile '${ZIP_FILE}' does not exist"
-            exit 0
-        fi
-        do_install
-        exit 0
-        ;;
-esac
+    fi
+done
+
+# Restore *.config for log4net after a clean install:
+if [ "$CLEAN_INSTALL" == "true" ]; then
+    echo "Configuring runtime for isthmus..."
+    cp -r "${OPENSIM_DIR}/share/common/runtime/bin/." "${OPENSIM_DIR}/runtime/bin"
+fi
 
