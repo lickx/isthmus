@@ -140,8 +140,7 @@ do_start() {
         return 1
     fi
 
-    dotnetcheck=`which dotnet`
-    if [ ! -f "${dotnetcheck}" ]; then
+    if [ ! `which dotnet` ]; then
         echo ".NET is not installed or 'dotnet' is not in the path"
         do_log ".NET is not installed or 'dotnet' is not in the path"
         exit

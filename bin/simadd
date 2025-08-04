@@ -23,8 +23,7 @@ fi
 # Region UDP port will automatically use same as sim TCP port
 region_port="${PORT_RANGE_START}"
 
-uuidgen=`which uuidgen`
-if [ "${uuidgen}" != "" ]; then
+if [ `which uuidgen` ]; then
     region_uuid=`uuidgen`
 else if [ -f "/proc/sys/kernel/random/uuid" ]; then
     # linux only
