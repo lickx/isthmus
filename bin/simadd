@@ -25,7 +25,7 @@ region_port="${PORT_RANGE_START}"
 
 if [ `which uuidgen` ]; then
     region_uuid=`uuidgen`
-else if [ -f "/proc/sys/kernel/random/uuid" ]; then
+elif [ -f "/proc/sys/kernel/random/uuid" ]; then
     # linux only
     region_uuid=$(cat "/proc/sys/kernel/random/uuid")
 else
