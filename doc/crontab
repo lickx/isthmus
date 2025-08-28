@@ -41,10 +41,10 @@ PATH=/usr/local/bin:/bin:/usr/bin:/opt/dotnet
 # Grid+Sims: Re-scan every 10 minutes for crashed sims (and robusts if in grid mode):
 */10 * * * * . $HOME/.bashrc; /home/opensim/isthmus/bin/istmonitor /home/opensim/isthmus
 
-# Sims: Make daily OARs 4:00am every day
-#0 4 * * * . $HOME/.bashrc; /home/opensim/isthmus/bin/simbackup /home/opensim/isthmus
+# Sims: Make daily OARs without assets 4:00am every day
+#0 4 * * * . $HOME/.bashrc; /home/opensim/isthmus/bin/simbackup /home/opensim/isthmus --noassets
 
-# Sims: Make weekly OARs 12:00am every monday
+# Sims: Make weekly full OARs including assets 12:00am every monday
 #0 12 * * 1 . $HOME/.bashrc; /home/opensim/isthmus/bin/simbackup /home/opensim/isthmus
 
 # Grid: For keeping the search service index current (OpenSimSearch)

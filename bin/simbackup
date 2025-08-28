@@ -7,8 +7,8 @@ if [ $# -eq 0 ]; then
     echo No isthmus folder specified
     exit 1
 fi
-
 OPENSIM_DIR=$1
+
 REGIONS_DIR="${OPENSIM_DIR}/etc/sims-enabled"
 SIMCTL="${OPENSIM_DIR}/bin/simctl"
 LOGFILE="${OPENSIM_DIR}/var/log/isthmus.log"
@@ -21,6 +21,13 @@ if [ ! -f "${OPENSIM_DIR}/etc/isthmus.conf" ]; then
     cp "${OPENSIM_DIR}/share/common/etc/isthmus.conf" "${OPENSIM_DIR}/etc"
 fi
 source "${OPENSIM_DIR}/etc/isthmus.conf"
+
+if [ $# -gt 1 ]; then
+    # We got parameters for save oar, strip the first parameter which
+    # is the isthmus folder so we can pass the rest to the save oar command
+    shift
+    OAR_OPTIONS="$OAR_OPTIONS $@"
+fi
 
 cd "${OPENSIM_DIR}/bin"
 mkdir -p "${OPENSIM_DIR}/var/log"
