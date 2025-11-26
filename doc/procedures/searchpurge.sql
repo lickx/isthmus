@@ -14,7 +14,7 @@ BEGIN
     DELETE classifieds FROM classifieds INNER JOIN search_parcels ON classifieds.parceluuid = search_parcels.parcelUUID WHERE search_parcels.regionUUID=pRegionID;
 
     -- events
-    DELETE search_events FROM search_events INNER JOIN search_parcels ON search_events.parcelUUID COLLATE utf8_unicode_ci = search_parcels.parcelUUID WHERE search_parcels.regionUUID=pRegionID;
+    DELETE search_events FROM search_events INNER JOIN search_parcels ON search_events.parcelUUID = search_parcels.parcelUUID WHERE search_parcels.regionUUID=pRegionID;
 
     -- objects
     DELETE FROM search_objects WHERE regionuuid=pRegionID;
