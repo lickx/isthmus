@@ -441,6 +441,8 @@ do_zap() {
     if is_running; then
         echo "Deleting all objects..."
         screen -r ${SCREENPID}.${SIM} -X exec .\!\! echo "delete object name --regex \"\""
+        sleep 1
+        screen -r ${SCREENPID}.${SIM} -X exec .\!\! echo "y"
         sleep 5
         echo "Deleting terrain and generating 'void' map tile"
         screen -r ${SCREENPID}.${SIM} -X exec .\!\! echo "terrain fill 0"
