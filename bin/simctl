@@ -300,6 +300,8 @@ do_stop() {
             exit
         fi
         echo -n "[${SIM}] Stopping"
+        screen -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nbackup"
+        sleep 2
         screen -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nquit"
         STOPTIME=0
         while :
