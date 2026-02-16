@@ -59,6 +59,8 @@ for simulator in ${REGIONS_DIR}/*; do
             OAR_FILE="${OAR_PATH}/${SIM}-`date -I'date'`.oar"
             screen -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nalert \"SYSTEM NOTICE: Region backup in progress\""
             sleep 5
+            screen -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nbackup"
+            sleep 30
             screen -r ${SCREENPID}.${SIM} -X exec .\!\! echo "\nsave oar ${OAR_OPTIONS} \"${OAR_FILE}\""
         fi
     fi
