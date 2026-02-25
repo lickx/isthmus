@@ -378,6 +378,15 @@ do_backup() {
     fi
 }
 
+do_bake() {
+    if is_running; then
+        screen -r ${SCREENPID}.${SIM} -X exec .\!\! echo "terrain bake"
+    else
+        echo "${SIM} not running"
+    fi
+}
+
+
 do_list() {
     if [ -z "$1" ]; then
         WHAT="enabled"
@@ -660,6 +669,14 @@ case "$1" in
         else
             setup $2
             do_backup
+        fi
+        ;;
+    bake)
+        if [ $# == 1 ]; then
+            do_multi $1
+        else
+            setup $2
+            do_bake
         fi
         ;;
     enable)
