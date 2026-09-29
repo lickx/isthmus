@@ -1,5 +1,9 @@
 Addendum to quick-setup
 
+ATTENTION! I recently tried a MySQL setup again on Debian testing (Forky),
+and it was 15 times slower than MariaDB importing a 12GB IAR, and also very
+slow importing OARs. Please consider using MariaDB instead.
+
 Recent mysql versions are slightly more complex to setup than MariaDB.
 Isthmus recommends MariaDB, however if you want to proceed with MySQL,
 follow these instructions:
