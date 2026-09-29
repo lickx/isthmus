@@ -4,15 +4,19 @@ Recent mysql versions are slightly more complex to setup than MariaDB.
 Isthmus recommends MariaDB, however if you want to proceed with MySQL,
 follow these instructions:
 
-$ cd /etc/mysql/mysql.conf.d
+Linux:
+$ cd /etc/mysql/mysql.conf.d 
 $ sudo nano mysqld.conf
-(add the following:)
-ssl=0
-skip_ssl
-default-authentication-plugin=mysql_native_password
-
+Under the [mysqld] section, add the line:
+mysql_native_password=ON
 Followed by:
 $ sudo service mysql restart
+
+Windows:
+notepad C:\ProgramData\MySQL\MySQL Server 8.x\my.ini
+Under the [mysqld] section, add the line:
+mysql_native_password=ON
+Restart the service within Windows Services manager (run services.msc)
 
 Then proceed to make your opensim user:
 GRANT ALL ON isthmus_gridname.* TO 'opensim'@'localhost' IDENTIFIED WITH
