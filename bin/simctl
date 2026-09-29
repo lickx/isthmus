@@ -158,9 +158,9 @@ setup() {
         REGION_SPAN_Y=$((REGION_SPAN_Y / 256))
     fi
 
-    # OpenSim-lickx:
+    # OpenSim since 2026-08-08 allows a custom tile folder (set in share/system/OpenSim.ini):
     REGION_MAPTILE="${OPENSIM_DIR}/var/maptiles/regions/MAP-${REGION_UUID}.png"
-    # Stock OpenSim in which the location of maptiles can't be customized:
+    # Legacy OpenSim compatibility that doesn't have this feature:
     REGION_MAPTILE_LEGACY="${OPENSIM_DIR}/runtime/bin/MAP-${REGION_UUID}.png"
 
     mkdir -p "${OPENSIM_DIR}/var/log"
