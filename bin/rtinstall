@@ -25,7 +25,7 @@ do_log() {
 
 do_install() {
     # Preserve custom *.config for log4net, also exclude unneeded stuff:
-    EXCLUDE="bin/config-include/* bin/Regions/* bin/Estates/* bin/OpenSim.ini bin/OpenSim.exe.config bin/Robust.exe.config bin/MoneyServer.exe.config bin/MoneyServer.dll.config"
+    EXCLUDE="bin/config-include/* bin/Regions/* bin/Estates/* bin/OpenSim.ini bin/OpenSim.exe.config bin/Robust.exe.config bin/MoneyServer.exe.config bin/MoneyServer.dll.config bin/MoneyServer.ini bin/startup_commands.txt bin/shutdown_commands.txt"
     cd "${OPENSIM_DIR}"
     # If we upgrade to a runtime that doesn't have a .version,
     # we don't want the wrong/old version to be displayed inworld:
