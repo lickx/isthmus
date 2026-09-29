@@ -12,14 +12,6 @@ home URI (hg.example.com) the same IP as your main domain (example.com). Any add
 subdomains used by other robust instances (or other stuff like www) can be CNAMEs if on
 the same server.
 
-It is strongly recommended to disable ipv6 on OpenSim servers. You do that in /etc/sysctl.conf:
-
-net.ipv6.conf.all.disable_ipv6 = 1
-net.ipv6.conf.default.disable_ipv6 = 1
-net.ipv6.conf.lo.disable_ipv6 = 1
-
-Afterwards reboot.
-
 
 Here is an example firewall for an Ubuntu server:
 
@@ -41,7 +33,9 @@ sudo ufw allow 9000:9100
 sudo ufw allow 8000:8009/tcp
 (port range 8010-8019/tcp are private ports we use)
 
-# Allow a second server hosting more sims access to private robust:
+# Allow a second server hosting more sims access to private robust.
+# Btw, it would be better if all your servers are also on a private subnet.
+# Some vps/server hosts offer that as an option.
 sudo ufw allow 8010:8019/tcp from 12.34.56.78
 
 # Now you should be all set up:
