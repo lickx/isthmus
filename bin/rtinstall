@@ -31,7 +31,7 @@ do_install() {
     # we don't want the wrong/old version to be displayed inworld:
     rm -f "bin/.version"
     unzip -q -o -d "${TARGET_DIR}" "${ZIP_FILE}" -x ${EXCLUDE} &>/dev/null
-    echo "Installed ${ZIP_FILE}"
+    echo "Installed `basename ${ZIP_FILE}`"
     do_log "rtinstall: Installed ${ZIP_FILE}"
 }
 
