@@ -12,6 +12,7 @@ The following additional packages are required:
   which
   libgdiplus
   uuid-runtime
+  python3-mariadb-connector (for eepcopy)
 
 
 In addition, one of the following databases is required:

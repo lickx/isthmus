@@ -1,0 +1,93 @@
+#!/usr/bin/python3
+import os
+import sys
+import configparser
+import mariadb
+
+def help():
+    print('PURPOSE: Copies a region environment to another region, or to all regions')
+    print('USAGE: '+sys.argv[0]+' <source_region_id> [dest_region_id]')
+    print('If dest_region_id is not given, copy to all regions in sim database');
+    sys.exit(1)
+
+if len(sys.argv)==1:
+    help()
+
+if len(sys.argv)==2:
+    source_region=sys.argv[1]
+if source_region=='--help' or source_region=='-h':
+    help()
+
+if len(sys.argv)==3:
+    dest_region=sys.argv[2]
+
+path = os.path.abspath(os.path.dirname(__file__))
+config = configparser.ConfigParser()
+config.read(path+'/../etc/database.ini')
+constr = config['DatabaseService']['ConnectionString']
+constr = constr.replace('"', '').split(';')
+
+db_host=''
+db_database=''
+db_user=''
+db_pass=''
+
+for keyval in constr:
+    if keyval=='':
+        continue
+    key = keyval.split('=')
+    key = key[0].lower()
+    val = keyval.split('=')
+    val = val[1]
+    match key:
+        case 'datasource':
+            db_host=val
+        case 'database':
+            db_database=val
+        case 'user id':
+            db_user=val
+        case 'password':
+            db_pass=val
+
+try:
+    conn = mariadb.connect(user=db_user, password=db_pass, host=db_host, database=db_database)
+
+    cursor = conn.cursor()
+
+    sql = 'SELECT llsd_settings FROM regionenvironment WHERE region_id=?'
+    data = [source_region]
+    cursor.execute(sql, data)
+
+    llsd_settings = cursor.fetchone()
+    if llsd_settings:
+        if 'dest_region' in globals():
+            # update just dest_region
+            sql = 'REPLACE INTO regionenvironment (region_id, llsd_settings) VALUES(?,?)'
+            data = [dest_region,llsd_settings[0]]
+
+        else:
+            # update all other regions
+            # We HAVE to fetch all known region uuids first, as some may
+            # not have an entry yet in regionenvironment
+            sql = 'SELECT regionUUID FROM regionsettings'
+            data = []
+            cursor.execute(sql, data)
+            all_regions=cursor.fetchall()
+
+            for regionID in all_regions:
+                if regionID[0] != source_region:
+                    sql = 'REPLACE INTO regionenvironment (region_id, llsd_settings) VALUES(?,?)'
+                    data = [regionID[0],llsd_settings[0]]
+                    cursor.execute(sql, data)
+
+        try:
+            conn.commit()
+        except mariadb.Error as e:
+            print(f"Error copying environment: {e}")
+
+except mariadb.Error as e:
+    print(f"Error connecting to database: {e}")
+    sys.exit(1)
+finally:
+    if conn:
+        conn.close()
