@@ -23,8 +23,7 @@ if [ ! -d "${ROBUST_DIR}" ]; then
 fi
 
 mkdir -p "${OPENSIM_DIR}/var/log"
-mkdir -p "${OPENSIM_DIR}/var/fsassets/assets"
-mkdir -p "${OPENSIM_DIR}/var/fsassets/main"
+mkdir -p "${OPENSIM_DIR}/var/fsassets"
 mkdir -p "${OPENSIM_DIR}/var/pid/robust"
 
 # We create this lock file when needing to suspend the watchdog
