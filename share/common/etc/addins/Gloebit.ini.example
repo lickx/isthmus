@@ -1,18 +1,3 @@
-; Gloebit is a modern hypergrid currency
-; https://www.gloebit.com
-;
-; 1) Create a Gloebit account
-; 2) Request for merchant status on your Gloebit control panel
-; 3) Using 'Merchant Tools', create a new Gloebit application:
-;  Name: My Grid or My Estate On OSGrid
-;  Description: Anything that describes your grid/estate
-;  Logo: An optional picture/logo (400x128 pixels)
-; 4) Note down the generated OAuth Key and OAuth Secret, these need to be
-;    filled down below in this ini file
-; 5) After having configured this ini file, rename it to Gloebit.ini 
-; 6) Put Gloebit.dll into runtime/bin
-;    The dll can be found here: http://dev.gloebit.com/opensim/downloads/
-
 [Economy]
 economymodule = Gloebit
 SellEnabled = true
@@ -26,7 +11,7 @@ PriceGroupCreate = 0
     ;; Set to true to enable GMM for all regions controlled by this OpenSim process.
     ;; Requires that "economymodule = Gloebit" is set in [Economy] or [Startup] section of opensim.ini
     ;; If set to false, can be enabled for individual regions - see GLBEnabledOnlyInRegions below
-    Enabled = false
+    Enabled = true
 
     ;# {GLBEnabledOnlyInRegions} {Enabled:false} {Enable Gloebit Money Module in specific regions by region UUID (space delimited list)?} {*} ""
     ;; If Enabled is false above, you can enable for individual regions controlled by this OpenSim process.
@@ -37,20 +22,17 @@ PriceGroupCreate = 0
     ;; Configure GMM to environment and Gloebit application on that environment to interact with
     ;; see http://dev.gloebit.com/opensim/configuration-instructions/ for more details.
 
-    ;; Environments:
-    ;;      sandbox - connects to sandbox.gloebit.com;  fake/sandboxed payments and gloebits;
-    ;;              https://sandbox.gloebit.com/signup/ - create sandbox account
-    ;;              https://sandbox.gloebit.com/merchant-signup/ - request ability to create apps
-    ;;              https://sandbox.gloebit.com/merchant-tools/ - create app and retrieve Key and Secret
+    ;; Environment:
     ;;      production - connects to www.gloebit.com; real payments and gloebits;
-    ;;              https://www.gloebit.com/signup/ - create production account
+    ;;              https://www.gloebit.com/signup/ - create your account
     ;;              https://www.gloebit.com/merchant-signup/ - request ability to create apps
-    ;;              (requires manual approval on production before gaining access to merchant tools)
+    ;;              (requires manual approval before gaining access to merchant tools)
     ;;              https://www.gloebit.com/merchant-tools/ - create app and retrieve Key and Secret
-    GLBEnvironment = sandbox
+    ;; Note: the separate "sandbox" test environment has been decommissioned; use production.
+    GLBEnvironment = production
 
     ;; Application the GMM on this process will connect to within the environment specified above
-    ;; Fill in GLBKey and GLBSecret with values from app created at https://sandbox.gloebit.com/merchant-tools/
+    ;; Fill in GLBKey and GLBSecret with values from the app you create at https://www.gloebit.com/merchant-tools/
     ;; See http://dev.gloebit.com/opensim/configuration-instructions/ for more details.
     GLBKey = 00000000-0000-0000-0000-000000000000
     GLBSecret = 00000000-0000-0000-0000-000000000000
@@ -82,7 +64,6 @@ PriceGroupCreate = 0
     ; GLBShowNewSessionAuthIM = true
     ;# {GLBShowWelcomeMessage} {Show welcome message when entering a region}
     ; GLBShowWelcomeMessage = true
-    GLBShowWelcomeMessage = false
 
     ;;;;; CONFIGURE SINGLE GLOEBIT DB FOR APP OR GRID ;;;;;;
     ;; Optional - If not configured here, Gloebit will use the DataService 
@@ -100,20 +81,30 @@ PriceGroupCreate = 0
     ;;
     ;; Both of these settings must be configured together.  See StandaloneCommon.ini.example
     ;; for ConnectionString examples and availiable StorageProviders
+    ;GLBSpecificStorageProvider = OpenSim.Data.MySQL.dll
+    ;GLBSpecificConnectionString = "Data Source=localhost;Database=opensim;User ID=opensim;Password=***;Old Guids=true;"
+    ;GLBSpecificStorageProvider = "OpenSim.Data.PGSQL.dll"
+    ;GLBSpecificConnectionString = "Server=localhost;Database=opensim;User Id=opensim; password=***;"
 
-    ; Microgrid setup (single server):
+    ; Isthmus microgrid setup (single server):
     ;GLBSpecificStorageProvider = OpenSim.Data.MySQL.dll
     ;GLBSpecificConnectionString = "Data Source=localhost;Database=gloebit;User ID=opensim_gloebit;Password=***;Old Guids=true;"
 
-    ; Maxigrid setup with multiple servers, use a central database:
+    ; Isthmus maxigrid setup with multiple servers, using a central gloebit database:
+    ; To make your gloebit sql user be able to access the gloebit db from
+    ; simservers different than the gloebit db server, grant sql access to
+    ; the gloebit sql user without hostname:
+    ; > grant all on gloebit.* to usernamewithouthostname identified by 'password';
     ;GLBSpecificStorageProvider = OpenSim.Data.MySQL.dll
     ;GLBSpecificConnectionString = "Data Source=192.168.0.2;Database=gloebit;User ID=opensim_gloebit;Password=***;Old Guids=true;"
 
-    ; Currently PostgreSQL is unsupported in OpenSim:
-    ;GLBSpecificStorageProvider = "OpenSim.Data.PGSQL.dll"
-    ;GLBSpecificConnectionString = "Server=localhost;Database=gloebit;User Id=opensim_gloebit; password=***;"
 
 ; These two lines added for land sales to work; see mantis 8779
-GLBNewHTTPFlow = true
-GLBNewLandPassFlow = true
+;GLBNewHTTPFlow = true
+;GLBNewLandPassFlow = true
 
+; Set to false if you don't want hypergrid visitors to buy non-free items:
+;SellNonfreeToHGEnabled = true
+
+; Set to false if you don't want hypergrid visitors to buy freebies:
+;SellFreebieToHGEnabled = true
