@@ -21,6 +21,8 @@ if [ ! -d "${OPENSIM_DIR}/share/grids/${GRID}" ]; then
 fi
 
 mkdir -p "${OPENSIM_DIR}/etc"
+mkdir -p "${OPENSIM_DIR}/etc/robust-include"
+mkdir -p "${OPENSIM_DIR}/etc/sims-include"
 mkdir -p "${OPENSIM_DIR}/etc/sims-available"
 mkdir -p "${OPENSIM_DIR}/etc/sims-enabled"
 mkdir -p "${OPENSIM_DIR}/runtime/bin"
@@ -31,24 +33,19 @@ cp -r "${OPENSIM_DIR}/share/grids/${GRID}/." "${OPENSIM_DIR}"
 echo "Installing common files and settings"
 cp -r "${OPENSIM_DIR}/share/common/." "${OPENSIM_DIR}"
 
-if [ -r "${OPENSIM_DIR}/etc/opensim.ini" ]; then
-    echo "Renaming old style system settings to etc/opensim.ini.old"
-    mv "${OPENSIM_DIR}/etc/opensim.ini" "${OPENSIM_DIR}/etc/opensim.ini.old"
-fi
-
-if [ -r "${OPENSIM_DIR}/etc/database.ini" ]; then
+if [ -r "${OPENSIM_DIR}/etc/robust-include/database.ini" ]; then
     echo "Preserving existing database settings"
 else
-    echo "Installing template for etc/database.ini - please edit this file"
-    echo -e "[DatabaseService]\nStorageProvider = \"OpenSim.Data.MySQL.dll\"\nConnectionString = \"DataSource=localhost;Database=SQL_DATABASE_NAME;User Id=SQL_USER_NAME;password=SQL_USER_PASSWORD;Old Guids=true;SslMode=None;\"" > "${OPENSIM_DIR}/etc/database.ini"
+    echo "Installing template for etc/robust-include/database.ini - please edit this file"
+    echo -e "[DatabaseService]\nStorageProvider = \"OpenSim.Data.MySQL.dll\"\nConnectionString = \"DataSource=localhost;Database=SQL_DATABASE_NAME;User Id=SQL_USER_NAME;password=SQL_USER_PASSWORD;Old Guids=true;SslMode=None;\"" > "${OPENSIM_DIR}/etc/robust-include/database.ini"
 fi
 
 echo "Protecting passwords"
-chmod 600 "${OPENSIM_DIR}/etc/database.ini"
+chmod 600 "${OPENSIM_DIR}/etc/robust-include/database.ini"
 chmod 600 ${OPENSIM_DIR}/etc/addins/*
-chmod 600 "${OPENSIM_DIR}/etc/voice.ini"
+chmod 600 "${OPENSIM_DIR}/etc/sims-include/voice.ini"
 
-if [ -r "${OPENSIM_DIR}/etc/estate.ini" ]; then
+if [ -r "${OPENSIM_DIR}/etc/sims-include/estate.ini" ]; then
    echo "Preserving existing estate settings"
 else
     DefaultEstateName="My Estate"
@@ -62,7 +59,7 @@ else
     if [ -n "${REPLY}" ]; then
         DefaultEstateOwnerName=${REPLY}
     fi
-    ESTATES_INI="${OPENSIM_DIR}/etc/estate.ini"
+    ESTATES_INI="${OPENSIM_DIR}/etc/sims-include/estate.ini"
     echo -e "[Estates]\nDefaultEstateName = \"${DefaultEstateName}\"\nDefaultEstateOwnerName = \"${DefaultEstateOwnerName}\"\n\n" > "${ESTATES_INI}"
     echo "[DatabaseService]" >> "${ESTATES_INI}"
     echo "; To keep estate data across instances/servers centralised (optional):" >> "${ESTATES_INI}"
@@ -73,7 +70,7 @@ else
     echo -e ";EstateConnectionString = \"Data Source=SERVER_IP;Database=estates;User ID=opensim_estates;Password=ESTATES_PASSWORD;Old Guids=true;SslMode=None;\"\n" >> "${ESTATES_INI}"
 fi
 
-echo "Please review etc/estate.ini if you want estate data to be stored centralised to be shared across multiple instances/servers."
+echo "Please review etc/sims-include/estate.ini if you want estate data to be stored centralised to be shared across multiple instances/servers."
 
 echo "Done"
 
