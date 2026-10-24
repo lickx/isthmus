@@ -10,16 +10,8 @@ export OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 
 ROBUST_DIR="${OPENSIM_DIR}/etc/robust.d"
 if [ ! -d "${ROBUST_DIR}" ]; then
-    if [ -r "${OPENSIM_DIR}/etc/robust.ini" ]; then
-        mkdir -p "${ROBUST_DIR}"
-        mv "${OPENSIM_DIR}/etc/robust.ini" "${ROBUST_DIR}/99main.ini"
-        echo "etc/robust.ini has been migrated to etc/robust.d/99main.ini"
-        echo "For an example of a split-robust setup, see the config files in:"
-        echo "share/grids/microgrid-hg/etc/robust.d"
-    else
-        echo "Grid services for this grid are not self-hosted but provided by a 3rd party"
-        exit
-    fi
+    echo "Grid services for this grid are not self-hosted but provided by a 3rd party"
+    exit
 fi
 
 mkdir -p "${OPENSIM_DIR}/var/log"
