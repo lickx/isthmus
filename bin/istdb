@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 OPENSIM_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
-DB_SETTINGS="${OPENSIM_DIR}/etc/database.ini" 
+if [ -d "${OPENSIM_DIR}/etc/robust-include" ]; then
+    DB_SETTINGS="${OPENSIM_DIR}/etc/robust-include/database.ini"
+else
+    DB_SETTINGS="${OPENSIM_DIR}/etc/sims-include/database.ini"
+fi
 LOGFILE="${OPENSIM_DIR}/var/log/isthmus.log"
 
 mkdir -p "${OPENSIM_DIR}/var/log"

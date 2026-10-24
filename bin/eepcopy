@@ -23,7 +23,7 @@ if len(sys.argv)==3:
 
 path = os.path.abspath(os.path.dirname(__file__))
 config = configparser.ConfigParser()
-config.read(path+'/../etc/database.ini')
+config.read(path+'/../etc/sims-include/database.ini')
 constr = config['DatabaseService']['ConnectionString']
 constr = constr.replace('"', '').split(';')
 
