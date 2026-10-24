@@ -33,17 +33,30 @@ cp -r "${OPENSIM_DIR}/share/grids/${GRID}/." "${OPENSIM_DIR}"
 echo "Installing common files and settings"
 cp -r "${OPENSIM_DIR}/share/common/." "${OPENSIM_DIR}"
 
-if [ -r "${OPENSIM_DIR}/etc/robust-include/database.ini" ]; then
-    echo "Preserving existing database settings"
-else
-    echo "Installing template for etc/robust-include/database.ini - please edit this file"
-    echo -e "[DatabaseService]\nStorageProvider = \"OpenSim.Data.MySQL.dll\"\nConnectionString = \"DataSource=localhost;Database=SQL_DATABASE_NAME;User Id=SQL_USER_NAME;password=SQL_USER_PASSWORD;Old Guids=true;SslMode=None;\"" > "${OPENSIM_DIR}/etc/robust-include/database.ini"
+if [ -d "${OPENSIM_DIR}/etc/robust.d" ]; then
+    ROBUST_DB_INI="${OPENSIM_DIR}/etc/robust-include/database.ini"
+    if [ ! -r "${ROBUST_DB_INI}" ]; then
+        echo "Installing template ini for robust database at ${ROBUST_DB_INI} - please edit this file afterwards"
+        echo -e "[DatabaseService]\nStorageProvider = \"OpenSim.Data.MySQL.dll\"\nConnectionString = \"DataSource=localhost;Database=SQL_DATABASE_NAME;User Id=SQL_USER_NAME;password=SQL_USER_PASSWORD;Old Guids=true;SslMode=None;\"" > "${ROBUST_DB_INI}"
+        chmod 600 "${ROBUST_DB_INI}"
+    fi
+fi
+SIM_DB_INI="${OPENSIM_DIR}/etc/sims-include/database.ini"
+if [ ! -r "${SIM_DB_INI}" ]; then
+    if [ -r "${ROBUST_DB_INI}" ]; then
+        echo "Re-using robust database settings for simulators by softlinking"
+        echo "If you want the simulators in a seperate database, replace ${SIM_DB_INI}"
+        ln -s "${ROBUST_DB_INI}" "${SIM_DB_INI}"
+    else
+        echo "Installing template ini for sims database at ${SIM_DB_INI} - please edit this file afterwards"
+        echo -e "[DatabaseService]\nStorageProvider = \"OpenSim.Data.MySQL.dll\"\nConnectionString = \"DataSource=localhost;Database=SQL_DATABASE_NAME;User Id=SQL_USER_NAME;password=SQL_USER_PASSWORD;Old Guids=true;SslMode=None;\"" > "${SIM_DB_INI}"
+    fi
+    chmod 600 "${SIMS_DB_INI}"
 fi
 
 echo "Protecting passwords"
-chmod 600 "${OPENSIM_DIR}/etc/robust-include/database.ini"
 chmod 600 ${OPENSIM_DIR}/etc/addins/*
-chmod 600 "${OPENSIM_DIR}/etc/sims-include/voice.ini"
+chmod 600 ${OPENSIM_DIR}/etc/sims-include/*
 
 if [ -r "${OPENSIM_DIR}/etc/sims-include/estate.ini" ]; then
    echo "Preserving existing estate settings"
